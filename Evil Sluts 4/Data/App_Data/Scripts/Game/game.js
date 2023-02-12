@@ -112,7 +112,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	this.playerOBJ = null;
 	this.playerDir = 1;
 	this.bulletSpawn = new Vector2();
-	this.controller = new playerController(false, "player", this.playerOBJ, 5, new Vector2(0.1, 0.2), new Vector2(100, 1180), new Vector2(100, 620));
+	this.controller = new playerController(false, "player", this.playerOBJ, 3, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	
 	this.load = function(pos=null) {
 		if (pos != null) {
