@@ -151,7 +151,18 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 						this.bulletSpawn = new Vector2(-10, -60);
 					break;
 				}
-				console.log(this.controller.touchEdge);
+				if (currentMap() != null) {
+					if (this.controller.touchEdge.x) {
+						currentMap().dir.x = -this.controller.moveDir.x;
+					} else {
+						currentMap().dir.x = 0;
+					}
+					if (this.controller.touchEdge.y) {
+						currentMap().dir.y = -this.controller.moveDir.y;
+					} else {
+						currentMap().dir.y = 0;
+					}
+				}
 				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null) {
 					if (fireTime == 0 && this.ammo > 0) {
 						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
@@ -201,31 +212,31 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	addUpdate(update, "player");
 }
 
-function baseItems(rariety=2, imageData=null){
-	
+function baseItems(rariety=1, imageData=null) {
 	this.rariety = rariety;
 	this.imageData = imageData;
 }
 
-function drugs(type = "", base = new baseItems()){
+function drugs(type="", base=new baseItems()) {
 	this.type = type;
 	this.base = base;
 }
-//chese mf
+
 const itemTable = [
-new drugs("heroin", new baseItems(1)),
-new drugs("crack", new baseItems(1)),
-new drugs("cocaine", new baseItems(2)),
-new drugs("lsd", new baseItems(5)),
-new drugs("mushroom", new baseItems(4)),
-new drugs("crocodile", new baseItems(1)),
-new drugs("bath salts", new baseItems(2)),
-new drugs("DMT", new baseItems(6)),
-new drugs("meth", new baseItems(1)),
-new drugs("smack", new baseItems(3)),
-new drugs("chese", new baseItems(10)),
-new drugs("your mom", new baseItems(7)),
-]
+	new drugs("heroin", new baseItems(1)),
+	new drugs("crack", new baseItems(1)),
+	new drugs("cocaine", new baseItems(2)),
+	new drugs("lsd", new baseItems(5)),
+	new drugs("mushroom", new baseItems(4)),
+	new drugs("crocodile", new baseItems(1)),
+	new drugs("bath salts", new baseItems(2)),
+	new drugs("DMT", new baseItems(6)),
+	new drugs("meth", new baseItems(1)),
+	new drugs("smack", new baseItems(3)),
+	new drugs("chese", new baseItems(10)),
+	new drugs("your mom", new baseItems(7)),
+];
+
 //Controls
 let moveUpBttn = new key(
 	"moveUp",
