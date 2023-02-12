@@ -103,16 +103,19 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	let bulletAmount = 0;
 	this.size = new Vector2(32, 32);
 	this.loaded = false;
-	this.nameTag = new nameTag("player","player");
+	this.nameTag = new nameTag("Jesus","player");
 	this.pos = new Vector2();
-	this.health = 0;
+	this.health = new Vector2(0, 100); //x- current health, y- max health
 	this.dead = false;
 	this.currentWeapon = 0;
 	this.currentWeaponData = null;
 	this.playerOBJ = null;
 	this.playerDir = 1;
 	this.bulletSpawn = new Vector2();
-	this.controller = new playerController(false, "player", this.playerOBJ, 3, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
+	this.playerSpeed = new Vector2(3, 5); //x- normal speed, y- running speed
+	this.run = false;
+	this.stamina = new Vector2(0, 50, 0.1); //x- current stamina, y- max stamina, r- stamina recharge
+	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	
 	this.load = function(pos=null) {
 		if (pos != null) {
@@ -239,7 +242,7 @@ const itemTable = [
 
 //Controls
 let moveUpBttn = new key(
-	"moveUp",
+	"Up",
 	[
 		new keyData("w", 0)
 	],
@@ -247,7 +250,7 @@ let moveUpBttn = new key(
 	false
 );
 let moveDownBttn = new key(
-	"moveDown",
+	"Down",
 	[
 		new keyData("s", 0)
 	],
@@ -255,7 +258,7 @@ let moveDownBttn = new key(
 	false
 );
 let moveLeftBttn = new key(
-	"moveLeft",
+	"Left",
 	[
 		new keyData("a", 0)
 	],
@@ -263,11 +266,19 @@ let moveLeftBttn = new key(
 	false
 );
 let moveRightBttn = new key(
-	"moveRight",
+	"Right",
 	[
 		new keyData("d", 0)
 	],
 	new Vector2(() => {currentPlayer.controller.moveDir.x = 1}, () => {currentPlayer.controller.moveDir.x = 0}),
+	false
+);
+let runBttn = new key(
+	"Run",
+	[
+		new keyData("Shift", 1)
+	],
+	new Vector2(() => {console.log("test")}, () => {}),
 	false
 );
 
