@@ -2705,6 +2705,7 @@ function menuToggle() {
 
 function settingsMenu() {
 	this.active = false;
+	this.iconHovered = false;
 	this.menuSize = new Vector2(800, 600);
 	this.menuScale = 1;
 	//Settings button
@@ -2725,9 +2726,11 @@ function settingsMenu() {
 	this.settingsIcon.style.display = "block";
 	this.settingsIcon.onmouseover = () => {
 		this.settingsIcon.style.opacity = "0.7";
+		this.iconHovered = true;
 	};
 	this.settingsIcon.onmouseleave = () => {
 		this.settingsIcon.style.opacity = "0.3";
+		this.iconHovered = false;
 	};
 	this.settingsIcon.onclick = () => {
 		this.show();

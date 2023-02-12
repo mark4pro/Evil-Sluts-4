@@ -137,6 +137,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(-5, -5), "black", 10)));
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
+		mousePressed[0] = false; //fixes shooting bullets after clicking play on the main menu
 		this.loaded = true;
 	}
 	this.unload = function() {
@@ -178,7 +179,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 						currentMap().dir.y = 0;
 					}
 				}
-				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null) {
+				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered) {
 					if (fireTime == 0 && this.ammo > 0) {
 						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
 							let newBullet = new Sprite(5, new baseObject(false, new nameTag("bullet_"+bulletAmount,this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
