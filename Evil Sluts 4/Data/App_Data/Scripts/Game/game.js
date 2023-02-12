@@ -9,6 +9,8 @@ let bullet_1_Img = new imageData("tear", imagePath+"tear.png", new Vector2(59, 9
 
 //Global vars
 let thisLoaded = false;
+let loadedCollisionArray = false;
+let collisionArray = null;
 let saveData = {
 	"mapPos":null,
 	"playerPos":null,
@@ -59,8 +61,23 @@ const mainUpdate = () => {
 			loadMaps();
 			thisLoaded = true;
 		}
-		if (currentMap() != null && currentMap().loaded && !currentPlayer.loaded) {
-			currentPlayer.load(currentMap().playerPosInit);
+		if (currentMap() != null && currentMap().loaded) {
+			if (!currentPlayer.loaded) {
+				currentPlayer.load(currentMap().playerPosInit);
+			}
+			if (!loadedCollisionArray) {
+				collisionArray = getByNameTag(new nameTag("collide", ""), 1, false, true);
+				if (collisionArray != null) {
+					loadedCollisionArray = true;
+				}
+			} else {
+				if (currentPlayer.loaded) {
+					let distanceFilter = collisionArray.filter((o) => currentPlayer.playerOBJ.base.position.distance(o.base.position) <= 320);
+					for (let i=0,length=distanceFilter.length;i<length;i++) {
+						cirPolyCollision(currentPlayer.playerOBJ, distanceFilter[i], currentPlayer.controller, false);
+					}
+				}
+			}
 		}
 	}
 };
@@ -117,7 +134,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 			this.pos = pos;
 		}
 		this.health = this.maxHealth;
-		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(-5, -5), "black", 5)));
+		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(-5, -5), "black", 10)));
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
 		this.loaded = true;
