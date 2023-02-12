@@ -60,11 +60,6 @@ const mainUpdate = () => {
 			thisLoaded = true;
 		}
 		if (currentMap() != null && currentMap().loaded && !currentPlayer.loaded) {
-			let wallTiles = objectArray.filter((i) => i.base.nameTag.name == "dungeon_wall");
-			for (let i=0,length=wallTiles.length;i<length;i++) {
-				wallTiles[i].layerNumber++;
-			}
-			loaded = false;
 			currentPlayer.load(currentMap().playerPosInit);
 		}
 	}
@@ -122,7 +117,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 			this.pos = pos;
 		}
 		this.health = this.maxHealth;
-		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor()));
+		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(-5, -5), "black", 5)));
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
 		this.loaded = true;
@@ -198,9 +193,6 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 							bulletsSpawned[i].base.marked = true;
 						}
 					}
-				}
-				if (!this.loaded) {
-					this.load();
 				}
 				this.currentWeaponData = weaponTable[this.currentWeapon];
 				if (this.currentWeapon > this.weapons.length-1) {
