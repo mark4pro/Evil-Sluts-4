@@ -83,6 +83,94 @@ const mainUpdate = () => {
 };
 addUpdate(mainUpdate, "mainUpdate"); 
 
+function baseItem(rariety=1, imageData=null) {
+	this.rariety = rariety;
+	this.imageData = imageData;
+	this.duplicate = () => {
+		return new baseItem(this.rariety, this.imageData);
+	}
+}
+
+function drugsItem(type="", base=new baseItems()) {
+	this.type = type;
+	this.base = base;
+	this.itemType = "drug";
+	this.mainType = "items"; //What inventory array it goes into
+	this.duplicate = () => {
+		return new drugsItem(this.type, this.base.duplicate());
+	}
+}
+
+function weaponItem(weaponId=0, base=new baseItems()) {
+	this.weaponId = weaponId;
+	this.base = base;
+	this.itemType = "weapon";
+	this.mainType = "weapons"; //What inventory array it goes into
+	this.equip = () => {
+		if (currentPlayer.loaded && currentPlayer.weapons.filter((i) => i.weaponId == this.weaponId).length == 0) {
+			currentPlayer.weapons.push(this);
+		}
+	}
+	this.unequip = () => {
+		if (currentPlayer.loaded && currentPlayer.weapons.filter((i) => i.weaponId == this.weaponId).length != 0) {
+			currentPlayer.weapons.forEach((w, i) => {
+				if (w.weaponId == this.weaponId) {
+					currentPlayer.weapons.splice(i, 1);
+				}
+			});
+		}
+	}
+	this.duplicate = () => {
+		return new weaponItem(this.weaponId, this.base.duplicate());
+	}
+}
+
+const itemTable = [
+	//Items
+	new drugsItem("heroin", new baseItem(1)),
+	new drugsItem("crack", new baseItem(1)),
+	new drugsItem("cocaine", new baseItem(2)),
+	new drugsItem("lsd", new baseItem(5)),
+	new drugsItem("mushroom", new baseItem(4)),
+	new drugsItem("crocodile", new baseItem(1)),
+	new drugsItem("bath salts", new baseItem(2)),
+	new drugsItem("DMT", new baseItem(6)),
+	new drugsItem("meth", new baseItem(1)),
+	new drugsItem("smack", new baseItem(3)),
+	new drugsItem("chese", new baseItem(10)),
+	new drugsItem("your mom", new baseItem(7)),
+	//Weapons
+	new weaponItem(0, new baseItem(1)),
+];
+
+const getItemsByType = (type="", mode=0) => {
+	if (mode < 0) {
+		mode = 0;
+	}
+	if (mode > 1) {
+		mode = 1;
+	}
+	switch (mode) {
+	case 0:
+		return itemTable.filter((i) => type.includes(i.itemType));
+	break;
+	case 1:
+		return itemTable.filter((i) => !type.includes(i.itemType));
+	break;
+	}
+}
+
+const addToInventory = (item=null) => {
+	if (item != null) {
+		inventory[item.mainType].push(item);
+	}
+}
+
+const inventory = {
+	"weapons":[getItemsByType("weapon")[0]],
+	"items":[],
+};
+
 function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1, 10), size=ONE, speed=5, range=100, damage=new Vector2(), spreadPattern=[0]) {
 	this.name = name;
 	this.imageData = imageData;
@@ -102,7 +190,7 @@ const weaponTable = {
 	0:new weapon("test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
 }
 
-const currentPlayer = new player(100, 10, [0], 100);
+const currentPlayer = new player(100, 10, [getItemsByType("weapon")[0]], 100);
 
 function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	this.maxHealth = maxHealth;
@@ -212,43 +300,30 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 						}
 					}
 				}
-				this.currentWeaponData = weaponTable[this.currentWeapon];
+				if (mouseWheel > 0) {
+					this.currentWeapon--;
+					mouseWheel = 0;
+				}
+				if (mouseWheel < 0) {
+					this.currentWeapon++;
+					mouseWheel = 0;
+				}
 				if (this.currentWeapon > this.weapons.length-1) {
-					this.currentWeapon = this.weapons.length-1;
+					this.currentWeapon = 0;
 				}
 				if (this.currentWeapon < 0) {
-					this.currentWeapon = 0;
+					this.currentWeapon = this.weapons.length-1;
+				}
+				if (this.weapons[this.currentWeapon] != undefined) {
+					this.currentWeaponData = weaponTable[this.weapons[this.currentWeapon].weaponId];
+				} else {
+					this.currentWeaponData = null;
 				}
 			}
 		}
 	};
 	addUpdate(update, "player");
 }
-
-function baseItems(rariety=1, imageData=null) {
-	this.rariety = rariety;
-	this.imageData = imageData;
-}
-
-function drugs(type="", base=new baseItems()) {
-	this.type = type;
-	this.base = base;
-}
-
-const itemTable = [
-	new drugs("heroin", new baseItems(1)),
-	new drugs("crack", new baseItems(1)),
-	new drugs("cocaine", new baseItems(2)),
-	new drugs("lsd", new baseItems(5)),
-	new drugs("mushroom", new baseItems(4)),
-	new drugs("crocodile", new baseItems(1)),
-	new drugs("bath salts", new baseItems(2)),
-	new drugs("DMT", new baseItems(6)),
-	new drugs("meth", new baseItems(1)),
-	new drugs("smack", new baseItems(3)),
-	new drugs("chese", new baseItems(10)),
-	new drugs("your mom", new baseItems(7)),
-];
 
 //Controls
 let moveUpBttn = new key(

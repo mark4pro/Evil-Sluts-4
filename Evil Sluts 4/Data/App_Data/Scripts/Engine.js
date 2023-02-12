@@ -2981,8 +2981,7 @@ function cursor() {
 			this.cursor = new Sprite(8, new baseObject(true, new nameTag("cursor", "Engine"), new Vector2(5, 5), new Vector2(-100, -100), data));
 		}
 	}
-	const update = () => this.update();
-	this.update = function() {
+	const update = () => {
 		if (this.cursor.type == "rectangle" && engineSettings.Debug.Show_Debug_Cursor) {
 			this.cursor.base.color.alpha = 1;
 			if (mouseData().b0 && !mouseData().b1 && !mouseData().b2) {
@@ -3018,9 +3017,10 @@ function cursor() {
 //Mouse
 let mousePos = new Vector2();
 let mousePressed = [false,false,false];
+let mouseWheel = 0;
 
 function mouseData() {
-	return {"pos":new Vector2((mousePos.x/screen.getScale().x), (mousePos.y/screen.getScale().y)), "b0":mousePressed[0], "b1":mousePressed[1], "b2":mousePressed[2]};
+	return {"pos":new Vector2((mousePos.x/screen.getScale().x), (mousePos.y/screen.getScale().y)), "b0":mousePressed[0], "b1":mousePressed[1], "b2":mousePressed[2], "wheel":mouseWheel};
 };
 
 window.addEventListener("mousemove", function(event) {
@@ -3030,6 +3030,11 @@ window.addEventListener("mousemove", function(event) {
 window.addEventListener("dblclick", function(event) {
 	event.preventDefault();
 });
+
+window.addEventListener("wheel", (e) => {
+	mouseWheel = e.deltaY;
+});
+
 document.body.style.userSelect = "none";
 
 window.onmousedown = function(event){
