@@ -211,7 +211,7 @@ function drugs(type = "", base = new baseItems()){
 	this.type = type;
 	this.base = base;
 }
-
+//chese mf
 const itemTable = [
 new drugs("heroin", new baseItems(1)),
 new drugs("crack", new baseItems(1)),
