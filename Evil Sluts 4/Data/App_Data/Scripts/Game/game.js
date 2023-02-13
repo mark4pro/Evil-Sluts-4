@@ -263,7 +263,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100
 					}
 				}
 				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered && this.playerOBJ != null) {
-					if (fireTime == 0 && this.ammo > 0) {
+					if (fireTime == 0 && this.ammo.x > 0) {
 						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
 							let newBullet = new Sprite(5, new baseObject(false, new nameTag("bullet_"+bulletAmount,this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
 							let angle = this.playerOBJ.base.position.getRotation(Cursor.cursor.base.position, false)+180;
@@ -273,7 +273,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100
 							bulletAmount++;
 							addObject(newBullet);
 						}
-						this.ammo--;
+						this.ammo.x--;
 					}
 					fireTime += this.currentWeaponData.fireTime.x*delta;
 					if (fireTime > this.currentWeaponData.fireTime.y) {
