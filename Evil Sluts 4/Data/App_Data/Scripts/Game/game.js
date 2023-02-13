@@ -83,7 +83,8 @@ const mainUpdate = () => {
 };
 addUpdate(mainUpdate, "mainUpdate"); 
 
-function statusBar(value=0, maxValue=100, color=new Vector2()) {
+function statusBar(obj=null, value=0, maxValue=100, color=new Vector2()) {
+	this.obj = obj;
 	this.value = value;
 	this.maxValue = maxValue;
 	this.color = color; //x- start color, y- end color
@@ -93,9 +94,11 @@ function statusBar(value=0, maxValue=100, color=new Vector2()) {
 	}
 	this.gradient.setNumberRange(1, this.maxValue);
 	this.setColors(this.color);
-	let thisColor = "";
+	let sizeX = this.obj.size.duplicate().x;
 	this.update = () => {
 		this.gradient.setNumberRange(1, this.maxValue);
+		this.obj.base.color = new colorData(this.gradient.colourAt(this.value), 1);
+		this.obj.base.size.x = sizeX*(this.value/(this.maxValue/100)/100);
 	}
 }
 
