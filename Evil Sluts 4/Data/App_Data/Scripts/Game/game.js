@@ -176,13 +176,12 @@ const weaponTable = {
 	0:new weapon("test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
 }
 
-const currentPlayer = new player(100, 10, [getItemsByType("weapon")[0]], 100);
+const currentPlayer = new player(100, 10, [getItemsByType("weapon")[0]], new Vector2(100, 100));
 
-function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
-	this.maxHealth = maxHealth;
+function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100)) {
 	this.defence = defence;
 	this.weapons = weapons;
-	this.ammo = ammo;
+	this.ammo = ammo; //x- current ammo, y- max ammo
 	
 	this.lockWeapon = false;
 	let fireTime = 0;
@@ -191,7 +190,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	this.loaded = false;
 	this.nameTag = new nameTag("Jesus","player");
 	this.pos = new Vector2();
-	this.health = new Vector2(0, 100); //x- current health, y- max health
+	this.health = new Vector2(maxHealth, maxHealth); //x- current health, y- max health
 	this.dead = false;
 	this.currentWeapon = 0;
 	this.currentWeaponData = null;
@@ -203,17 +202,18 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	this.stamina = new Vector2(0, 50, 0.1); //x- current stamina, y- max stamina, r- stamina recharge
 	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	
-	this.healthBar = new Rectangle(8, new baseObject(false, new nameTag("healthBar", "UI"), new Vector2(200, 50), new Vector2(640, 640), new colorData("black")));
-	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen", 1));
+	this.healthBarTxt = new Text(8, "Health", new baseObject(false, new nameTag("healthBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.healthBar = new Rectangle(8, new baseObject(false, new nameTag("healthBar", "UI"), new Vector2(200, 25), new Vector2(640, 640), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen", 0.75));
 	
 	this.load = function(pos=null) {
 		if (pos != null) {
 			this.pos = pos;
 		}
-		this.health.x = this.health.y;
 		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(-5, -5), "black", 10)));
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
+		addObject(this.healthBarTxt);
 		addObject(this.healthBar);
 		mousePressed[0] = false; //fixes shooting bullets after clicking play on the main menu
 		this.loaded = true;
@@ -221,6 +221,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	this.unload = function() {
 		deleteByNameTag(this.nameTag);
 		deleteByNameTag(this.healthBar.base.nameTag);
+		deleteByNameTag(this.healthBarTxt.base.nameTag);
 		this.controller.deactivate();
 		this.loaded = false;
 	}
