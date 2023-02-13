@@ -69,11 +69,13 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2())
 	}
 }
 
-function baseItem(rariety=1, imageData=null) {
+function baseItem(id=0, rariety=1, size=new Vector2(16, 16), imageData=null) {
+	this.id = id;
 	this.rariety = rariety;
+	this.size = size;
 	this.imageData = imageData;
 	this.duplicate = () => {
-		return new baseItem(this.rariety, this.imageData);
+		return new baseItem(this.id, this.rariety, this.size, this.imageData);
 	}
 }
 
@@ -113,20 +115,20 @@ function weaponItem(weaponId=0, base=new baseItems()) {
 
 const itemTable = [
 	//Items
-	new drugsItem("heroin", new baseItem(1)),
-	new drugsItem("crack", new baseItem(1)),
-	new drugsItem("cocaine", new baseItem(2)),
-	new drugsItem("lsd", new baseItem(5)),
-	new drugsItem("mushroom", new baseItem(4)),
-	new drugsItem("crocodile", new baseItem(1)),
-	new drugsItem("bath salts", new baseItem(2)),
-	new drugsItem("DMT", new baseItem(6)),
-	new drugsItem("meth", new baseItem(1)),
-	new drugsItem("smack", new baseItem(3)),
-	new drugsItem("chese", new baseItem(10)),
-	new drugsItem("your mom", new baseItem(7)),
+	new drugsItem("heroin", new baseItem(0, 1, new Vector2(16, 16))),
+	new drugsItem("crack", new baseItem(1, 1, new Vector2(16, 16))),
+	new drugsItem("cocaine", new baseItem(2, 2, new Vector2(16, 16))),
+	new drugsItem("lsd", new baseItem(3, 5, new Vector2(16, 16))),
+	new drugsItem("mushroom", new baseItem(4, 4, new Vector2(16, 16))),
+	new drugsItem("crocodile", new baseItem(5, 1, new Vector2(16, 16))),
+	new drugsItem("bath salts", new baseItem(6, 2, new Vector2(16, 16))),
+	new drugsItem("DMT", new baseItem(7, 6, new Vector2(16, 16))),
+	new drugsItem("meth", new baseItem(8, 1, new Vector2(16, 16))),
+	new drugsItem("smack", new baseItem(9, 3, new Vector2(16, 16))),
+	new drugsItem("chese", new baseItem(10, 10, new Vector2(16, 16))),
+	new drugsItem("your mom", new baseItem(11, 7, new Vector2(16, 16))),
 	//Weapons
-	new weaponItem(0, new baseItem(1)),
+	new weaponItem(0, new baseItem(101, 1, new Vector2(32, 32), bullet_1_Img.getColor())),
 ];
 
 const getItemsByType = (type="", mode=0) => {
@@ -156,6 +158,27 @@ const inventory = {
 	"weapons":[getItemsByType("weapon")[0]],
 	"items":[],
 };
+
+const dropItem = (itemType="items", index=0) => {
+	let inventoryItem = inventory[itemType][index];
+	if (inventoryItem != undefined) {
+		let dup = inventoryItem.duplicate();
+		switch (currentPlayer.playerDir) {
+			case -1:
+				pos = currentPlayer.playerOBJ.base.position.addV(new Vector2(-30, 80));
+			break;
+			case 1:
+				pos = currentPlayer.playerOBJ.base.position.addV(new Vector2(30, 80));
+			break;
+		}
+		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", currentMap().nameTag.name), dup.base.size, pos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+		//droppedItem.item = 
+		if (typeof inventoryItem.unequip != "undefined") {
+			inventoryItem.unequip();
+		}
+		inventory[itemType].splice(index, 1);
+	}
+}
 
 function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1, 10), size=ONE, speed=5, range=100, damage=new Vector2(), spreadPattern=[0]) {
 	this.name = name;
@@ -218,7 +241,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 		if (pos != null) {
 			this.pos = pos;
 		}
-		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(-5, -5), "black", 10)));
+		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(5, -5), "black", 10)));
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
 		addObject(this.healthBarTxt);
