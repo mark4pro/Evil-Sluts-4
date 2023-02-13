@@ -210,6 +210,9 @@ function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weap
 	this.staminaBar = new Rectangle(8, new baseObject(false, new nameTag("staminaBar", "UI"), new Vector2(200, 25), new Vector2(640, 695), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.staminaBarLink = new statusBar(this.staminaBar, this.stamina.x, this.stamina.y, new Vector2("ghostwhite", "darkblue", 0.75));
 	
+		
+	this.weaponNameTxt = new Text(8, "Weapon Name", new baseObject(false, new nameTag("weaponNameTxt", "UI"), new Vector2("30px Arial", false, "left"), new Vector2(10, 10), new colorData("purple", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+	
 	this.load = function(pos=null) {
 		if (pos != null) {
 			this.pos = pos;
@@ -221,6 +224,8 @@ function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weap
 		addObject(this.healthBar);
 		addObject(this.staminaBarTxt);
 		addObject(this.staminaBar);
+		addObject(this.weaponNameTxt);
+	
 		mousePressed[0] = false; //fixes shooting bullets after clicking play on the main menu
 		this.loaded = true;
 	}
@@ -230,6 +235,8 @@ function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weap
 		deleteByNameTag(this.healthBarTxt.base.nameTag);
 		deleteByNameTag(this.staminaBar.base.nameTag);
 		deleteByNameTag(this.staminaBarTxt.base.nameTag);
+		deleteByNameTag(this.weaponName.base.nameTag);
+		deleteByNameTag(this.weaponNameTxt.base.nameTag);
 		this.controller.deactivate();
 		this.loaded = false;
 	}
@@ -247,6 +254,9 @@ function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weap
 				this.staminaBarLink.value = this.stamina.x;
 				this.staminaBarLink.maxValue = this.stamina.y;
 				this.staminaBarLink.update();
+				if(this.currentWeaponData != null){ 
+				this.weaponNameTxt.text = "Weapon Name: "+this.currentWeaponData.name;
+				}
 				if (this.controller.moveDir.x != 0) {
 					this.playerDir = -this.controller.moveDir.x;
 				}
