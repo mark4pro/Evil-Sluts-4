@@ -83,6 +83,22 @@ const mainUpdate = () => {
 };
 addUpdate(mainUpdate, "mainUpdate"); 
 
+function statusBar(value=0, maxValue=100, color=new Vector2()) {
+	this.value = value;
+	this.maxValue = maxValue;
+	this.color = color; //x- start color, y- end color
+	this.gradient = new Rainbow();
+	this.setColors = (color=new Vector2()) => {
+		this.gradient.setSpectrum(this.color.x, this.color.y);
+	}
+	this.gradient.setNumberRange(1, this.maxValue);
+	this.setColors(this.color);
+	let thisColor = "";
+	this.update = () => {
+		this.gradient.setNumberRange(1, this.maxValue);
+	}
+}
+
 function baseItem(rariety=1, imageData=null) {
 	this.rariety = rariety;
 	this.imageData = imageData;
