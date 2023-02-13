@@ -69,12 +69,6 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2())
 	}
 }
 
-
-
-
-
-
-
 function baseItem(rariety=1, imageData=null) {
 	this.rariety = rariety;
 	this.imageData = imageData;
@@ -182,9 +176,9 @@ const weaponTable = {
 	0:new weapon("test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
 }
 
-const currentPlayer = new player(100, 10, [getItemsByType("weapon")[0]], new Vector2(100, 100));
+const currentPlayer = new player(100, new Vector2(50, 0.1), 10, [getItemsByType("weapon")[0]], new Vector2(100, 100));
 
-function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100)) {
+function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weapons=[], ammo=new Vector2(100, 100)) {
 	this.defence = defence;
 	this.weapons = weapons;
 	this.ammo = ammo; //x- current ammo, y- max ammo
@@ -205,15 +199,15 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100
 	this.bulletSpawn = new Vector2();
 	this.playerSpeed = new Vector2(3, 5); //x- normal speed, y- running speed
 	this.run = false;
-	this.stamina = new Vector2(0, 50, 0.1); //x- current stamina, y- max stamina, r- stamina recharge
+	this.stamina = new Vector2(maxStamina.x, maxStamina.x, maxStamina.y); //x- current stamina, y- max stamina, r- stamina recharge
 	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	
 	this.healthBarTxt = new Text(8, "Health", new baseObject(false, new nameTag("healthBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.healthBar = new Rectangle(8, new baseObject(false, new nameTag("healthBar", "UI"), new Vector2(200, 25), new Vector2(640, 640), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen", 0.75));
 	
-	this.staminaBarTxt = new Text(8, "Stamina", new baseObject(false, new nameTag("staminaBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
-	this.staminaBar = new Rectangle(8, new baseObject(false, new nameTag("staminaBar", "UI"), new Vector2(200, 25), new Vector2(640, 720), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.staminaBarTxt = new Text(8, "Stamina", new baseObject(false, new nameTag("staminaBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 670), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.staminaBar = new Rectangle(8, new baseObject(false, new nameTag("staminaBar", "UI"), new Vector2(200, 25), new Vector2(640, 695), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.staminaBarLink = new statusBar(this.staminaBar, this.stamina.x, this.stamina.y, new Vector2("ghostwhite", "darkblue", 0.75));
 	
 	this.load = function(pos=null) {
