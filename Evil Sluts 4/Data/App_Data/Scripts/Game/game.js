@@ -69,6 +69,12 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2())
 	}
 }
 
+
+
+
+
+
+
 function baseItem(rariety=1, imageData=null) {
 	this.rariety = rariety;
 	this.imageData = imageData;
@@ -206,6 +212,10 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100
 	this.healthBar = new Rectangle(8, new baseObject(false, new nameTag("healthBar", "UI"), new Vector2(200, 25), new Vector2(640, 640), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen", 0.75));
 	
+	this.staminaBarTxt = new Text(8, "Stamina", new baseObject(false, new nameTag("staminaBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.staminaBar = new Rectangle(8, new baseObject(false, new nameTag("staminaBar", "UI"), new Vector2(200, 25), new Vector2(640, 720), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.staminaBarLink = new statusBar(this.staminaBar, this.stamina.x, this.stamina.y, new Vector2("ghostwhite", "darkblue", 0.75));
+	
 	this.load = function(pos=null) {
 		if (pos != null) {
 			this.pos = pos;
@@ -215,6 +225,8 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100
 		this.controller.activate();
 		addObject(this.healthBarTxt);
 		addObject(this.healthBar);
+		addObject(this.staminaBarTxt);
+		addObject(this.staminaBar);
 		mousePressed[0] = false; //fixes shooting bullets after clicking play on the main menu
 		this.loaded = true;
 	}
@@ -222,6 +234,8 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100
 		deleteByNameTag(this.nameTag);
 		deleteByNameTag(this.healthBar.base.nameTag);
 		deleteByNameTag(this.healthBarTxt.base.nameTag);
+		deleteByNameTag(this.staminaBar.base.nameTag);
+		deleteByNameTag(this.staminaBarTxt.base.nameTag);
 		this.controller.deactivate();
 		this.loaded = false;
 	}
@@ -236,6 +250,9 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=new Vector2(100, 100
 				this.healthBarLink.value = this.health.x;
 				this.healthBarLink.maxValue = this.health.y;
 				this.healthBarLink.update();
+				this.staminaBarLink.value = this.stamina.x;
+				this.staminaBarLink.maxValue = this.stamina.y;
+				this.staminaBarLink.update();
 				if (this.controller.moveDir.x != 0) {
 					this.playerDir = -this.controller.moveDir.x;
 				}
