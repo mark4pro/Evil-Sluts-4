@@ -236,6 +236,9 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	this.stamina = new Vector2(0, 50, 0.1); //x- current stamina, y- max stamina, r- stamina recharge
 	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	
+	this.healthBar = new Rectangle(8, new baseObject(false, new nameTag("healthBar", "UI"), new Vector2(200, 50), new Vector2(640, 640), new colorData("black")));
+	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen"));
+	
 	this.load = function(pos=null) {
 		if (pos != null) {
 			this.pos = pos;
@@ -244,11 +247,13 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(-5, -5), "black", 10)));
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
+		addObject(this.healthBar);
 		mousePressed[0] = false; //fixes shooting bullets after clicking play on the main menu
 		this.loaded = true;
 	}
 	this.unload = function() {
 		deleteByNameTag(this.nameTag);
+		deleteByNameTag(this.healthBar.base.nameTag);
 		this.controller.deactivate();
 		this.loaded = false;
 	}
@@ -260,6 +265,8 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 					this.unload();
 				}
 			} else {
+				this.healthBarLink.value = this.health.x;
+				this.healthBarLink.maxValue = this.health.y;
 				if (this.controller.moveDir.x != 0) {
 					this.playerDir = -this.controller.moveDir.x;
 				}
