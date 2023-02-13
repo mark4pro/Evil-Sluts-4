@@ -230,6 +230,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 		mousePressed[0] = false; //fixes shooting bullets after clicking play on the main menu
 		this.loaded = true;
 	}
+	
 	this.unload = function() {
 		deleteByNameTag(this.nameTag);
 		deleteByNameTag(this.healthBar.base.nameTag);
@@ -243,6 +244,12 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 		this.controller.deactivate();
 		this.loaded = false;
 	}
+	
+	this.damagePlayer = (damage=10) => {
+		console.log(damage*(damage/this.defence));
+		this.health.x -= clamp(damage*(damage/this.defence), 0, this.health.y);
+	}
+	
 	const update = () => {
 		deleteByMarked();
 		if (typeof gameState != "undefined") {
