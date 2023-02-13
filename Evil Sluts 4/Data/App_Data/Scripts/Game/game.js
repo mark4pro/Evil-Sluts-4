@@ -50,54 +50,21 @@ function mainMenu() {
 	addUpdate(update, "mainMenu");
 }
 
-const mainUpdate = () => {
-	//Inits after all scripts are loaded
-	if (typeof map != "undefined") {
-		if (!thisLoaded) {
-			config.scale = 5;
-			config.tileTables = [new tileTableLink("table_1", "this_table_1")];
-			loadTileTables();
-			config.maps = ["test_map"];
-			loadMaps();
-			thisLoaded = true;
-		}
-		if (currentMap() != null && currentMap().loaded) {
-			if (!currentPlayer.loaded) {
-				currentPlayer.load(currentMap().playerPosInit);
-			}
-			if (!loadedCollisionArray) {
-				collisionArray = getByNameTag(new nameTag("collide", ""), 1, false, true);
-				if (collisionArray != null) {
-					loadedCollisionArray = true;
-				}
-			} else {
-				if (currentPlayer.loaded) {
-					let distanceFilter = collisionArray.filter((o) => currentPlayer.playerOBJ.base.position.distance(o.base.position) <= 320);
-					for (let i=0,length=distanceFilter.length;i<length;i++) {
-						cirPolyCollision(currentPlayer.playerOBJ, distanceFilter[i], currentPlayer.controller, false);
-					}
-				}
-			}
-		}
-	}
-};
-addUpdate(mainUpdate, "mainUpdate"); 
-
-function statusBar(obj=null, value=0, maxValue=100, color=new Vector2()) {
+function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2()) {
 	this.obj = obj;
 	this.value = value;
 	this.maxValue = maxValue;
-	this.color = color; //x- start color, y- end color
+	this.color = color; //x- start color, y- end color, r- alpha
 	this.gradient = new Rainbow();
 	this.setColors = (color=new Vector2()) => {
 		this.gradient.setSpectrum(this.color.x, this.color.y);
 	}
-	this.gradient.setNumberRange(1, this.maxValue);
+	this.gradient.setNumberRange(0, this.maxValue);
 	this.setColors(this.color);
-	let sizeX = this.obj.size.duplicate().x;
+	let sizeX = this.obj.base.size.duplicate().x;
 	this.update = () => {
-		this.gradient.setNumberRange(1, this.maxValue);
-		this.obj.base.color = new colorData(this.gradient.colourAt(this.value), 1);
+		//this.gradient.setNumberRange(0, this.maxValue);
+		this.obj.base.color = new colorData("#"+this.gradient.colorAt(this.value), this.color.r);
 		this.obj.base.size.x = sizeX*(this.value/(this.maxValue/100)/100);
 	}
 }
@@ -237,13 +204,13 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	
 	this.healthBar = new Rectangle(8, new baseObject(false, new nameTag("healthBar", "UI"), new Vector2(200, 50), new Vector2(640, 640), new colorData("black")));
-	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen"));
+	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen", 1));
 	
 	this.load = function(pos=null) {
 		if (pos != null) {
 			this.pos = pos;
 		}
-		this.health = this.maxHealth;
+		this.health.x = this.health.y;
 		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(-5, -5), "black", 10)));
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
@@ -267,6 +234,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 			} else {
 				this.healthBarLink.value = this.health.x;
 				this.healthBarLink.maxValue = this.health.y;
+				this.healthBarLink.update();
 				if (this.controller.moveDir.x != 0) {
 					this.playerDir = -this.controller.moveDir.x;
 				}
@@ -293,7 +261,7 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 						currentMap().dir.y = 0;
 					}
 				}
-				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered) {
+				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered && this.playerOBJ != null) {
 					if (fireTime == 0 && this.ammo > 0) {
 						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
 							let newBullet = new Sprite(5, new baseObject(false, new nameTag("bullet_"+bulletAmount,this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
@@ -350,6 +318,39 @@ function player(maxHealth=100, defence=10, weapons=[], ammo=100) {
 	};
 	addUpdate(update, "player");
 }
+
+const mainUpdate = () => {
+	//Inits after all scripts are loaded
+	if (typeof map != "undefined") {
+		if (!thisLoaded) {
+			config.scale = 5;
+			config.tileTables = [new tileTableLink("table_1", "this_table_1")];
+			loadTileTables();
+			config.maps = ["test_map"];
+			loadMaps();
+			thisLoaded = true;
+		}
+		if (currentMap() != null && currentMap().loaded) {
+			if (!currentPlayer.loaded) {
+				currentPlayer.load(currentMap().playerPosInit);
+			}
+			if (!loadedCollisionArray) {
+				collisionArray = getByNameTag(new nameTag("collide", ""), 1, false, true);
+				if (collisionArray != null) {
+					loadedCollisionArray = true;
+				}
+			} else {
+				if (currentPlayer.loaded) {
+					let distanceFilter = collisionArray.filter((o) => currentPlayer.playerOBJ.base.position.distance(o.base.position) <= 320);
+					for (let i=0,length=distanceFilter.length;i<length;i++) {
+						cirPolyCollision(currentPlayer.playerOBJ, distanceFilter[i], currentPlayer.controller, false);
+					}
+				}
+			}
+		}
+	}
+};
+addUpdate(mainUpdate, "mainUpdate"); 
 
 //Controls
 let moveUpBttn = new key(

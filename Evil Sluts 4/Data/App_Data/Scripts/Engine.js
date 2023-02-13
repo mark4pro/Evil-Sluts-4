@@ -882,7 +882,7 @@ function setupObject(base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 }
 
 //Rectangle class
-const BLANK_OBJECT = new Rectangle(0, new baseObject(BLANK_NAMETAG, new Vector2(10, 10), screen.halfResolution));
+const BLANK_OBJECT = new Rectangle(0, new baseObject(false));
 function Rectangle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.layerNumber = layerNumber;
 	this.base = base;
