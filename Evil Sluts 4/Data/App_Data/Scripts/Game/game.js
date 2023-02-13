@@ -176,9 +176,9 @@ const weaponTable = {
 	0:new weapon("test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
 }
 
-const currentPlayer = new player(100, new Vector2(50, 0.1), 10, [getItemsByType("weapon")[0]], new Vector2(100, 100));
+const currentPlayer = new player(100, new Vector2(3, 7), new Vector2(100, 0.5, 0.1), 10, [getItemsByType("weapon")[0]], new Vector2(100, 100));
 
-function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weapons=[], ammo=new Vector2(100, 100)) {
+function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vector2(100, 0.1), defence=10, weapons=[], ammo=new Vector2(100, 100)) {
 	this.defence = defence;
 	this.weapons = weapons;
 	this.ammo = ammo; //x- current ammo, y- max ammo
@@ -197,9 +197,9 @@ function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weap
 	this.playerOBJ = null;
 	this.playerDir = 1;
 	this.bulletSpawn = new Vector2();
-	this.playerSpeed = new Vector2(3, 5); //x- normal speed, y- running speed
+	this.playerSpeed = new Vector2(playerSpeed.x, playerSpeed.y); //x- normal speed, y- running speed
 	this.run = false;
-	this.stamina = new Vector2(maxStamina.x, maxStamina.x, maxStamina.y); //x- current stamina, y- max stamina, r- stamina recharge
+	this.stamina = new Vector2(maxStamina.x, maxStamina.x, maxStamina.y, maxStamina.r); //x- current stamina, y- max stamina, r- stamina recharge
 	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	
 	this.healthBarTxt = new Text(8, "Health", new baseObject(false, new nameTag("healthBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
@@ -209,6 +209,8 @@ function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weap
 	this.staminaBarTxt = new Text(8, "Stamina", new baseObject(false, new nameTag("staminaBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 670), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.staminaBar = new Rectangle(8, new baseObject(false, new nameTag("staminaBar", "UI"), new Vector2(200, 25), new Vector2(640, 695), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.staminaBarLink = new statusBar(this.staminaBar, this.stamina.x, this.stamina.y, new Vector2("ghostwhite", "darkblue", 0.75));
+	
+	this.weaponNameTxt = new Text(8, "Stamina", new baseObject(false, new nameTag("staminaBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 670), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
 	
 	this.load = function(pos=null) {
 		if (pos != null) {
@@ -244,11 +246,26 @@ function player(maxHealth=100, maxStamina=new Vector2(50, 0.1), defence=10, weap
 				this.healthBarLink.value = this.health.x;
 				this.healthBarLink.maxValue = this.health.y;
 				this.healthBarLink.update();
+				this.health.x = clamp(this.health.x, 0, this.health.y);
 				this.staminaBarLink.value = this.stamina.x;
 				this.staminaBarLink.maxValue = this.stamina.y;
 				this.staminaBarLink.update();
+				this.stamina.x = clamp(this.stamina.x, 0, this.stamina.y);
 				if (this.controller.moveDir.x != 0) {
 					this.playerDir = -this.controller.moveDir.x;
+				}
+				if (this.controller.moveDir.x != 0 || this.controller.moveDir.y != 0) {
+					if (this.run && this.stamina.x > 0) {
+						this.controller.maxSpeed = this.playerSpeed.y;
+						this.stamina.x -= this.stamina.r*delta;
+					} else {
+						this.controller.maxSpeed = this.playerSpeed.x;
+					}
+				}
+				if (!this.run) {
+					if (this.stamina.x < this.stamina.y) {
+						this.stamina.x += this.stamina.o*delta;
+					}
 				}
 				if (this.playerOBJ != null) {
 					this.playerOBJ.scale.x = this.playerDir;
@@ -402,7 +419,15 @@ let runBttn = new key(
 	[
 		new keyData("Shift", 1)
 	],
-	new Vector2(() => {console.log("test")}, () => {}),
+	new Vector2(() => {
+		if (currentPlayer.loaded) {
+			currentPlayer.run = true;
+		}
+	}, () => {
+		if (currentPlayer.loaded) {
+			currentPlayer.run = false;
+		}
+	}),
 	false
 );
 
