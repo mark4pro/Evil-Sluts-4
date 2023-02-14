@@ -131,6 +131,11 @@ const itemTable = [
 	new weaponItem(0, new baseItem(101, 1, new Vector2(32, 32), bullet_1_Img.getColor())),
 ];
 
+const getItemById = (id=0) => {
+	return itemTable.filter((i) => i.base.id == id)[0];
+	
+}
+
 const getItemsByType = (type="", mode=0) => {
 	if (mode < 0) {
 		mode = 0;
