@@ -6,6 +6,7 @@ loadAddons();
 //Images
 let playerImg = new imageData("player", imagePath+"player_1.png", new Vector2(64, 128));
 let bullet_1_Img = new imageData("tear", imagePath+"tear.png", new Vector2(59, 91));
+let pick_up_bttn_Img = new imageData("pick_up_bttn", imagePath+"pick_up.png", new Vector2(64, 32));
 
 //Global vars
 let thisLoaded = false;
@@ -191,7 +192,7 @@ const dropItem = (itemType="items", index=0) => {
 
 const getDroppedItems = () => {
 	let droppedItems = getByNameTag(new nameTag("itemDrop"), 1);
-	if (typeof droppedItems.length == "undefined") {
+	if (droppedItems != null && typeof droppedItems.length == "undefined") {
 		droppedItems = [droppedItems];
 	}
 	if (droppedItems != null) {
@@ -245,18 +246,27 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	this.run = false;
 	this.stamina = new Vector2(maxStamina.x, maxStamina.x, maxStamina.y, maxStamina.r); //x- current stamina, y- max stamina, r- stamina recharge
 	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
+	this.bttns = [];
 	
+	//UI
+	//Health
 	this.healthBarTxt = new Text(8, "Health", new baseObject(false, new nameTag("healthBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.healthBar = new Rectangle(8, new baseObject(false, new nameTag("healthBar", "UI"), new Vector2(200, 25), new Vector2(640, 640), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen", 0.75));
-	
+	//Stamina
 	this.staminaBarTxt = new Text(8, "Stamina", new baseObject(false, new nameTag("staminaBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 670), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.staminaBar = new Rectangle(8, new baseObject(false, new nameTag("staminaBar", "UI"), new Vector2(200, 25), new Vector2(640, 695), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.staminaBarLink = new statusBar(this.staminaBar, this.stamina.x, this.stamina.y, new Vector2("ghostwhite", "darkblue", 0.75));
-	
+	//Weapon name
 	this.weaponNameTxt = new Text(8, "Weapon Name", new baseObject(false, new nameTag("weaponNameTxt", "UI"), new Vector2("30px Arial", false, "left"), new Vector2(10, 20), new colorData("purple", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
-	
+	//Ammo count
 	this.ammoCountTxt = new Text(8, "Ammo Count", new baseObject(false, new nameTag("ammoCount", "UI"), new Vector2("30px Arial", false, "left"), new Vector2(10, 50), new colorData("orange", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+	//Pick up bttn
+	this.pickUpBttn = new Sprite(8, new baseObject(false, new nameTag("pickUpBttn", "UI_BTTN"), new Vector2(128, 64), new Vector2(1216, 688), pick_up_bttn_Img.getColor()));
+	this.droppedItemsTxt = new Text(8, "0", new baseObject(false, new nameTag("droppedItemsTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(1152, 656), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.pickUpBttnLink = new buttonLink(this.pickUpBttn, this.droppedItemsTxt, recCollision, () => {
+		
+	}, new Vector2(pick_up_bttn_Img.getColor(0.75), pick_up_bttn_Img.getColor(1)), new Vector2(new colorData("white", 0.75), new colorData("white", 1)), null, new Vector2("rgba(0,0,0,192)", "rgba(0,0,0,256)"));
 	
 	this.respawn = function(pos) {
 		if (pos != null) {
@@ -283,6 +293,9 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 		addObject(this.staminaBar);
 		addObject(this.weaponNameTxt);
 	    addObject(this.ammoCountTxt);
+		addObject(this.pickUpBttn);
+		addObject(this.droppedItemsTxt);
+		this.pickUpBttnLink.link();
 		mousePressed[0] = false; //fixes shooting bullets after clicking play on the main menu
 		this.loaded = true;
 	}
@@ -297,6 +310,9 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 		deleteByNameTag(this.weaponNameTxt.base.nameTag);
 		deleteByNameTag(this.ammoCount.base.nameTag);
 		deleteByNameTag(this.ammoCountTxt.base.nameTag);
+		deleteByNameTag(this.pickUpBttn.base.nameTag);
+		deleteByNameTag(this.droppedItemsTxt.base.nameTag);
+		this.pickUpBttnLink.unlink();
 		this.controller.deactivate();
 		this.loaded = false;
 	}
@@ -314,6 +330,24 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 					this.unload();
 				}
 			} else {
+				//UI
+				if (this.bttns.length == 0 && getByNameTag(new nameTag("", "BTTN"), 2, false, true) != null) {
+					if (typeof getByNameTag(new nameTag("", "BTTN"), 2, false, true).length != "undefined") {
+						this.bttns = getByNameTag(new nameTag("", "BTTN"), 2, false, true);
+					} else {
+						this.bttns = [getByNameTag(new nameTag("", "BTTN"), 2, false, true)];
+					}
+				}
+				if (this.bttns != null) {
+					if (typeof this.bttns.length != "undefined") {
+						let isTouchBttns = this.bttns.some((b) => recCollision(Cursor.cursor, b)); 
+						if (isTouchBttns) {
+							this.lockWeapon = true;
+						} else {
+							this.lockWeapon = false;
+						}
+					}
+				}
 				this.healthBarLink.value = this.health.x;
 				this.healthBarLink.maxValue = this.health.y;
 				this.healthBarLink.update();
@@ -331,6 +365,16 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 					this.weaponNameTxt.text = "Weapon Name: "+this.currentWeaponData.name;
 				}
 				this.ammoCountTxt.text = "Ammo: "+this.ammo.x;
+				if (getDroppedItems() != null) {
+					if (getDroppedItems().length > 100) {
+						this.droppedItemsTxt.text = "100+";
+					} else {
+						this.droppedItemsTxt.text = getDroppedItems().length;
+					}
+				} else {
+					this.droppedItemsTxt.text = "0";
+				}
+				//Player movement
 				if (this.controller.moveDir.x != 0) {
 					this.playerDir = -this.controller.moveDir.x;
 				}
