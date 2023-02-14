@@ -115,18 +115,18 @@ function weaponItem(weaponId=0, base=new baseItems()) {
 
 const itemTable = [
 	//Items
-	new drugsItem("heroin", new baseItem(0, 1, new Vector2(16, 16))),
-	new drugsItem("crack", new baseItem(1, 1, new Vector2(16, 16))),
-	new drugsItem("cocaine", new baseItem(2, 2, new Vector2(16, 16))),
-	new drugsItem("lsd", new baseItem(3, 5, new Vector2(16, 16))),
-	new drugsItem("mushroom", new baseItem(4, 4, new Vector2(16, 16))),
-	new drugsItem("crocodile", new baseItem(5, 1, new Vector2(16, 16))),
-	new drugsItem("bath salts", new baseItem(6, 2, new Vector2(16, 16))),
-	new drugsItem("DMT", new baseItem(7, 6, new Vector2(16, 16))),
-	new drugsItem("meth", new baseItem(8, 1, new Vector2(16, 16))),
-	new drugsItem("smack", new baseItem(9, 3, new Vector2(16, 16))),
-	new drugsItem("chese", new baseItem(10, 10, new Vector2(16, 16))),
-	new drugsItem("your mom", new baseItem(11, 7, new Vector2(16, 16))),
+	new drugsItem("heroin", new baseItem(0, 1, new Vector2(32, 32))),
+	new drugsItem("crack", new baseItem(1, 1, new Vector2(32, 32))),
+	new drugsItem("cocaine", new baseItem(2, 2, new Vector2(32, 32))),
+	new drugsItem("lsd", new baseItem(3, 5, new Vector2(32, 32))),
+	new drugsItem("mushroom", new baseItem(4, 4, new Vector2(32, 32))),
+	new drugsItem("crocodile", new baseItem(5, 1, new Vector2(32, 32))),
+	new drugsItem("bath salts", new baseItem(6, 2, new Vector2(32, 32))),
+	new drugsItem("DMT", new baseItem(7, 6, new Vector2(32, 32))),
+	new drugsItem("meth", new baseItem(8, 1, new Vector2(32, 32))),
+	new drugsItem("smack", new baseItem(9, 3, new Vector2(32, 32))),
+	new drugsItem("chese", new baseItem(10, 10, new Vector2(32, 32))),
+	new drugsItem("your mom", new baseItem(11, 7, new Vector2(32, 32))),
 	//Weapons
 	new weaponItem(0, new baseItem(101, 1, new Vector2(32, 32), bullet_1_Img.getColor())),
 ];
@@ -171,12 +171,28 @@ const dropItem = (itemType="items", index=0) => {
 				pos = currentPlayer.playerOBJ.base.position.addV(new Vector2(30, 80));
 			break;
 		}
-		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", currentMap().nameTag.name), dup.base.size, pos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
-		//droppedItem.item = 
+		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item_"+currentMap().nameTag.name), dup.base.size, pos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+		droppedItem.item = inventoryItem.duplicate();
+		droppedItem.pickUp = () => {
+			addToInventory(droppedItem.item);
+			droppedItem.base.marked = true;
+		}
 		if (typeof inventoryItem.unequip != "undefined") {
 			inventoryItem.unequip();
 		}
 		inventory[itemType].splice(index, 1);
+	}
+}
+
+const getDroppedItems = () => {
+	let droppedItems = getByNameTag(new nameTag("itemDrop"), 1);
+	if (typeof droppedItems.length == "undefined") {
+		droppedItems = [droppedItems];
+	}
+	if (droppedItems != null) {
+		return droppedItems.filter((i) => cirPolyCollision(currentPlayer.playerOBJ, i));
+	} else {
+		return null;
 	}
 }
 
@@ -218,7 +234,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	this.currentWeapon = 0;
 	this.currentWeaponData = null;
 	this.playerOBJ = null;
-	this.playerDir = 1;
+	this.playerDir = -1;
 	this.bulletSpawn = new Vector2();
 	this.playerSpeed = new Vector2(playerSpeed.x, playerSpeed.y); //x- normal speed, y- running speed
 	this.run = false;
@@ -237,11 +253,23 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	
 	this.ammoCountTxt = new Text(8, "Ammo Count", new baseObject(false, new nameTag("ammoCount", "UI"), new Vector2("30px Arial", false, "left"), new Vector2(10, 50), new colorData("orange", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
 	
+	this.respawn = function(pos) {
+		if (pos != null) {
+			this.pos = pos;
+		}
+		this.health.x = this.health.y;
+		this.stamina.x = this.stamina.y;
+		this.ammo.x = this.ammo.y;
+		this.load(this.pos);
+	}
+	
 	this.load = function(pos=null) {
 		if (pos != null) {
 			this.pos = pos;
 		}
+		currentMap().unload();
 		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(5, -5), "black", 10)));
+		this.playerOBJ.scale.x = this.playerDir;
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
 		addObject(this.healthBarTxt);
@@ -285,6 +313,11 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 				this.healthBarLink.maxValue = this.health.y;
 				this.healthBarLink.update();
 				this.health.x = clamp(this.health.x, 0, this.health.y);
+				if (this.health.x == 0) {
+					this.dead = true;
+				} else {
+					this.dead = false;
+				}
 				this.staminaBarLink.value = this.stamina.x;
 				this.staminaBarLink.maxValue = this.stamina.y;
 				this.staminaBarLink.update();
@@ -332,7 +365,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 						currentMap().dir.y = 0;
 					}
 				}
-				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered && this.playerOBJ != null) {
+				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered && this.playerOBJ != null && !this.dead) {
 					if (fireTime == 0 && this.ammo.x > 0) {
 						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
 							let newBullet = new Sprite(5, new baseObject(false, new nameTag("bullet_"+bulletAmount,this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
@@ -384,6 +417,9 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 				} else {
 					this.currentWeaponData = null;
 				}
+				if (this.dead) {
+					deleteByNameTag(this.nameTag);
+				}
 			}
 		}
 	};
@@ -429,7 +465,15 @@ let moveUpBttn = new key(
 	[
 		new keyData("w", 0)
 	],
-	new Vector2(() => {currentPlayer.controller.moveDir.y = -1}, () => {currentPlayer.controller.moveDir.y = 0}),
+	new Vector2(() => {
+		if (currentPlayer.loaded) {
+			if (!currentPlayer.dead) {
+				currentPlayer.controller.moveDir.y = -1;
+			} else {
+				currentPlayer.controller.moveDir.y = 0;
+			}
+		}
+	}, () => {currentPlayer.controller.moveDir.y = 0}),
 	false
 );
 let moveDownBttn = new key(
@@ -437,7 +481,15 @@ let moveDownBttn = new key(
 	[
 		new keyData("s", 0)
 	],
-	new Vector2(() => {currentPlayer.controller.moveDir.y = 1}, () => {currentPlayer.controller.moveDir.y = 0}),
+	new Vector2(() => {
+		if (currentPlayer.loaded) {
+			if (!currentPlayer.dead) {
+				currentPlayer.controller.moveDir.y = 1;
+			} else {
+				currentPlayer.controller.moveDir.y = 0;
+			}
+		}
+	}, () => {currentPlayer.controller.moveDir.y = 0}),
 	false
 );
 let moveLeftBttn = new key(
@@ -445,7 +497,15 @@ let moveLeftBttn = new key(
 	[
 		new keyData("a", 0)
 	],
-	new Vector2(() => {currentPlayer.controller.moveDir.x = -1}, () => {currentPlayer.controller.moveDir.x = 0}),
+	new Vector2(() => {
+		if (currentPlayer.loaded) {
+			if (!currentPlayer.dead) {
+				currentPlayer.controller.moveDir.x = -1;
+			} else {
+				currentPlayer.controller.moveDir.x = 0;
+			}
+		}
+	}, () => {currentPlayer.controller.moveDir.x = 0}),
 	false
 );
 let moveRightBttn = new key(
@@ -453,7 +513,15 @@ let moveRightBttn = new key(
 	[
 		new keyData("d", 0)
 	],
-	new Vector2(() => {currentPlayer.controller.moveDir.x = 1}, () => {currentPlayer.controller.moveDir.x = 0}),
+	new Vector2(() => {
+		if (currentPlayer.loaded) {
+			if (!currentPlayer.dead) {
+				currentPlayer.controller.moveDir.x = 1;
+			} else {
+				currentPlayer.controller.moveDir.x = 0;
+			}
+		}
+	}, () => {currentPlayer.controller.moveDir.x = 0}),
 	false
 );
 let runBttn = new key(
@@ -463,7 +531,11 @@ let runBttn = new key(
 	],
 	new Vector2(() => {
 		if (currentPlayer.loaded) {
-			currentPlayer.run = true;
+			if (!currentPlayer.dead) {
+				currentPlayer.run = true;
+			} else {
+				currentPlayer.run = false;
+			}
 		}
 	}, () => {
 		if (currentPlayer.loaded) {
