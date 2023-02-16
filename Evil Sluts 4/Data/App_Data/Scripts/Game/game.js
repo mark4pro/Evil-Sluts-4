@@ -494,20 +494,21 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	addUpdate(update, "player");
 }
 
-function enemySpawner(enemyName = "sam", enemySize = new Vector(), enemyPos = new Vector2(), imgData = null, spawnAmmount = 0, maxHealth = 0, defense = 0,  speed = new Vector2(5, 6), damage = new Vector2(6, 8)){
+function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPos=new Vector2(), imgData=null, shadowData=NO_SHADOW, spawnAmmount=0, maxHealth=0, defense=0,  speed=new Vector2(5, 6), damage=new Vector2(6, 8)){
 	this.enemyName = enemyName;
-	this.spawnAmmount = spawnAmmount;
 	this.enemySize = enemySize;
 	this.enemyPos = enemyPos;
+	this.imgData = imgData;
+	this.shadowData = shadowData;
+	this.spawnAmmount = spawnAmmount;
 	this.maxHealth = maxHealth;
 	this.defense = defense;
-	this.imgData = imgData;
 	this.speed = speed;
 	this.damage = damage;
 	
 	this.enemies = [];
 	this.spawn = () => {
-		let enemy = new Sprite(3, new baseObject(false, new nameTag(this.enemyName, "enemy_" + currentMap().nameTag.name, this.enemySize, this.enemyPos, this.imgData)));
+		let enemy = new Sprite(3, new baseObject(false, new nameTag(this.enemyName, "enemy_"+currentMap().nameTag.name), this.enemySize, this.enemyPos, this.imgData, this.shadowData));
 		enemy.damage = this.damage.duplicate();
 		enemy.speed = this.speed.duplicate();
 		enemy.defense = this.defense;
