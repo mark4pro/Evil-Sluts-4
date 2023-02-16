@@ -267,7 +267,6 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	this.stamina = new Vector2(maxStamina.x, maxStamina.x, maxStamina.y, maxStamina.r); //x- current stamina, y- max stamina, r- stamina recharge
 	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	this.bttns = [];
-	
 	//UI
 	//Health
 	this.healthBarTxt = new Text(8, "Health", new baseObject(false, new nameTag("healthBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
@@ -493,6 +492,29 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 		}
 	};
 	addUpdate(update, "player");
+}
+
+function enemySpawner(enemyName = "sam", enemySize = new Vector(), enemyPos = new Vector2(), imgData = null, spawnAmmount = 0, maxHealth = 0, defense = 0,  speed = new Vector2(5, 6), damage = new Vector2(6, 8)){
+	this.enemyName = enemyName;
+	this.spawnAmmount = spawnAmmount;
+	this.enemySize = enemySize;
+	this.enemyPos = enemyPos;
+	this.maxHealth = maxHealth;
+	this.defense = defense;
+	this.imgData = imgData;
+	this.speed = speed;
+	this.damage = damage;
+	
+	this.enemies = [];
+	this.spawn = () => {
+		let enemy = new Sprite(3, new baseObject(false, new nameTag(this.enemyName, "enemy_" + currentMap().nameTag.name, this.enemySize, this.enemyPos, this.imgData)));
+		enemy.damage = this.damage.duplicate();
+		enemy.speed = this.speed.duplicate();
+		enemy.defense = this.defense;
+		enemy.maxHealth = this.maxHealth;
+		
+		addObject(enemy);
+	}
 }
 
 const mainUpdate = () => {
