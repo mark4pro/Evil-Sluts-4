@@ -9,7 +9,7 @@ const itemPath = "Items/";
 
 //Images
 //Player
-let playerImg = new imageData("player", imagePath+"player_1.png", new Vector2(64, 128));
+let player_Img = new imageData("player", imagePath+"player_1.png", new Vector2(64, 128));
 //Weapons
 let bullet_1_Img = new imageData("tear", imagePath+weaponPath+"tear.png", new Vector2(59, 91));
 //Items
@@ -303,7 +303,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 			this.pos = pos;
 		}
 		currentMap().unload();
-		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, playerImg.getColor(), new Shadow(new Vector2(5, -5), "black", 10)));
+		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, player_Img.getColor(), new Shadow(new Vector2(5, -5), "black", 10)));
 		this.playerOBJ.scale.x = this.playerDir;
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
@@ -543,7 +543,7 @@ let moveUpBttn = new key(
 			}
 		}
 	}, () => {currentPlayer.controller.moveDir.y = 0}),
-	false
+	true
 );
 let moveDownBttn = new key(
 	"Down",
@@ -559,7 +559,7 @@ let moveDownBttn = new key(
 			}
 		}
 	}, () => {currentPlayer.controller.moveDir.y = 0}),
-	false
+	true
 );
 let moveLeftBttn = new key(
 	"Left",
@@ -575,7 +575,7 @@ let moveLeftBttn = new key(
 			}
 		}
 	}, () => {currentPlayer.controller.moveDir.x = 0}),
-	false
+	true
 );
 let moveRightBttn = new key(
 	"Right",
@@ -591,7 +591,7 @@ let moveRightBttn = new key(
 			}
 		}
 	}, () => {currentPlayer.controller.moveDir.x = 0}),
-	false
+	true
 );
 let runBttn = new key(
 	"Run",
