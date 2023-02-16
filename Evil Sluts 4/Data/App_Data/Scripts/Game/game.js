@@ -3,9 +3,29 @@ screen.setResolution(new Vector2(1280, 720));
 engineSettings.Addons = ["mapRenderer"];
 loadAddons();
 
+//Custom paths
+const weaponPath = "Weapons/";
+const itemPath = "Items/";
+
 //Images
+//Player
 let playerImg = new imageData("player", imagePath+"player_1.png", new Vector2(64, 128));
-let bullet_1_Img = new imageData("tear", imagePath+"tear.png", new Vector2(59, 91));
+//Weapons
+let bullet_1_Img = new imageData("tear", imagePath+weaponPath+"tear.png", new Vector2(59, 91));
+//Items
+let bath_salts_Img = new imageData("bath_salts", imagePath+itemPath+"bath_salts.png", new Vector2(32, 32));
+let cocaine_Img = new imageData("cocaine", imagePath+itemPath+"cocaine.png", new Vector2(32, 32));
+let crack_Img = new imageData("crack", imagePath+itemPath+"crack.png", new Vector2(32, 32));
+let crocodile_Img = new imageData("crocodile", imagePath+itemPath+"crocodile.png", new Vector2(32, 32));
+let dmt_Img = new imageData("dmt", imagePath+itemPath+"dmt.png", new Vector2(32, 32));
+let heroin_Img = new imageData("heroin", imagePath+itemPath+"heroin.png", new Vector2(32, 32));
+let lsd_Img = new imageData("lsd", imagePath+itemPath+"lsd.png", new Vector2(32, 32));
+let meth_Img = new imageData("meth", imagePath+itemPath+"meth.png", new Vector2(32, 32));
+let mushroom_Img = new imageData("mushroom", imagePath+itemPath+"mushroom.png", new Vector2(32, 32));
+let smack_Img = new imageData("smack", imagePath+itemPath+"smack.png", new Vector2(32, 32));
+let your_mom_Img = new imageData("your_mom", imagePath+itemPath+"your_mom.png", new Vector2(32, 32));
+let chese_Img = new imageData("chese", imagePath+itemPath+"chese.png", new Vector2(32, 32));
+//UI
 let pick_up_bttn_Img = new imageData("pick_up_bttn", imagePath+"pick_up.png", new Vector2(64, 32));
 
 //Global vars
@@ -116,18 +136,18 @@ function weaponItem(weaponId=0, base=new baseItems()) {
 
 const itemTable = [
 	//Items
-	new drugsItem("heroin", new baseItem(0, 1, new Vector2(32, 32))),
-	new drugsItem("crack", new baseItem(1, 1, new Vector2(32, 32))),
-	new drugsItem("cocaine", new baseItem(2, 2, new Vector2(32, 32))),
-	new drugsItem("lsd", new baseItem(3, 5, new Vector2(32, 32))),
-	new drugsItem("mushroom", new baseItem(4, 4, new Vector2(32, 32))),
-	new drugsItem("crocodile", new baseItem(5, 1, new Vector2(32, 32))),
-	new drugsItem("bath salts", new baseItem(6, 2, new Vector2(32, 32))),
-	new drugsItem("DMT", new baseItem(7, 6, new Vector2(32, 32))),
-	new drugsItem("meth", new baseItem(8, 1, new Vector2(32, 32))),
-	new drugsItem("smack", new baseItem(9, 3, new Vector2(32, 32))),
-	new drugsItem("chese", new baseItem(10, 10, new Vector2(32, 32))),
-	new drugsItem("your mom", new baseItem(11, 7, new Vector2(32, 32))),
+	new drugsItem("heroin", new baseItem(0, 1, new Vector2(32, 32), heroin_Img.getColor())),
+	new drugsItem("crack", new baseItem(1, 1, new Vector2(32, 32), crack_Img.getColor())),
+	new drugsItem("cocaine", new baseItem(2, 2, new Vector2(32, 32), cocaine_Img.getColor())),
+	new drugsItem("lsd", new baseItem(3, 5, new Vector2(32, 32), lsd_Img.getColor())),
+	new drugsItem("mushroom", new baseItem(4, 4, new Vector2(32, 32), mushroom_Img.getColor())),
+	new drugsItem("crocodile", new baseItem(5, 1, new Vector2(32, 32), crocodile_Img.getColor())),
+	new drugsItem("bath salts", new baseItem(6, 2, new Vector2(32, 32), bath_salts_Img.getColor())),
+	new drugsItem("DMT", new baseItem(7, 6, new Vector2(32, 32), dmt_Img.getColor())),
+	new drugsItem("meth", new baseItem(8, 1, new Vector2(32, 32), meth_Img.getColor())),
+	new drugsItem("smack", new baseItem(9, 3, new Vector2(32, 32), smack_Img.getColor())),
+	new drugsItem("chese", new baseItem(10, 10, new Vector2(32, 32), chese_Img.getColor())),
+	new drugsItem("your mom", new baseItem(11, 7, new Vector2(32, 32), your_mom_Img.getColor())),
 	//Weapons
 	new weaponItem(0, new baseItem(101, 1, new Vector2(32, 32), bullet_1_Img.getColor())),
 ];
