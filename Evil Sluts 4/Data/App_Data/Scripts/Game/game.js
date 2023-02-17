@@ -1,6 +1,7 @@
 //Setup
 screen.setResolution(new Vector2(1280, 720));
 Cursor.cursor.base.size = (new Vector2(14, 14));
+Cursor.offset = Cursor.cursor.base.size.div(2);
 engineSettings.Addons = ["mapRenderer"];
 loadAddons();
 
