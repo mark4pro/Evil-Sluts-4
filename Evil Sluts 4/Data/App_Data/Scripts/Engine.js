@@ -2974,6 +2974,7 @@ function buttonLink(object=null, textObj=null, collision=null, func=null, hoverC
 const Cursor = new cursor();
 
 function cursor() {
+	this.offset = new Vector2();
 	this.cursor = new Rectangle(8, new baseObject(true, new nameTag("cursor", "Engine"), new Vector2(5, 5), new Vector2(-100, -100), new colorData("red")));
 	this.setImage = function(data=null) {
 		if (data != null) {
@@ -3001,7 +3002,7 @@ function cursor() {
 			this.cursor.base.color.alpha = 0; 
 		}
 		if (getByNameTag(this.cursor.base.nameTag) != null) {
-			this.cursor.base.position = mouseData().pos;
+			this.cursor.base.position = mouseData().pos.addV(this.offset);
 		} else {
 			addObject(this.cursor);
 		}

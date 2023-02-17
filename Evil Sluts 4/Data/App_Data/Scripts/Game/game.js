@@ -267,6 +267,8 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	this.stamina = new Vector2(maxStamina.x, maxStamina.x, maxStamina.y, maxStamina.r); //x- current stamina, y- max stamina, r- stamina recharge
 	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
 	this.bttns = [];
+	this.playerBullets = [];
+	
 	//UI
 	//Health
 	this.healthBarTxt = new Text(8, "Health", new baseObject(false, new nameTag("healthBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
@@ -433,10 +435,11 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 						currentMap().dir.y = 0;
 					}
 				}
+				//Player shooting
 				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered && this.playerOBJ != null && !this.dead) {
 					if (fireTime == 0 && this.ammo.x > 0) {
 						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
-							let newBullet = new Sprite(5, new baseObject(false, new nameTag("bullet_"+bulletAmount,this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
+							let newBullet = new Sprite(5, new baseObject(false, new nameTag("bullet_"+bulletAmount,"player_bullet_"+this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
 							let angle = this.playerOBJ.base.position.getRotation(Cursor.cursor.base.position, false)+180;
 							newBullet.base.nameTag.name = newBullet.base.nameTag.name+i;
 							newBullet.base.position.r = degToRad(this.currentWeaponData.spreadPattern[i]+angle);
@@ -457,12 +460,12 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 				if (bulletAmount > 1000) {
 					bulletAmount = 0;
 				}
-				let bulletsSpawned = getByNameTag(new nameTag("bullet_"), 1, false, true);
-				if (bulletsSpawned != null) {
-					for (let i=0;i<bulletsSpawned.length;i++) {
-						let dist = bulletsSpawned[i].base.startPosition.distance(bulletsSpawned[i].base.position);
+				this.playerBullets = getByNameTag(new nameTag("", "player_bullet"), 2, false, true);
+				if (this.playerBullets != null) {
+					for (let i=0;i<this.playerBullets.length;i++) {
+						let dist = this.playerBullets[i].base.startPosition.distance(this.playerBullets[i].base.position);
 						if (dist > this.currentWeaponData.range) {
-							bulletsSpawned[i].base.marked = true;
+							this.playerBullets[i].base.marked = true;
 						}
 					}
 				}
@@ -494,7 +497,8 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	addUpdate(update, "player");
 }
 
-function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPos=new Vector2(), imgData=null, shadowData=NO_SHADOW, spawnAmmount=0, maxHealth=0, defense=0,  speed=new Vector2(5, 6), damage=new Vector2(6, 8)){
+//Add enemy spawn array- randomly get from array
+function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPos=new Vector2(), imgData=null, shadowData=NO_SHADOW, spawnAmmount=0, maxHealth=0, defense=0,  speed=new Vector2(5, 6), damage=new Vector2(6, 8)) {
 	this.enemyName = enemyName;
 	this.enemySize = enemySize;
 	this.enemyPos = enemyPos;
@@ -507,15 +511,24 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPos=new Vector
 	this.damage = damage;
 	
 	this.enemies = [];
+	
 	this.spawn = () => {
-		let enemy = new Sprite(3, new baseObject(false, new nameTag(this.enemyName, "enemy_"+currentMap().nameTag.name), this.enemySize, this.enemyPos, this.imgData, this.shadowData));
-		enemy.damage = this.damage.duplicate();
-		enemy.speed = this.speed.duplicate();
-		enemy.defense = this.defense;
-		enemy.maxHealth = this.maxHealth;
-		
-		addObject(enemy);
+		if (this.enemies.length <= this.spawnAmmount) {
+			let enemy = new Sprite(4, new baseObject(false, new nameTag(this.enemyName, "enemy_"+currentMap().nameTag.name), this.enemySize, this.enemyPos, this.imgData, this.shadowData));
+			enemy.damage = this.damage.duplicate();
+			enemy.speed = this.speed.duplicate();
+			enemy.defense = this.defense;
+			enemy.maxHealth = this.maxHealth;
+			
+			this.enemies.push(enemy);
+			addObject(enemy);
+		}
 	}
+	
+	const update = () => {
+		this.spawn();
+	}
+	addUpdate(update, "enemySpawner");
 }
 
 const mainUpdate = () => {
@@ -539,10 +552,24 @@ const mainUpdate = () => {
 					loadedCollisionArray = true;
 				}
 			} else {
+				//Collisions
 				if (currentPlayer.loaded) {
-					let distanceFilter = collisionArray.filter((o) => currentPlayer.playerOBJ.base.position.distance(o.base.position) <= 320);
-					for (let i=0,length=distanceFilter.length;i<length;i++) {
-						cirPolyCollision(currentPlayer.playerOBJ, distanceFilter[i], currentPlayer.controller, false);
+					let playerDistanceFilter = collisionArray.filter((o) => currentPlayer.playerOBJ.base.position.distance(o.base.position) <= 320);
+					for (let i=0,length=playerDistanceFilter.length;i<length;i++) {
+						cirPolyCollision(currentPlayer.playerOBJ, playerDistanceFilter[i], currentPlayer.controller, false);
+					}
+					if (currentPlayer.playerBullets != null && currentPlayer.playerBullets.length == undefined) {
+						currentPlayer.playerBullets = [currentPlayer.playerBullets];
+					}
+					if (currentPlayer.playerBullets != null && currentPlayer.playerBullets.length != undefined && currentPlayer.playerBullets.length != 0) {
+						let playerBulletsDistanceFilter = collisionArray.filter((o) => currentPlayer.playerBullets.some((b) => b.base.position.distance(o.base.position) <= 320));
+						for (let i=0,length=playerBulletsDistanceFilter.length;i<length;i++) {
+							for (let b=0,length=currentPlayer.playerBullets.length;b<length;b++) {
+								if (cirPolyCollision(currentPlayer.playerBullets[b], playerBulletsDistanceFilter[i])) {
+									currentPlayer.playerBullets[b].base.marked = true;
+								}
+							}
+						}
 					}
 				}
 			}
