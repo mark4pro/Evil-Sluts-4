@@ -847,8 +847,9 @@ function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZER
 	}
 	this.updatePosition = function() {
 		if (!isPaused) {
-			this.position.x += this.position.s*Math.sin(this.position.r+this.position.o)*delta;
-			this.position.y -= this.position.s*Math.cos(this.position.r+this.position.o)*delta;
+			let velocity = new Vector2(this.position.s*Math.sin(this.position.r+this.position.o)*delta, this.position.s*Math.cos(this.position.r+this.position.o)*delta);
+			this.position.x += velocity.x;
+			this.position.y -= velocity.y;
 		}
 	}
 	this.duplicate = function() {

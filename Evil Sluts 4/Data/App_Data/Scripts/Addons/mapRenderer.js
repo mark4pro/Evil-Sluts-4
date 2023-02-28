@@ -84,6 +84,7 @@ function map(locationId=0, thisNameTag=new nameTag(), mapSize=new Vector2(20, 20
 	this.mapSizeReal = new Vector2();
 	this.mapHalfSizeReal = new Vector2();
 	this.movingMap = false;
+	this.removeMap = false;
 	
 	let mapObjs = [];
 	let oldLength = 0;
@@ -91,6 +92,7 @@ function map(locationId=0, thisNameTag=new nameTag(), mapSize=new Vector2(20, 20
 	this.getTileByMapPos = function(mapPos=new Vector2(), layerNumber=1) {
 		return objectArray.filter((o) => (o.base.nameTag.tag == this.nameTag.name && o.mapPos.same(mapPos) && o.layerNumber == layerNumber));
 	}
+	
 	this.load = function(mapPos=null) {
 		if (mapPos != null) {
 			this.mapPos = mapPos;
@@ -101,28 +103,30 @@ function map(locationId=0, thisNameTag=new nameTag(), mapSize=new Vector2(20, 20
 				thisTile.tileTable = eval(thisTile.tileTable);
 			}
 			if (thisTile.pos.x <= this.mapSize.x && thisTile.pos.y <= this.mapSize.y) {
+				let thisTilePos = new Vector2((thisTile.pos.x*this.tileSize.x*config.scale)-((this.tileSize.x*config.scale)/2), (thisTile.pos.y*this.tileSize.y*config.scale)-((this.tileSize.y*config.scale)/2));
 				let newTileOBJ = thisTile.tileTable[thisTile.tableId].duplicate();
 				newTileOBJ.layerNumber = thisTile.layerNum;
 				newTileOBJ.mapPos = thisTile.pos;
 				newTileOBJ.base.nameTag.tag = this.nameTag.name;
 				newTileOBJ.base.size = newTileOBJ.base.size.multi(config.scale);
-				newTileOBJ.base.position = new Vector2(this.mapPos.x+(thisTile.pos.x*this.tileSize.x*config.scale)-((this.tileSize.x*config.scale)/2), this.mapPos.y+(thisTile.pos.y*this.tileSize.y*config.scale)-((this.tileSize.y*config.scale)/2));
-				newTileOBJ.base.startPosition = new Vector2((thisTile.pos.x*this.tileSize.x*config.scale)-((this.tileSize.x*config.scale)/2), (thisTile.pos.y*this.tileSize.y*config.scale)-((this.tileSize.y*config.scale)/2));
+				newTileOBJ.base.position = thisTilePos.addV(this.mapPos).duplicate();
+				newTileOBJ.base.startPosition = thisTilePos.duplicate();
 				addObject(newTileOBJ);
 			}
 		}
 		this.loaded = true;
 		addUpdate(update, this.nameTag.name);
 	}
+	
 	this.unload = function() {
 		deleteByNameTag(new nameTag("", this.nameTag.name), 2, true);
 		this.loaded = false;
 		deleteUpdate(1, this.nameTag.name);
 	}
+	
 	const update = () => {
 		let speedVector = this.dir.multi(config.mapScrollSpeed);
 		this.mapPos = this.mapPos.addV(speedVector.multi(delta));
-		//move to web worker for better performace
 		let objArrayLength = objectArray.length;
 		if (oldLength != objArrayLength) {
 			mapObjs = objectArray.filter((o) => o.base.nameTag.tag.includes(this.nameTag.name));
@@ -148,6 +152,7 @@ function map(locationId=0, thisNameTag=new nameTag(), mapSize=new Vector2(20, 20
 	maps.push(this);
 }
 
+//Gets current map
 const currentMap = () => {
 	for (let i=0,mapsLength=maps.length;i<mapsLength;i++) {
 		if (maps[i].loaded) {
@@ -156,6 +161,27 @@ const currentMap = () => {
 	};
 }
 
+//Gets position of a tile
+const getMapTilePos = (vec2=ONE) => {
+	let thisMapSize = currentMap().mapSize;
+	let thisTileSize = currentMap().tileSize;
+	let thisMapPos = currentMap().mapPos;
+	if (vec2.x < 1) {
+		vec2.x = 0;
+	}
+	if (vec2.x > thisMapSize.x) {
+		vec2.x = thisMapSize.x;
+	}
+	if (vec2.y < 1) {
+		vec2.y = 0;
+	}
+	if (vec2.y > thisMapSize.y) {
+		vec2.y = thisMapSize.y;
+	}
+	return vec2.multiV(thisTileSize).multi(config.scale).addV(thisMapPos).subV(thisTileSize.multi(config.scale).div(2));
+}
+
+//Gets map by nameTag
 const getMap = (thisNameTag=new nameTag()) => {
 	for (let i=0,mapsLength=maps.length;i<mapsLength;i++) {
 		if (maps[i].nameTag.same(thisNameTag)) {
@@ -164,6 +190,7 @@ const getMap = (thisNameTag=new nameTag()) => {
 	};
 }
 
+//Deletes map by nameTag
 const deleteMap = (thisNameTag=new nameTag()) => {
 	for (let i=0,mapsLength=maps.length;i<mapsLength;i++) {
 		if (maps[i].nameTag.same(thisNameTag)) {
@@ -173,6 +200,7 @@ const deleteMap = (thisNameTag=new nameTag()) => {
 	};
 }
 
+//Loads maps
 const mapLoader = () => {
 	if (gameState == 1) {
 		maps.forEach((i) => {

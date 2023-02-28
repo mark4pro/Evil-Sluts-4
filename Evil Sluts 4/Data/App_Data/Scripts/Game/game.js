@@ -500,35 +500,85 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 }
 
 //Add enemy spawn array- randomly get from array
-function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPos=new Vector2(), imgData=null, shadowData=NO_SHADOW, spawnAmmount=0, maxHealth=0, defense=0,  speed=new Vector2(5, 6), damage=new Vector2(6, 8)) {
+function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=0,  speed=new Vector2(4, 5, 6, 7), damage=new Vector2(6, 8)) {
 	this.enemyName = enemyName;
 	this.enemySize = enemySize;
-	this.enemyPos = enemyPos;
+	this.enemyPositions = enemyPositions; //can be an array of positions
 	this.imgData = imgData;
 	this.shadowData = shadowData;
-	this.spawnAmmount = spawnAmmount;
+	this.spawnAmount = spawnAmount;
+	this.spawnSpeed = spawnSpeed; //x- speed, y- max time
 	this.maxHealth = maxHealth;
 	this.defense = defense;
-	this.speed = speed;
-	this.damage = damage;
+	this.speed = speed; //x- min normal speed, y- max normal speed, r- min agro speed, o- max agro speed
+	this.damage = damage; //x- min damage, y- max damage
 	
 	this.enemies = [];
+	this.time = 0;
+	this.count = 0;
+	let enemyPos = new Vector2();
 	
 	this.spawn = () => {
-		if (this.enemies.length <= this.spawnAmmount) {
-			let enemy = new Sprite(4, new baseObject(false, new nameTag(this.enemyName, "enemy_"+currentMap().nameTag.name), this.enemySize, this.enemyPos, this.imgData, this.shadowData));
+		if (typeof this.enemyPositions.length == "undefined") {
+			enemyPos = this.enemyPositions;
+		} else {
+			enemyPos = this.enemyPositions[rangeInt(0, this.enemyPositions.length-1)];
+		}
+		if (this.count < this.spawnAmount) {
+			let enemy = new Sprite(4, new baseObject(false, new nameTag(this.enemyName, "enemy"), this.enemySize, enemyPos, this.imgData, this.shadowData));
+			//Overwrite the movement function to fix fanky enemy movement
+			enemy.base.updatePosition = () => {
+				if (!isPaused) {
+					let velocity = new Vector2((enemy.base.position.s*Math.sin(enemy.base.position.o)*delta), -(enemy.base.position.s*Math.cos(enemy.base.position.o)*delta));
+					enemy.base.startPosition = enemy.base.startPosition.addV(velocity);
+					enemy.base.position = enemy.base.startPosition.addV(currentMap().mapPos);
+				}
+			}
 			enemy.damage = this.damage.duplicate();
-			enemy.speed = this.speed.duplicate();
+			enemy.speed = new Vector2(rangeFloat(this.speed.x, this.speed.y, 1), rangeFloat(this.speed.r, this.speed.o, 1));
 			enemy.defense = this.defense;
+			enemy.health = this.maxHealth;
 			enemy.maxHealth = this.maxHealth;
 			
 			this.enemies.push(enemy);
 			addObject(enemy);
+			this.count++;
 		}
 	}
 	
 	const update = () => {
-		this.spawn();
+		//Spawns enemies
+		if (this.count < this.spawnAmount) {
+			this.time += this.spawnSpeed.x*delta;
+		}
+		if (this.time >= this.spawnSpeed.y) {
+			this.spawn();
+			currentMap().removeMap = true;
+			console.log(this.count);
+			this.time = 0;
+		}
+		//Kill enemies when health reaches 0
+		if (this.enemies.length != 0) {
+			let enemyHealthFilter = this.enemies.filter((e) => e.health <= 0);
+			enemyHealthFilter.forEach((e) => {
+				//Add explosion effect
+				e.base.marked = true;
+			});
+		}
+		//Discards killed enemies from the enemies array (Garbage clean up)
+		let cleanArray = this.enemies.some((e) => e.base.marked);
+		if (cleanArray) {
+			this.enemies = this.enemies.filter((e) => !e.base.marked);
+		}
+		//Enemy movement
+		if (this.enemies.length != 0 && currentPlayer.loaded) {
+			for (let i=0,length=this.enemies.length;i<length;i++) {
+				let thisEnemy = this.enemies[i];
+				let thisAngle = thisEnemy.base.position.getRotation(currentPlayer.playerOBJ.base.position);
+				thisEnemy.base.position.o = thisAngle;
+				thisEnemy.base.position.s = thisEnemy.speed.x;
+			}
+		}
 	}
 	addUpdate(update, "enemySpawner");
 }
