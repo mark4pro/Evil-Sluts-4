@@ -525,7 +525,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			enemyPos = this.enemyPositions[rangeInt(0, this.enemyPositions.length-1)];
 		}
 		if (this.count < this.spawnAmount) {
-			let enemy = new Sprite(4, new baseObject(false, new nameTag(this.enemyName, "enemy"), this.enemySize, enemyPos, this.imgData, this.shadowData));
+			let enemy = new Sprite(4, new baseObject(false, new nameTag(this.enemyName+"_"+this.count, "enemy"), this.enemySize, enemyPos, this.imgData, this.shadowData));
 			//Overwrite the movement function to fix fanky enemy movement
 			enemy.base.updatePosition = () => {
 				if (!isPaused) {

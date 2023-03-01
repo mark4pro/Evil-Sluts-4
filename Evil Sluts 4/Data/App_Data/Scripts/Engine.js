@@ -297,6 +297,7 @@ function Vector2(x=0, y=0, r=0, o=0, s=0) {
 		return new Vector2(this.x-vector2.x, this.y-vector2.y);
 	}
 	this.neg = function(place="x") { //"x" or "y"
+		place = place.toLowerCase();
 		if (place == "x") {
 			return new Vector2(-this.x, this.y);
 		}
@@ -851,6 +852,9 @@ function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZER
 			this.position.x += velocity.x;
 			this.position.y -= velocity.y;
 		}
+	}
+	this.destroy = function() {
+		deleteByNameTag(this.nameTag);
 	}
 	this.duplicate = function() {
 		return new baseObject(this.autoAdd, this.nameTag.duplicate(), this.size.duplicate(), this.position.duplicate(), this.color.duplicate(), this.shadow.duplicate(), this.rotOrigin.duplicate());
