@@ -47,6 +47,7 @@ function mainMenu() {
 	this.startBttn = new Rectangle(2, new baseObject(false, new nameTag("startBttn", "menu"), new Vector2(200, 50), new Vector2(640, 360), new colorData("grey"), new Shadow(new Vector2(5, 5), "black", 10)));
 	this.startBttnTxt = new Text(3, "Play", new baseObject(false, new nameTag("startBttnTxt", "menu"), new Vector2("30px Arial", false, "center"), new Vector2(640, 360), colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
 	const startBttnFunc = new buttonLink(this.startBttn, this.startBttnTxt, recCollision, () => {
+		mousePressed[0] = false; //Fixes shooting when hitting play
 		gameState = 1;
 	}, new Vector2(new colorData("grey"), new colorData("lightgrey"))); 
 	const update = () => {
@@ -77,7 +78,7 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2())
 	this.obj = obj;
 	this.value = value;
 	this.maxValue = maxValue;
-	this.color = color; //x- start color, y- end color, r- alpha
+	this.color = color; //x- end color, y- start color, r- alpha
 	this.gradient = new Rainbow();
 	this.setColors = (color=new Vector2()) => {
 		this.gradient.setSpectrum(this.color.x, this.color.y);
@@ -154,6 +155,25 @@ const itemTable = [
 	new weaponItem(0, new baseItem(101, 1, new Vector2(32, 32), bullet_1_Img.getColor())),
 ];
 
+//Gets all item types
+const getItemTypes = () => {
+	let result = [];
+	let done = false;
+	itemTable.forEach((t, i) => {
+		let resultIncludes = result.some((r) => r == t.itemType);
+		if (!resultIncludes) {
+			result.push(t.itemType);
+		}
+		if (i >= itemTable.length-1) {
+			done = true;
+		}
+	});
+	if (done) {
+		return result;
+	}
+}
+
+//Gets an item by it's id
 const getItemById = (id=0) => {
 	return itemTable.filter((i) => i.base.id == id)[0];
 	
@@ -176,6 +196,71 @@ const getItemsByType = (type="", mode=0) => {
 	}
 }
 
+//Random loot by type
+const getRandomByType = (type="", rarietyRange=new Vector2(1, 10)) => {
+	if (rarietyRange.x < 1) {
+		rarietyRange.x = 0;
+	}
+	if (rarietyRange.x > rarietyRange.y) {
+		rarietyRange.x = rarietyRange.y;
+	}
+	if (rarietyRange.y > 10) {
+		rarietyRange.y = 10;
+	}
+	if (rarietyRange.y < rarietyRange.x) {
+		rarietyRange.y = rarietyRange.x;
+	}
+	const typeArray = itemTable.filter((i) => i.itemType == type && i.base.rariety >= rarietyRange.x && i.base.rariety <= rarietyRange.y);
+	if (typeArray.length != 0) {
+		return typeArray[rangeInt(0, typeArray.length-1)];
+	} else {
+		return null;
+	}
+}
+
+//Random loot
+const lootGen = (rarietyRange=new Vector2(1, 10)) => {
+	if (rarietyRange.x < 1) {
+		rarietyRange.x = 0;
+	}
+	if (rarietyRange.x > rarietyRange.y) {
+		rarietyRange.x = rarietyRange.y;
+	}
+	if (rarietyRange.y > 10) {
+		rarietyRange.y = 10;
+	}
+	if (rarietyRange.y < rarietyRange.x) {
+		rarietyRange.y = rarietyRange.x;
+	}
+	const types = getItemTypes();
+	const randType = types[rangeInt(0, types.length-1)];
+	const items = getItemsByType(randType);
+	const itemRarietyPool = items.filter((i) => i.base.rariety >= rarietyRange.x && i.base.rariety <= rarietyRange.y);
+	console.log(itemRarietyPool);
+	return itemRarietyPool[rangeInt(0, itemRarietyPool.length-1)];
+}
+
+//Spawns an item
+const spawnItem = (id=0, dropPos=ZERO) => {
+	let thisItem = getItemById(id);
+	if (thisItem != undefined) {
+		let dup = thisItem.duplicate();
+		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+		droppedItem.base.overridePositionUpdateFunction = true;
+		droppedItem.base.updatePosition = () => {
+			if (!isPaused && currentMap() != null) {
+				droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
+			}
+		}
+		droppedItem.item = thisItem.duplicate();
+		droppedItem.pickUp = () => {
+			addToInventory(droppedItem.item);
+			droppedItem.base.marked = true;
+		}
+	}
+}
+
+//Adds item to inventory
 const addToInventory = (item=null) => {
 	if (item != null) {
 		inventory[item.mainType].push(item);
@@ -187,6 +272,7 @@ const inventory = {
 	"items":[],
 };
 
+//Drops item from the players inventory
 const dropItem = (itemType="items", index=0) => {
 	let inventoryItem = inventory[itemType][index];
 	if (inventoryItem != undefined) {
@@ -199,7 +285,13 @@ const dropItem = (itemType="items", index=0) => {
 				pos = currentPlayer.playerOBJ.base.position.addV(new Vector2(30, 80));
 			break;
 		}
-		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item_"+currentMap().nameTag.name), dup.base.size, pos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, pos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+		droppedItem.base.overridePositionUpdateFunction = true;
+		droppedItem.base.updatePosition = () => {
+			if (!isPaused && currentMap() != null) {
+				droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
+			}
+		}
 		droppedItem.item = inventoryItem.duplicate();
 		droppedItem.pickUp = () => {
 			addToInventory(droppedItem.item);
@@ -212,6 +304,7 @@ const dropItem = (itemType="items", index=0) => {
 	}
 }
 
+//Gets all drops items
 const getDroppedItems = () => {
 	let droppedItems = getByNameTag(new nameTag("itemDrop"), 1);
 	if (droppedItems != null && typeof droppedItems.length == "undefined") {
@@ -235,7 +328,7 @@ function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1
 	this.size = size;
 	this.speed = speed;
 	this.range = range;
-	this.damage = damage;
+	this.damage = damage; //x- min damage, y- max damage
 	this.spreadPattern = spreadPattern;
 }
 
@@ -329,9 +422,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 		deleteByNameTag(this.healthBarTxt.base.nameTag);
 		deleteByNameTag(this.staminaBar.base.nameTag);
 		deleteByNameTag(this.staminaBarTxt.base.nameTag);
-		deleteByNameTag(this.weaponName.base.nameTag);
 		deleteByNameTag(this.weaponNameTxt.base.nameTag);
-		deleteByNameTag(this.ammoCount.base.nameTag);
 		deleteByNameTag(this.ammoCountTxt.base.nameTag);
 		deleteByNameTag(this.pickUpBttn.base.nameTag);
 		deleteByNameTag(this.droppedItemsTxt.base.nameTag);
@@ -346,7 +437,6 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	}
 	
 	const update = () => {
-		deleteByMarked();
 		if (typeof gameState != "undefined") {
 			if (gameState == 0) {
 				if (this.loaded) {
@@ -446,6 +536,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 							newBullet.base.nameTag.name = newBullet.base.nameTag.name+i;
 							newBullet.base.position.r = degToRad(this.currentWeaponData.spreadPattern[i]+angle);
 							newBullet.base.position.s = -this.currentWeaponData.speed;
+							newBullet.damage = rangeFloat(this.currentWeaponData.damage.x, this.currentWeaponData.damage.y);
 							bulletAmount++;
 							addObject(newBullet);
 						}
@@ -500,7 +591,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 }
 
 //Add enemy spawn array- randomly get from array
-function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=0,  speed=new Vector2(4, 5, 6, 7), damage=new Vector2(6, 8)) {
+function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=10, speed=new Vector2(4, 5, 6, 7, 0.25), stopDistance=200, damage=new Vector2(6, 8), lootAmount=2, drugAmount=new Vector2(1, 1), dropRariety=new Vector2(1, 3)) {
 	this.enemyName = enemyName;
 	this.enemySize = enemySize;
 	this.enemyPositions = enemyPositions; //can be an array of positions
@@ -510,8 +601,12 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 	this.spawnSpeed = spawnSpeed; //x- speed, y- max time
 	this.maxHealth = maxHealth;
 	this.defense = defense;
-	this.speed = speed; //x- min normal speed, y- max normal speed, r- min agro speed, o- max agro speed
+	this.speed = speed; //x- min normal speed, y- max normal speed, r- min agro speed, o- max agro speed, s- health agro percent
+	this.stopDistance = stopDistance;
 	this.damage = damage; //x- min damage, y- max damage
+	this.lootAmount = lootAmount;
+	this.drugAmount = drugAmount; //x- min drugs, y- max drugs
+	this.dropRariety = dropRariety; //x- min rariety, y- max rariety
 	
 	this.enemies = [];
 	this.time = 0;
@@ -525,22 +620,38 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			enemyPos = this.enemyPositions[rangeInt(0, this.enemyPositions.length-1)];
 		}
 		if (this.count < this.spawnAmount) {
+			let enemyHealthBar = new Rectangle(4, new baseObject(false, new nameTag(this.enemyName+"_"+this.count+"_healthBar", "enemy_healthBar"), new Vector2(100, 5), enemyPos.subV(new Vector2(0, this.enemySize.div(2).y+10)), new colorData("darkgreen", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+			let enemyHealthBarLink = new statusBar(enemyHealthBar, this.maxHealth, this.maxHealth, new Vector2("darkred", "darkgreen", 0.75));
 			let enemy = new Sprite(4, new baseObject(false, new nameTag(this.enemyName+"_"+this.count, "enemy"), this.enemySize, enemyPos, this.imgData, this.shadowData));
 			//Overwrite the movement function to fix fanky enemy movement
+			enemy.base.overridePositionUpdateFunction = true; //Fixes movement jitter caused by the position update function not updating when the speed is 0
 			enemy.base.updatePosition = () => {
-				if (!isPaused) {
-					let velocity = new Vector2((enemy.base.position.s*Math.sin(enemy.base.position.o)*delta), -(enemy.base.position.s*Math.cos(enemy.base.position.o)*delta));
-					enemy.base.startPosition = enemy.base.startPosition.addV(velocity);
-					enemy.base.position = enemy.base.startPosition.addV(currentMap().mapPos);
+				if (!isPaused && currentMap() != null) {
+					let velocity = new Vector2(((enemy.base.position.s*Math.sin(enemy.base.position.o))*delta), -((enemy.base.position.s*Math.cos(enemy.base.position.o))*delta));
+					enemy.base.startPosition = enemy.base.startPosition.duplicate().addV(velocity);
+					enemy.base.position = enemy.base.startPosition.duplicate().addV(currentMap().mapPos);
 				}
 			}
+			
 			enemy.damage = this.damage.duplicate();
 			enemy.speed = new Vector2(rangeFloat(this.speed.x, this.speed.y, 1), rangeFloat(this.speed.r, this.speed.o, 1));
 			enemy.defense = this.defense;
 			enemy.health = this.maxHealth;
 			enemy.maxHealth = this.maxHealth;
+			enemy.healthBar = enemyHealthBar;
+			enemy.healthBarLink = enemyHealthBarLink;
+			enemy.agro = false;
+			
+			enemy.damage = (damage=10) => {
+				if (enemy.defense != 0) {
+					enemy.health -= clamp(damage*(damage/this.defense), 0, enemy.maxHealth);
+				} else {
+					enemy.health -= clamp(damage, 0, enemy.maxHealth);
+				}
+			}
 			
 			this.enemies.push(enemy);
+			addObject(enemyHealthBar);
 			addObject(enemy);
 			this.count++;
 		}
@@ -554,7 +665,6 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 		if (this.time >= this.spawnSpeed.y) {
 			this.spawn();
 			currentMap().removeMap = true;
-			console.log(this.count);
 			this.time = 0;
 		}
 		//Kill enemies when health reaches 0
@@ -562,6 +672,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			let enemyHealthFilter = this.enemies.filter((e) => e.health <= 0);
 			enemyHealthFilter.forEach((e) => {
 				//Add explosion effect
+				e.healthBar.base.marked = true;
 				e.base.marked = true;
 			});
 		}
@@ -570,13 +681,64 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 		if (cleanArray) {
 			this.enemies = this.enemies.filter((e) => !e.base.marked);
 		}
-		//Enemy movement
 		if (this.enemies.length != 0 && currentPlayer.loaded) {
 			for (let i=0,length=this.enemies.length;i<length;i++) {
 				let thisEnemy = this.enemies[i];
 				let thisAngle = thisEnemy.base.position.getRotation(currentPlayer.playerOBJ.base.position);
-				thisEnemy.base.position.o = thisAngle;
-				thisEnemy.base.position.s = thisEnemy.speed.x;
+				let thisDistance = thisEnemy.base.position.distance(currentPlayer.playerOBJ.base.position);
+				//Clamp health
+				thisEnemy.health = clamp(thisEnemy.health, 0, thisEnemy.maxHealth);
+				//Health bar code
+				thisEnemy.healthBar.base.position = thisEnemy.base.position.subV(new Vector2(0, this.enemySize.div(2).y+10));
+				thisEnemy.healthBarLink.value = thisEnemy.health;
+				thisEnemy.healthBarLink.update();
+				//Agro check
+				if (thisEnemy.health <= (thisEnemy.maxHealth*thisEnemy.speed.s)) {
+					thisEnemy.agro = true;
+				}
+				//Enemy movement code
+				if (thisDistance <= this.stopDistance) {
+					thisEnemy.base.position.s = 0;
+				} else {
+					thisEnemy.base.position.o = thisAngle;
+					let enemyDistanceFilter = collisionArray.filter((o) => thisEnemy.base.position.distance(o.base.position) <= 320);
+					let isTouchingWall = enemyDistanceFilter.some((w) => cirPolyCollision(thisEnemy, w));
+					for (let i=0,length=enemyDistanceFilter.length;i<length;i++) {
+						cirPolyCollision(thisEnemy, enemyDistanceFilter[i], null, false);
+					}
+					if (!isTouchingWall) {
+						if (!thisEnemy.agro) {
+							thisEnemy.base.position.s = thisEnemy.speed.x;
+						} else {
+							thisEnemy.base.position.s = thisEnemy.speed.y;
+						}
+					} else {
+						thisEnemy.base.position.s = 0;
+					}
+				}
+				//Player bullet collisions
+				if (currentPlayer.playerBullets != null) {
+					for (let b=0,length=currentPlayer.playerBullets.length;b<length;b++) {
+						let thisBullet = currentPlayer.playerBullets[b];
+						if (cirPolyCollision(thisEnemy, thisBullet)) {
+							thisEnemy.damage(thisBullet.damage);
+							//drops
+							if (thisEnemy.health <= 0) {
+								for (let i=0;i<this.lootAmount;i++) {
+									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
+									spawnItem(lootGen(this.dropRariety).base.id, dropPos);
+								}
+								let dropDrugAmount = rangeInt(this.drugAmount.x, this.drugAmount.y);
+								for (let i=0;i<dropDrugAmount;i++) {
+									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
+									spawnItem(getRandomByType("drug", this.dropRariety).base.id, dropPos);
+									console.log(dropPos);
+								}
+							}
+							thisBullet.base.destroy();
+						}
+					}
+				}
 			}
 		}
 	}
@@ -584,6 +746,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 }
 
 const mainUpdate = () => {
+	deleteByMarked();
 	//Inits after all scripts are loaded
 	if (typeof map != "undefined") {
 		if (!thisLoaded) {
@@ -593,6 +756,10 @@ const mainUpdate = () => {
 			config.maps = ["test_map"];
 			loadMaps();
 			thisLoaded = true;
+		}
+		if (currentMap() == null) {
+			deleteByNameTag(new nameTag("", "enemy"), 2, true);
+			deleteUpdate(1, "enemySpawner");
 		}
 		if (currentMap() != null && currentMap().loaded) {
 			if (!currentPlayer.loaded) {
@@ -618,7 +785,7 @@ const mainUpdate = () => {
 						for (let i=0,length=playerBulletsDistanceFilter.length;i<length;i++) {
 							for (let b=0,length=currentPlayer.playerBullets.length;b<length;b++) {
 								if (cirPolyCollision(currentPlayer.playerBullets[b], playerBulletsDistanceFilter[i])) {
-									currentPlayer.playerBullets[b].base.marked = true;
+									currentPlayer.playerBullets[b].base.destroy();
 								}
 							}
 						}

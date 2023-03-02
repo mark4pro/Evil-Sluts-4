@@ -516,19 +516,13 @@ function deleteUpdate(mode=1, op1, op2) {
 	}
 	switch (mode) {
 		case 0:
-			updateArray = updateArray.filter((u) => {
-				return !(u.id == op1 && u.tag == op2);
-			});
+			updateArray = updateArray.filter((u) => !(u.id == op1 && u.tag == op2));
 		break;
 		case 1:
-			updateArray = updateArray.filter((u) => {
-				return !(u.id == op1);
-			});
+			updateArray = updateArray.filter((u) => !(u.id == op1));
 		break;
 		case 2:
-			updateArray = updateArray.filter((u) => {
-				return !(u.tag == op1);
-			});
+			updateArray = updateArray.filter((u) => !(u.tag == op1));
 		break;
 	}
 }
@@ -843,6 +837,7 @@ function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZER
 	this.rotOrigin = rotOrigin;
 	this.startPosition = position.duplicate();
 	this.marked = false;
+	this.overridePositionUpdateFunction = false; //Always runs the update position function even when the speed is 0 if true;
 	if (this.rotOrigin == null) {
 		this.rotOrigin = this.position;
 	}
@@ -1512,7 +1507,7 @@ function Renderer() {
 		if (typeof i.base.size.x == "string" || (i.base.position.x-(i.base.size.x/2) <= screen.resolution.x && i.base.position.x+(i.base.size.x/2) >= 0 && i.base.position.y-(i.base.size.y/2) <= screen.resolution.y && i.base.position.y+(i.base.size.y/2) >= 0)) {
 			i.draw();
 		}
-		if (i.base.position.s != 0) {
+		if (i.base.position.s != 0 || i.base.overridePositionUpdateFunction) {
 			i.base.updatePosition();
 		}
 	});
