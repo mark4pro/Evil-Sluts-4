@@ -732,7 +732,6 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 								for (let i=0;i<dropDrugAmount;i++) {
 									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
 									spawnItem(getRandomByType("drug", this.dropRariety).base.id, dropPos);
-									console.log(dropPos);
 								}
 							}
 							thisBullet.base.destroy();
