@@ -266,6 +266,7 @@ function Vector2(x=0, y=0, r=0, o=0, s=0) {
 	this.duplicate = function() {
 		return new Vector2(this.x, this.y, this.r, this.o, this.s);
 	}
+	this.dup = this.duplicate;
 	//Compare vectors
 	this.same = function(vector2=ZERO) {
 		let result = false;
@@ -585,6 +586,7 @@ function Shadow(offset=ZERO, color="", blur=0) {
 	this.duplicate = function() {
 		return new Shadow(this.offset, this.color, this.blur);
 	}
+	this.dup = this.duplicate;
 }
 
 //NameTag
@@ -637,6 +639,7 @@ function nameTag(name="",tag="") {
 	this.duplicate = function() {
 		return new nameTag(this.name, this.tag);
 	}
+	this.dup = this.duplicate;
 }
 
 //Line data
@@ -661,6 +664,7 @@ function lineData(stroked=false, cap=0, width=1, dashOffset=0, pattern=[]) {
 	this.duplicate = function() {
 		return new lineData(this.stroked, this.cap, this.width, this.dashOffset, this.pattern);
 	}
+	this.dup = this.duplicate;
 }
 
 //Color data
@@ -701,6 +705,7 @@ function colorData(color="white", alpha=1, comp=0) {
 	this.duplicate = function() {
 		return new colorData(this.color, this.alpha, this.compMode);
 	}
+	this.dup = this.duplicate;
 	this.same = function(data, mode=0) {
 		if (mode < 0) {
 			mode = 0;
@@ -780,6 +785,7 @@ function gradientData(type=0, start=new Vector2(), end=new Vector2(), colors=[])
 	this.duplicate = function() {
 		return new gradientData(this.type, this.start, this.end, this.colors);
 	}
+	this.dup = this.duplicate;
 }
 
 //Image data
@@ -854,6 +860,7 @@ function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZER
 	this.duplicate = function() {
 		return new baseObject(this.autoAdd, this.nameTag.duplicate(), this.size.duplicate(), this.position.duplicate(), this.color.duplicate(), this.shadow.duplicate(), this.rotOrigin.duplicate());
 	}
+	this.dup = this.duplicate;
 }
 
 //Sets up object
@@ -895,6 +902,7 @@ function Rectangle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.duplicate = function() {
 		return new Rectangle(this.layerNumber, this.base.duplicate(), this.line.duplicate());
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, this.line);
 		points = [
@@ -929,6 +937,7 @@ function Circle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.duplicate = function() {
 		return new Circle(this.layerNumber, this.base.duplicate(), this.line.duplicate());
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, this.line);
 		ctx.beginPath();
@@ -958,6 +967,7 @@ function Light(layerNumber=1, base=EMPTY_OBJECT, lightIntensity=new Vector2(), l
 	this.duplicate = function() {
 		return new Light(this.layerNumber, this.base.duplicate(), this.lightIntensity.duplicate(), this.line.duplicate());
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, this.line);
 		ctx.beginPath();
@@ -1008,6 +1018,7 @@ function Sprite(layerNumber=1, base=EMPTY_OBJECT, animator=null) {
 			return new Sprite(this.layerNumber, this.base.duplicate(), null);
 		}
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, DEFAULT_LINE);
 		let newSprite = document.getElementById(this.base.color.color);
@@ -1066,6 +1077,7 @@ function spriteMind(clipPos=new Vector2(), clipSize=null) {
 	this.duplicate = function() {
 		return new spriteMind(this.clipPos, this.clipSize);
 	}
+	this.dup = this.duplicate;
 }
 
 //Sprite animator
@@ -1115,6 +1127,7 @@ function spriteAnimator(image=null, size=ZERO, speed=1, loop=false) {
 	this.duplicate = function() {
 		return new spriteAnimator(this.image, this.size.duplicate(), this.speed, this.loop);
 	}
+	this.dup = this.duplicate;
 }
 
 //Text class
@@ -1197,6 +1210,7 @@ function TextBox(layerNumber=1, font="30px Arial", textColor="white", base=EMPTY
 	this.duplicate = function() {
 		return new TextBox(this.layerNumber, this.font, this.textColor, this.base.duplicate(), this.line.duplicate());
 	}
+	this.dup = this.duplicate;
 	
 	//Keybuffer
 	let thisKeyBuffer = [];

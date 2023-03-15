@@ -74,6 +74,186 @@ function mainMenu() {
 	addUpdate(update, "mainMenu");
 }
 
+//Item pickup menu
+const dropMenu = new pickUpMenu();
+
+//Container object for the menu
+function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], visColor="darkgrey") {
+	this.layerNumber = layerNumber;
+	this.base = base;
+	this.objs = objs;
+	this.visColor = visColor;
+	this.type = "container";
+	let points = [];
+	this.loaded = false;
+	this.overLimit = false;
+	this.oldObjs = [...objs];
+	this.getPoints = function() {
+		return points;
+	}
+	this.duplicate = function() {
+		return new Container(this.layerNumber, this.base.duplicate(), this.objs);
+	}
+	this.draw = function() {
+		setupObject(this.base, DEFAULT_LINE);
+		points = [
+			this.base.rotOrigin.rotateVector2(new Vector2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
+			this.base.rotOrigin.rotateVector2(new Vector2(this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
+			this.base.rotOrigin.rotateVector2(new Vector2(this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
+			this.base.rotOrigin.rotateVector2(new Vector2(-this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
+			this.base.rotOrigin.rotateVector2(new Vector2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r)];
+		let thisPath = new Path2D();
+		thisPath.moveTo(this.base.position.x, this.base.position.y);
+		for (let i=0;i<points.length;i++) {
+			thisPath.lineTo(points[i].x, points[i].y);
+		}
+		ctx.fill(thisPath);
+		ctx.save();
+		ctx.clip(thisPath);
+		if (!this.loaded) {
+			for (let i=0,length=this.objs.length;i<length;i++) {
+				if (!this.overLimit && length >= 14) {
+					this.overLimit = true;
+				}
+				if (i < 14) {
+					let thisObj = this.objs[i];
+					let currentObj = new Rectangle(8, new baseObject(this.base.autoAdd, new nameTag(this.base.nameTag.name, this.base.nameTag.tag+"_"+"vis"+"_"+i), new Vector2(this.base.size.x, 25), new Vector2(this.base.position.x, Math.abs(this.base.position.y-(this.base.size.y/2))+(i*25)+12.5), new colorData(this.visColor, this.base.color.alpha)));
+					currentObj.id = i;
+					currentObj.base.overridePositionUpdateFunction = true;
+					currentObj.base.updatePosition = () => {
+						let thisBase = getByNameTag(this.base.nameTag);
+						if (isPaused && thisBase != null) {
+							currentObj.base.position = new Vector2(thisBase.base.position.x, Math.abs(thisBase.base.position.y-(thisBase.base.size.y/2))+(currentObj.id*25)+12.5);
+						}
+					}
+				}
+				if (length >= 14 && i >= 13) {
+					this.loaded = true;
+				}
+				if (i == length-1) {
+					this.loaded = true;
+				}
+			}
+		}
+		if (this.overLimit) {
+			if (this.loaded) {
+				this.loaded = true;
+			}
+			if (this.objs.length < 14) {
+				this.overLimit = false;
+			}
+		}
+		ctx.restore();
+		if (this.oldObjs.length != this.objs.length) {
+			deleteByNameTag(new nameTag("", "vis"), 2, true);
+			this.loaded = false;
+			this.oldObjs = [...this.objs];
+		}
+	}
+	if (this.base.autoAdd && this.layerNumber >= 1 && this.layerNumber <= 8) {
+		layer[this.layerNumber].push(this);
+		loaded = false;
+	}
+}
+
+function pickUpMenu() {
+	this.size = new Vector2(600, 375);
+	this.pos = screen.halfResolution.dup();
+	
+	let items = [];
+	let itemVis = [];
+	let count = 1;
+	this.updateFrequence = 1;
+	this.maxUpdateTime = 10;
+	
+	this.isShowing = false;
+	this.isClickedOn = false;
+	
+	this.tag = "pickup_menu";
+	this.componentTable = {
+		"Background":null,
+		"MenuTitle":null,
+		"CloseBttn":null,
+		"CloseBttnLink":null,
+		"ItemContainer":null,
+	}
+	
+	this.init = () => {
+		if (!this.isShowing) {
+			const compList = this.componentTable;
+			//Window setup
+			compList.Background = new Rectangle(8, new baseObject(true, new nameTag("Background", this.tag), this.size.duplicate(), this.pos.dup(), new colorData("grey", 0.75), new Shadow(new Vector2(5, 5), "black", 10)));
+			compList.MenuTitle = new Text(8, "Ground Items", new baseObject(true, new nameTag("MenuTitle", this.tag), new Vector2("25px Arial", false, "center"), new Vector2(0, (this.size.y/2)-15), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 10)));
+			compList.MenuTitle.base.overridePositionUpdateFunction = true;
+			compList.MenuTitle.base.updatePosition = () => {
+				let thisBase = getByNameTag(new nameTag("Background", this.tag));
+				if (isPaused && thisBase != null) {
+					compList.MenuTitle.base.position = thisBase.base.position.subV(compList.MenuTitle.base.startPosition);
+				}
+			}
+			compList.CloseBttn = new Sprite(8, new baseObject(true, new nameTag("CloseBttn", this.tag), new Vector2(20, 20), new Vector2(-((this.size.x/2)-12.5), (this.size.y/2)-12.5), Close_UI.getColor(0.75), new Shadow(new Vector2(5, 5), "black", 10)));
+			compList.CloseBttn.base.overridePositionUpdateFunction = true;
+			compList.CloseBttn.base.updatePosition = () => {
+				let thisBase = getByNameTag(new nameTag("Background", this.tag));
+				if (isPaused && thisBase != null) {
+					compList.CloseBttn.base.position = thisBase.base.position.subV(compList.CloseBttn.base.startPosition);
+				}
+			}
+			compList.CloseBttnLink = new buttonLink(compList.CloseBttn, null, recCollision, () => {
+				this.hide();
+				mousePressed[0] = false;
+			}, new Vector2(Close_UI.getColor(0.75), Close_UI_Hover.getColor(0.75)));
+			compList.CloseBttnLink.link();
+			compList.ItemContainer = new Container(8, new baseObject(true, new nameTag("ItemContainer", this.tag), new Vector2(this.size.x, this.size.y-25), new Vector2(0, -12.5), new colorData("lightgrey", 0.25)), [""], "darkgrey");
+			compList.ItemContainer.base.overridePositionUpdateFunction = true;
+			compList.ItemContainer.base.updatePosition = () => {
+				let thisBase = getByNameTag(new nameTag("Background", this.tag));
+				if (isPaused && thisBase != null) {
+					compList.ItemContainer.base.position = thisBase.base.position.subV(compList.ItemContainer.base.startPosition);
+				}
+			}
+			this.isShowing = true;
+		}
+	}
+	
+	this.hide = () => {
+		deleteByNameTag(new nameTag("", this.tag), 2, true);
+		this.componentTable.CloseBttnLink.unlink();
+		isPaused = false;
+		this.isShowing = false;
+	}
+	
+	//Resets the item ui
+	this.resetVis = () => {
+		for (let i=0,length=itemVis.length;i<length;i++) {
+			itemVis[i].base.destroy();
+			if (i == length-1) {
+				itemVis = [];
+			}
+		}
+	}
+	
+	const update = () => {
+		//Updates item list
+		if (this.isShowing) {
+			isPaused = true;
+			count += this.updateFrequence*delta;
+			if (count > this.maxUpdateTime) {
+				//Get items from ground by distance to player
+				let result = getDroppedItems();
+				if (result != null) {
+					items = result;
+				} else {
+					items = [];
+				}
+				//Reset counter
+				count = 1;
+			}
+		}
+	}
+	addUpdate(update, "pickUpMenu");
+}
+
 function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2()) {
 	this.obj = obj;
 	this.value = value;
@@ -87,7 +267,6 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2())
 	this.setColors(this.color);
 	let sizeX = this.obj.base.size.duplicate().x;
 	this.update = () => {
-		//this.gradient.setNumberRange(0, this.maxValue);
 		this.obj.base.color = new colorData("#"+this.gradient.colorAt(this.value), this.color.r);
 		this.obj.base.size.x = sizeX*(this.value/(this.maxValue/100)/100);
 	}
@@ -176,7 +355,6 @@ const getItemTypes = () => {
 //Gets an item by it's id
 const getItemById = (id=0) => {
 	return itemTable.filter((i) => i.base.id == id)[0];
-	
 }
 
 const getItemsByType = (type="", mode=0) => {
@@ -381,7 +559,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	this.pickUpBttn = new Sprite(8, new baseObject(false, new nameTag("pickUpBttn", "UI_BTTN"), new Vector2(128, 64), new Vector2(1216, 688), pick_up_bttn_Img.getColor()));
 	this.droppedItemsTxt = new Text(8, "0", new baseObject(false, new nameTag("droppedItemsTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(1152, 656), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
 	this.pickUpBttnLink = new buttonLink(this.pickUpBttn, this.droppedItemsTxt, recCollision, () => {
-		
+		dropMenu.init();
 	}, new Vector2(pick_up_bttn_Img.getColor(0.75), pick_up_bttn_Img.getColor(1)), new Vector2(new colorData("white", 0.75), new colorData("white", 1)), null, new Vector2("rgba(0,0,0,192)", "rgba(0,0,0,256)"));
 	
 	this.respawn = function(pos) {
