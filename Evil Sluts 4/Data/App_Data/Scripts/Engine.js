@@ -6,6 +6,14 @@ const engineSettings = {
 		"Show_Delta_Time":false,
 		"Show_Debug_Cursor":false
 	},
+	"Settings_Menu":{
+		"Image_Smoothing":true,
+		"Shadows":true,
+		"Debug":true,
+		"Show_FPS":true,
+		"Show_DELTA":true,
+		"Show_Debug_Cursor":true
+	},
 	"Addons":[]
 };
 
@@ -41,32 +49,39 @@ let Settings_Icon = new imageData("settings_icon", imagePath+"Settings.png", new
 const modVars = new globalVars();
 
 function globalVars() {
-	this.vars = [];
-	this.add = function(value=null, name="", id="") {
-		let check = this.vars.filter((v) => (v.name == name && v.id == id));
-		if (check.length == 0) {
-			this.vars.push({"value":value, "name":name, "id":id});
+	this.modVarIndex = {};
+	this.deleteMod = (id="") => {
+		delete this.modVarIndex[id];
+	}
+	this.addMod = (id="") => {
+		if (this.modVarIndex[id] == undefined) {
+			this.modVarIndex[id] = {};
+		} else {
+			this.deleteMod(id);
+			this.modVarIndex[id] = {};
 		}
 	}
-	this.delete = function(name="", id="") {
-		let check = this.vars.filter((v) => (v.name == name && v.id == id));
-		if (check.length != 0) {
-			this.vars.forEach((v, i) => {
-				if (v.name == name && v.id == id) {
-					this.vars.splice(i, 1);
-				}
-			});
+	this.addVar = (id="", name="", value="") => {
+		if (this.modVarIndex[id] != undefined) {
+			this.modVarIndex[id][name] = value;
+		} else {
+			this.addMod(id);
+			this.modVarIndex[id][name] = value;
 		}
 	}
-	this.deleteById = function(id="") {
-		this.vars = this.vars.filter((v) => (v.id != id));
+	this.deleteVar = (id="", name="") => {
+		if (this.modVarIndex[id] != undefined) {
+			delete this.modVarIndex[id][name];
+		}
 	}
-	this.get = function(name="", id="") {
-		return this.vars.filter((v) => (v.name == name && v.id == id))[0].value;
-	}
-	this.set = function(value=null, name="", id="") {
-		this.vars.filter((v) => (v.name == name && v.id == id))[0].value = value;
-	}
+}
+
+const getModVar = (id="", name="") => {
+	return modVars.modVarIndex[id][name];
+}
+
+const setModVar = (id="", name="", value="") => {
+	modVars.modVarIndex[id][name] = value;
 }
 
 //Checks number to see if it's even or odd
@@ -1835,7 +1850,19 @@ function mod(path="", id="") {
 		domElements.forEach((e) => {
 			e.remove();
 		});
-		modVars.deleteById(this.id);
+		try {
+			eval(this.id+"_unload()");
+		} catch (e) {}
+		try {
+			eval(this.id+"_Unload()");
+		} catch (e) {}
+		try {
+			getModVar(this.id, "unload")();
+		} catch (e) {}
+		try {
+			getModVar(this.id, "Unload")();
+		} catch (e) {}
+		modVars.deleteMod(this.id);
 		let script = document.getElementById(this.id);
 		let scriptV = document.getElementById(this.id+"V");
 		ModLoader.modDiv.removeChild(script);
@@ -2699,6 +2726,36 @@ function optionsMenu() {
 		engineSettings.Debug.Show_Delta_Time = this.deltaChkBx.checked;
 		this.debugCursorTxt.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
 		engineSettings.Debug.Show_Debug_Cursor = this.debugCursorChkBx.checked;
+		if (engineSettings.Settings_Menu.Image_Smoothing) {
+			this.imageSmoothingDiv.style.display = "inherit";
+		} else {
+			this.imageSmoothingDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Shadows) {
+			this.shadowsDiv.style.display = "inherit";
+		} else {
+			this.shadowsDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Debug) {
+			this.debugDiv.style.display = "inherit";
+		} else {
+			this.debugDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Show_FPS) {
+			this.fpsDiv.style.display = "inherit";
+		} else {
+			this.fpsDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Show_DELTA) {
+			this.deltaDiv.style.display = "inherit";
+		} else {
+			this.deltaDiv.style.display = "none";
+		}
+		if (engineSettings.Settings_Menu.Show_Debug_Cursor) {
+			this.debugCursorDiv.style.display = "inherit";
+		} else {
+			this.debugCursorDiv.style.display = "none";
+		}
 	}
 	addUpdate(update, "settings menu");
 }

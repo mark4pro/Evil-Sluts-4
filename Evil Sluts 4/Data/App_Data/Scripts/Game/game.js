@@ -2,6 +2,8 @@
 screen.setResolution(new Vector2(1280, 720));
 Cursor.cursor.base.size = (new Vector2(14, 14));
 Cursor.offset = Cursor.cursor.base.size.div(2);
+engineSettings.Settings_Menu.Image_Smoothing = false;
+engineSettings.Settings_Menu.Show_Debug_Cursor = false;
 engineSettings.Addons = ["mapRenderer"];
 loadAddons();
 
@@ -768,7 +770,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	addUpdate(update, "player");
 }
 
-//Add enemy spawn array- randomly get from array
+//Add enemy spawn array / randomly get from array
 function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=10, speed=new Vector2(4, 5, 6, 7, 0.25), stopDistance=200, damage=new Vector2(6, 8), lootAmount=2, drugAmount=new Vector2(1, 1), dropRariety=new Vector2(1, 3)) {
 	this.enemyName = enemyName;
 	this.enemySize = enemySize;
