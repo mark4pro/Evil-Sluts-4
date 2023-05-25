@@ -79,26 +79,46 @@ function mainMenu() {
 //Item pickup menu
 const dropMenu = new pickUpMenu();
 
+const defaultContainerStyle = new ContainerStyle();
+function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25px Arial", visTxtShadow=new Shadow(new Vector2(5, 5), "black", 5), visBttnColor=new Vector2("#686868", "#959595"), visSize=25) {
+	this.visColor = visColor;
+	this.visTxtColor = visTxtColor;
+	this.visTxtFont = visTxtFont;
+	this.visTxtShadow = visTxtShadow;
+	this.visBttnColor = visBttnColor;
+	this.visSize = visSize;
+	this.duplicate = function() {
+		return new ContainerStyle(this.visColor, this.visTxtColor, this.visTxtFont, this.visTxtShadow, this.visBttnColor, this.visSize);
+	}
+	this.dup = this.duplicate;
+}
+
 //Container object for the menu
-function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], visColor="darkgrey") {
+function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 	this.layerNumber = layerNumber;
 	this.base = base;
 	this.objs = objs;
-	this.visColor = visColor;
+	this.containerStyle = defaultContainerStyle.dup();
+	if (style != null) {
+		this.containerStyle = style;
+	}
 	this.type = "container";
-	let points = [];
-	this.loaded = false;
-	this.overLimit = false;
-	this.oldObjs = [...objs];
+	let points_1 = [];
+	let points_2 = [];
 	this.getPoints = function() {
-		return points;
+		return points_1;
+	}
+	this.getPoints2 = function() {
+		return points_2;
 	}
 	this.duplicate = function() {
-		return new Container(this.layerNumber, this.base.duplicate(), this.objs);
+		return new Container(this.layerNumber, this.base.dup(), this.objs, this.containerStyle.dup());
 	}
+	this.dup = this.duplicate;
 	this.draw = function() {
+		//Background
 		setupObject(this.base, DEFAULT_LINE);
-		points = [
+		points_1 = [
 			this.base.rotOrigin.rotateVector2(new Vector2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
 			this.base.rotOrigin.rotateVector2(new Vector2(this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
 			this.base.rotOrigin.rotateVector2(new Vector2(this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
@@ -106,51 +126,85 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], visColor="darkgrey
 			this.base.rotOrigin.rotateVector2(new Vector2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r)];
 		let thisPath = new Path2D();
 		thisPath.moveTo(this.base.position.x, this.base.position.y);
-		for (let i=0;i<points.length;i++) {
-			thisPath.lineTo(points[i].x, points[i].y);
+		for (let i=0;i<points_1.length;i++) {
+			thisPath.lineTo(points_1[i].x, points_1[i].y);
 		}
 		ctx.fill(thisPath);
 		ctx.save();
 		ctx.clip(thisPath);
-		if (!this.loaded) {
-			for (let i=0,length=this.objs.length;i<length;i++) {
-				if (!this.overLimit && length >= 14) {
-					this.overLimit = true;
-				}
-				if (i < 14) {
-					let thisObj = this.objs[i];
-					let currentObj = new Rectangle(8, new baseObject(this.base.autoAdd, new nameTag(this.base.nameTag.name, this.base.nameTag.tag+"_"+"vis"+"_"+i), new Vector2(this.base.size.x, 25), new Vector2(this.base.position.x, Math.abs(this.base.position.y-(this.base.size.y/2))+(i*25)+12.5), new colorData(this.visColor, this.base.color.alpha)));
-					currentObj.id = i;
-					currentObj.base.overridePositionUpdateFunction = true;
-					currentObj.base.updatePosition = () => {
-						let thisBase = getByNameTag(this.base.nameTag);
-						if (isPaused && thisBase != null) {
-							currentObj.base.position = new Vector2(thisBase.base.position.x, Math.abs(thisBase.base.position.y-(thisBase.base.size.y/2))+(currentObj.id*25)+12.5);
-						}
-					}
-				}
-				if (length >= 14 && i >= 13) {
-					this.loaded = true;
-				}
-				if (i == length-1) {
-					this.loaded = true;
-				}
-			}
+		//Vis bg
+		let visSize = new Vector2(this.base.size.x, this.objs.length*this.containerStyle.visSize);
+		points_2 = [
+				this.base.rotOrigin.rotateVector2(new Vector2(-visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
+				this.base.rotOrigin.rotateVector2(new Vector2(visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
+				this.base.rotOrigin.rotateVector2(new Vector2(visSize.x/2+this.base.position.x, visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
+				this.base.rotOrigin.rotateVector2(new Vector2(-visSize.x/2+this.base.position.x, visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
+				this.base.rotOrigin.rotateVector2(new Vector2(-visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r)];
+		let thisPath2 = new Path2D();
+		thisPath2.moveTo(this.base.position.x, this.base.position.y);
+		for (let i=0;i<points_2.length;i++) {
+			thisPath2.lineTo(points_2[i].x, points_2[i].y);
 		}
-		if (this.overLimit) {
-			if (this.loaded) {
-				this.loaded = true;
+		ctx.fillStyle = this.containerStyle.visColor;
+		ctx.fill(thisPath2);
+		//Vis txt
+		ctx.textAlign = "left";
+		ctx.textBaseline = "middle";
+		ctx.font = this.containerStyle.visTxtFont;
+		ctx.fillStyle = this.containerStyle.visTxtColor;
+		if (engineSettings.Allow_Shadows) {
+			ctx.shadowColor = this.containerStyle.visTxtShadow.color;
+			ctx.shadowBlur = this.containerStyle.visTxtShadow.blur;
+			ctx.shadowOffsetX = this.containerStyle.visTxtShadow.offset.x;
+			ctx.shadowOffsetY = this.containerStyle.visTxtShadow.offset.y;
+		} else {
+			ctx.shadowColor = NO_SHADOW.color;
+			ctx.shadowBlur = NO_SHADOW.blur;
+			ctx.shadowOffsetX = NO_SHADOW.offset.x;
+			ctx.shadowOffsetY = NO_SHADOW.offset.y;
+		}
+		for (let i=1,length=this.objs.length;i<=length;i++) {
+			ctx.fillText(getItemName(this.objs[i-1].item), this.base.position.x-this.base.size.div(2).x+5, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2));
+		}
+		//Vis bttn
+		let visBttnSize = new Vector2(170, this.containerStyle.visSize);
+		ctx.shadowColor = NO_SHADOW.color;
+		ctx.shadowBlur = NO_SHADOW.blur;
+		ctx.shadowOffsetX = NO_SHADOW.offset.x;
+		ctx.shadowOffsetY = NO_SHADOW.offset.y;
+		for (let i=1,length=this.objs.length;i<=length;i++) {
+			let visBttnPos = new Vector2((this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y));
+			if (recCollision({"base":{"position":Cursor.cursor.base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)), "size":visBttnSize}}) && recCollision(Cursor.cursor, this)) {
+				ctx.fillStyle = this.containerStyle.visBttnColor.y;
+				if (mousePressed[0]) {
+					this.objs[i-1].pickUp();
+					mousePressed[0] = false;
+				}
+			} else {
+				ctx.fillStyle = this.containerStyle.visBttnColor.x;
 			}
-			if (this.objs.length < 14) {
-				this.overLimit = false;
-			}
+			ctx.fillRect(visBttnPos.x, visBttnPos.y, visBttnSize.x, visBttnSize.y);
+		}
+		//Vis bttn txt
+		ctx.textAlign = "left";
+		ctx.textBaseline = "middle";
+		ctx.font = this.containerStyle.visTxtFont;
+		ctx.fillStyle = this.containerStyle.visTxtColor;
+		if (engineSettings.Allow_Shadows) {
+			ctx.shadowColor = this.containerStyle.visTxtShadow.color;
+			ctx.shadowBlur = this.containerStyle.visTxtShadow.blur;
+			ctx.shadowOffsetX = this.containerStyle.visTxtShadow.offset.x;
+			ctx.shadowOffsetY = this.containerStyle.visTxtShadow.offset.y;
+		} else {
+			ctx.shadowColor = NO_SHADOW.color;
+			ctx.shadowBlur = NO_SHADOW.blur;
+			ctx.shadowOffsetX = NO_SHADOW.offset.x;
+			ctx.shadowOffsetY = NO_SHADOW.offset.y;
+		}
+		for (let i=1,length=this.objs.length;i<=length;i++) {
+			ctx.fillText("Pick up", (this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2));
 		}
 		ctx.restore();
-		if (this.oldObjs.length != this.objs.length) {
-			deleteByNameTag(new nameTag("", "vis"), 2, true);
-			this.loaded = false;
-			this.oldObjs = [...this.objs];
-		}
 	}
 	if (this.base.autoAdd && this.layerNumber >= 1 && this.layerNumber <= 8) {
 		layer[this.layerNumber].push(this);
@@ -184,34 +238,48 @@ function pickUpMenu() {
 		if (!this.isShowing) {
 			const compList = this.componentTable;
 			//Window setup
-			compList.Background = new Rectangle(8, new baseObject(true, new nameTag("Background", this.tag), this.size.duplicate(), this.pos.dup(), new colorData("grey", 0.75), new Shadow(new Vector2(5, 5), "black", 10)));
-			compList.MenuTitle = new Text(8, "Ground Items", new baseObject(true, new nameTag("MenuTitle", this.tag), new Vector2("25px Arial", false, "center"), new Vector2(0, (this.size.y/2)-15), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 10)));
+			compList.Background = new Rectangle(8, new baseObject(true, new nameTag("Background", this.tag), this.size.duplicate(), this.pos.dup(), new colorData("grey", 0.6), new Shadow(new Vector2(5, 5), "black", 10)));
+			compList.MenuTitle = new Text(8, "Ground Items", new baseObject(true, new nameTag("MenuTitle", this.tag), new Vector2("25px Arial", false, "center"), new Vector2(0, (this.size.y/2)-15), new colorData("white", 0), new Shadow(new Vector2(5, 5), "black", 10)));
 			compList.MenuTitle.base.overridePositionUpdateFunction = true;
+			compList.MenuTitle.base.loaded = false;
 			compList.MenuTitle.base.updatePosition = () => {
-				let thisBase = getByNameTag(new nameTag("Background", this.tag));
-				if (isPaused && thisBase != null) {
-					compList.MenuTitle.base.position = thisBase.base.position.subV(compList.MenuTitle.base.startPosition);
+				if (isPaused) {
+					compList.MenuTitle.base.position = compList.Background.base.position.subV(compList.MenuTitle.base.startPosition);
+					compList.MenuTitle.base.loaded = true;
+				}
+				if (compList.MenuTitle.base.loaded) {
+					compList.MenuTitle.base.color.alpha = 0.6;
 				}
 			}
-			compList.CloseBttn = new Sprite(8, new baseObject(true, new nameTag("CloseBttn", this.tag), new Vector2(20, 20), new Vector2(-((this.size.x/2)-12.5), (this.size.y/2)-12.5), Close_UI.getColor(0.75), new Shadow(new Vector2(5, 5), "black", 10)));
+			compList.MenuTitle.base.updatePosition();
+			compList.CloseBttn = new Sprite(8, new baseObject(true, new nameTag("CloseBttn", this.tag), new Vector2(20, 20), new Vector2(-((this.size.x/2)-12.5), (this.size.y/2)-12.5), Close_UI.getColor(0), new Shadow(new Vector2(5, 5), "black", 10)));
 			compList.CloseBttn.base.overridePositionUpdateFunction = true;
+			compList.CloseBttn.base.loaded = false;
 			compList.CloseBttn.base.updatePosition = () => {
-				let thisBase = getByNameTag(new nameTag("Background", this.tag));
-				if (isPaused && thisBase != null) {
-					compList.CloseBttn.base.position = thisBase.base.position.subV(compList.CloseBttn.base.startPosition);
+				if (isPaused) {
+					compList.CloseBttn.base.position = compList.Background.base.position.subV(compList.CloseBttn.base.startPosition);
+					compList.CloseBttn.base.loaded = true;
+				}
+				if (compList.CloseBttn.base.loaded) {
+					compList.CloseBttn.base.color.alpha = 0.6;
 				}
 			}
+			compList.CloseBttn.base.updatePosition();
 			compList.CloseBttnLink = new buttonLink(compList.CloseBttn, null, recCollision, () => {
 				this.hide();
 				mousePressed[0] = false;
 			}, new Vector2(Close_UI.getColor(0.75), Close_UI_Hover.getColor(0.75)));
 			compList.CloseBttnLink.link();
-			compList.ItemContainer = new Container(8, new baseObject(true, new nameTag("ItemContainer", this.tag), new Vector2(this.size.x, this.size.y-25), new Vector2(0, -12.5), new colorData("lightgrey", 0.25)), [""], "darkgrey");
+			compList.ItemContainer = new Container(8, new baseObject(true, new nameTag("ItemContainer", this.tag), new Vector2(this.size.x, this.size.y-25), new Vector2(0, -12.5), new colorData("lightgrey", 0)), []);
 			compList.ItemContainer.base.overridePositionUpdateFunction = true;
+			compList.ItemContainer.base.loaded = false;
 			compList.ItemContainer.base.updatePosition = () => {
-				let thisBase = getByNameTag(new nameTag("Background", this.tag));
-				if (isPaused && thisBase != null) {
-					compList.ItemContainer.base.position = thisBase.base.position.subV(compList.ItemContainer.base.startPosition);
+				if (isPaused) {
+					compList.ItemContainer.base.position = compList.Background.base.position.subV(compList.ItemContainer.base.startPosition);
+					compList.ItemContainer.base.loaded = true;
+				}
+				if (compList.ItemContainer.base.loaded) {
+					compList.ItemContainer.base.color.alpha = 0.5;
 				}
 			}
 			this.isShowing = true;
@@ -251,6 +319,7 @@ function pickUpMenu() {
 				//Reset counter
 				count = 1;
 			}
+			this.componentTable.ItemContainer.objs = items;
 		}
 	}
 	addUpdate(update, "pickUpMenu");
@@ -336,6 +405,19 @@ const itemTable = [
 	new weaponItem(0, new baseItem(101, 1, new Vector2(32, 32), bullet_1_Img.getColor())),
 ];
 
+const getItemName = (item) => {
+	let result = null;
+	switch (item.mainType) {
+		case "items":
+			result = item.type;
+		break;
+		case "weapons":
+			result = weaponTable[item.weaponId].name;
+		break;
+	}
+	return result;
+}
+
 //Gets all item types
 const getItemTypes = () => {
 	let result = [];
@@ -416,7 +498,6 @@ const lootGen = (rarietyRange=new Vector2(1, 10)) => {
 	const randType = types[rangeInt(0, types.length-1)];
 	const items = getItemsByType(randType);
 	const itemRarietyPool = items.filter((i) => i.base.rariety >= rarietyRange.x && i.base.rariety <= rarietyRange.y);
-	console.log(itemRarietyPool);
 	return itemRarietyPool[rangeInt(0, itemRarietyPool.length-1)];
 }
 
