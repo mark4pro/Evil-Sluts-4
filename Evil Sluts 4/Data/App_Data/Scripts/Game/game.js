@@ -503,7 +503,10 @@ const lootGen = (rarietyRange=new Vector2(1, 10)) => {
 
 //Spawns an item
 const spawnItem = (id=0, dropPos=ZERO) => {
-	let thisItem = getItemById(id);
+	let thisItem = id;
+	if (typeof id == "number") {
+		thisItem = getItemById(id);
+	}
 	if (thisItem != undefined) {
 		let dup = thisItem.duplicate();
 		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
@@ -538,15 +541,7 @@ const dropItem = (itemType="items", index=0) => {
 	let inventoryItem = inventory[itemType][index];
 	if (inventoryItem != undefined) {
 		let dup = inventoryItem.duplicate();
-		switch (currentPlayer.playerDir) {
-			case -1:
-				pos = currentPlayer.playerOBJ.base.position.addV(new Vector2(-30, 80));
-			break;
-			case 1:
-				pos = currentPlayer.playerOBJ.base.position.addV(new Vector2(30, 80));
-			break;
-		}
-		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, pos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, currentPlayer.playerItemDropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
 		droppedItem.base.overridePositionUpdateFunction = true;
 		droppedItem.base.updatePosition = () => {
 			if (!isPaused && currentMap() != null) {
@@ -594,7 +589,7 @@ function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1
 }
 
 const weaponTable = {
-	0:new weapon("test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
+	0:new weapon("Test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
 }
 
 const currentPlayer = new player(100, new Vector2(3, 7), new Vector2(100, 0.5, 0.1), 10, [getItemsByType("weapon")[0]], new Vector2(100, 100));
@@ -617,6 +612,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	this.currentWeaponData = null;
 	this.playerOBJ = null;
 	this.playerDir = -1;
+	this.playerItemDropPos = new Vector2();
 	this.bulletSpawn = new Vector2();
 	this.playerSpeed = new Vector2(playerSpeed.x, playerSpeed.y); //x- normal speed, y- running speed
 	this.run = false;
@@ -737,6 +733,8 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 				this.stamina.x = clamp(this.stamina.x, 0, this.stamina.y);
 				if(this.currentWeaponData != null){ 
 					this.weaponNameTxt.text = "Weapon Name: "+this.currentWeaponData.name;
+				} else {
+					this.weaponNameTxt.text = "Weapon Name: None";
 				}
 				this.ammoCountTxt.text = "Ammo: "+this.ammo.x;
 				if (getDroppedItems() != null) {
@@ -767,6 +765,14 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 				}
 				if (this.playerOBJ != null) {
 					this.playerOBJ.scale.x = this.playerDir;
+					switch (this.playerDir) {
+						case -1:
+							this.playerItemDropPos = this.playerOBJ.base.position.addV(new Vector2(-30, 80));
+						break;
+						case 1:
+							this.playerItemDropPos = this.playerOBJ.base.position.addV(new Vector2(30, 80));
+						break;
+					}
 				}
 				switch (this.playerDir) {
 					case -1:
