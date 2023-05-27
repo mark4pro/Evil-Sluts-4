@@ -15,7 +15,7 @@ const itemPath = "Items/";
 //Player
 let player_Img = new imageData("player", imagePath+"player_1.png", new Vector2(64, 128));
 //Weapons
-let bullet_1_Img = new imageData("tear", imagePath+weaponPath+"tear.png", new Vector2(59, 91));
+let bullet_1_Img = new imageData("heart", imagePath+weaponPath+"Heart.png", new Vector2(59, 91));
 //Items
 let bath_salts_Img = new imageData("bath_salts", imagePath+itemPath+"bath_salts.png", new Vector2(32, 32));
 let cocaine_Img = new imageData("cocaine", imagePath+itemPath+"cocaine.png", new Vector2(32, 32));
@@ -387,6 +387,8 @@ function weaponItem(weaponId=0, base=new baseItems()) {
 	}
 }
 
+const globalExcludedDrops = [];
+
 const itemTable = [
 	//Items
 	new drugsItem("heroin", new baseItem(0, 1, new Vector2(32, 32), heroin_Img.getColor())),
@@ -419,13 +421,15 @@ const getItemName = (item) => {
 }
 
 //Gets all item types
-const getItemTypes = () => {
+const getItemTypes = (exclude=[]) => {
 	let result = [];
 	let done = false;
 	itemTable.forEach((t, i) => {
-		let resultIncludes = result.some((r) => r == t.itemType);
-		if (!resultIncludes) {
-			result.push(t.itemType);
+		if (!exclude.every((e) => e == t.itemType) || exclude.length == 0) {
+			let resultIncludes = result.some((r) => r == t.itemType);
+			if (!resultIncludes) {
+				result.push(t.itemType);
+			}
 		}
 		if (i >= itemTable.length-1) {
 			done = true;
@@ -441,7 +445,7 @@ const getItemById = (id=0) => {
 	return itemTable.filter((i) => i.base.id == id)[0];
 }
 
-const getItemsByType = (type="", mode=0) => {
+const getItemsByType = (type="", mode=0, excluded=[]) => {
 	if (mode < 0) {
 		mode = 0;
 	}
@@ -450,16 +454,24 @@ const getItemsByType = (type="", mode=0) => {
 	}
 	switch (mode) {
 	case 0:
-		return itemTable.filter((i) => type.includes(i.itemType));
+		if (excluded.length != 0) {
+			return itemTable.filter((i) => (type.includes(i.itemType) && !excluded.every((e) => getItemName(i) == e)));
+		} else {
+			return itemTable.filter((i) => type.includes(i.itemType));
+		}
 	break;
 	case 1:
-		return itemTable.filter((i) => !type.includes(i.itemType));
+		if (excluded.length != 0) {
+			return itemTable.filter((i) => (!type.includes(i.itemType) && !excluded.every((e) => getItemName(i) == e)));
+		} else {
+			return itemTable.filter((i) => !type.includes(i.itemType));
+		}
 	break;
 	}
 }
 
 //Random loot by type
-const getRandomByType = (type="", rarietyRange=new Vector2(1, 10)) => {
+const getRandomByType = (type="", rarietyRange=new Vector2(1, 10), nameExclude=[]) => {
 	if (rarietyRange.x < 1) {
 		rarietyRange.x = 0;
 	}
@@ -472,7 +484,7 @@ const getRandomByType = (type="", rarietyRange=new Vector2(1, 10)) => {
 	if (rarietyRange.y < rarietyRange.x) {
 		rarietyRange.y = rarietyRange.x;
 	}
-	const typeArray = itemTable.filter((i) => i.itemType == type && i.base.rariety >= rarietyRange.x && i.base.rariety <= rarietyRange.y);
+	const typeArray = getItemsByType(type, 0, globalExcludedDrops.concat(nameExclude)).filter((i) => i.base.rariety >= rarietyRange.x && i.base.rariety <= rarietyRange.y);
 	if (typeArray.length != 0) {
 		return typeArray[rangeInt(0, typeArray.length-1)];
 	} else {
@@ -481,7 +493,7 @@ const getRandomByType = (type="", rarietyRange=new Vector2(1, 10)) => {
 }
 
 //Random loot
-const lootGen = (rarietyRange=new Vector2(1, 10)) => {
+const lootGen = (rarietyRange=new Vector2(1, 10), typeExclude=[], nameExclude=[]) => {
 	if (rarietyRange.x < 1) {
 		rarietyRange.x = 0;
 	}
@@ -494,11 +506,47 @@ const lootGen = (rarietyRange=new Vector2(1, 10)) => {
 	if (rarietyRange.y < rarietyRange.x) {
 		rarietyRange.y = rarietyRange.x;
 	}
-	const types = getItemTypes();
+	const types = getItemTypes(typeExclude);
 	const randType = types[rangeInt(0, types.length-1)];
-	const items = getItemsByType(randType);
+	const items = getItemsByType(randType, 0, globalExcludedDrops.concat(nameExclude));
 	const itemRarietyPool = items.filter((i) => i.base.rariety >= rarietyRange.x && i.base.rariety <= rarietyRange.y);
 	return itemRarietyPool[rangeInt(0, itemRarietyPool.length-1)];
+}
+
+const getLootTable = (amountRange=new Vector2(1, 10), rarietyRange=new Vector2(1, 10), typeExclude=[], nameExclude=[]) => {
+	if (amountRange.x < 1) {
+		amountRange.x = 0;
+	}
+	if (amountRange.x > amountRange.y) {
+		amountRange.x = amountRange.y;
+	}
+	if (amountRange.y < amountRange.x) {
+		amountRange.y = amountRange.x;
+	}
+	if (rarietyRange.x < 1) {
+		rarietyRange.x = 0;
+	}
+	if (rarietyRange.x > rarietyRange.y) {
+		rarietyRange.x = rarietyRange.y;
+	}
+	if (rarietyRange.y > 10) {
+		rarietyRange.y = 10;
+	}
+	if (rarietyRange.y < rarietyRange.x) {
+		rarietyRange.y = rarietyRange.x;
+	}
+	const lootTable = [];
+	let done = false;
+	for (let i=0,length=rangeInt(amountRange.x, amountRange.y);i<length;i++) {
+		let thisLoot = lootGen(rarietyRange, typeExclude, nameExclude);
+		lootTable.push(thisLoot);
+		if (i == length-1) {
+			done = true;
+		}
+	}
+	if (done) {
+		return lootTable;
+	}
 }
 
 //Spawns an item
@@ -508,18 +556,36 @@ const spawnItem = (id=0, dropPos=ZERO) => {
 		thisItem = getItemById(id);
 	}
 	if (thisItem != undefined) {
-		let dup = thisItem.duplicate();
-		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
-		droppedItem.base.overridePositionUpdateFunction = true;
-		droppedItem.base.updatePosition = () => {
-			if (!isPaused && currentMap() != null) {
-				droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
+		if (!Array.isArray(id)) {
+			let dup = thisItem.duplicate();
+			let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+			droppedItem.base.overridePositionUpdateFunction = true;
+			droppedItem.base.updatePosition = () => {
+				if (!isPaused && currentMap() != null) {
+					droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
+				}
 			}
-		}
-		droppedItem.item = thisItem.duplicate();
-		droppedItem.pickUp = () => {
-			addToInventory(droppedItem.item);
-			droppedItem.base.marked = true;
+			droppedItem.item = dup;
+			droppedItem.pickUp = () => {
+				addToInventory(droppedItem.item);
+				droppedItem.base.marked = true;
+			}
+		} else {
+			for (let i=0,length=id.length;i<length;i++) {
+				let dup = thisItem[i].duplicate();
+				let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+				droppedItem.base.overridePositionUpdateFunction = true;
+				droppedItem.base.updatePosition = () => {
+					if (!isPaused && currentMap() != null) {
+						droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
+					}
+				}
+				droppedItem.item = dup;
+				droppedItem.pickUp = () => {
+					addToInventory(droppedItem.item);
+					droppedItem.base.marked = true;
+				}
+			}
 		}
 	}
 }
@@ -858,7 +924,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 }
 
 //Add enemy spawn array / randomly get from array
-function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=10, speed=new Vector2(4, 5, 6, 7, 0.25), stopDistance=200, damage=new Vector2(6, 8), lootAmount=2, drugAmount=new Vector2(1, 1), dropRariety=new Vector2(1, 3)) {
+function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=10, speed=new Vector2(4, 5, 6, 7, 0.25), stopDistance=200, damage=new Vector2(6, 8), confirmedDrop=null, lootAmount=new Vector2(1, 4), drugAmount=new Vector2(1, 1), dropRariety=new Vector2(1, 3), dropTypeExclude=[], dropNameExclude=[]) {
 	this.enemyName = enemyName;
 	this.enemySize = enemySize;
 	this.enemyPositions = enemyPositions; //can be an array of positions
@@ -871,9 +937,12 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 	this.speed = speed; //x- min normal speed, y- max normal speed, r- min agro speed, o- max agro speed, s- health agro percent
 	this.stopDistance = stopDistance;
 	this.damage = damage; //x- min damage, y- max damage
+	this.confirmedDrop = confirmedDrop; //drops this item when killed
 	this.lootAmount = lootAmount;
 	this.drugAmount = drugAmount; //x- min drugs, y- max drugs
 	this.dropRariety = dropRariety; //x- min rariety, y- max rariety
+	this.dropTypeExclude = dropTypeExclude; //array of item types to exclude from the loot table
+	this.dropNameExclude = dropNameExclude; //array of item names to exclude from the loot table
 	
 	this.enemies = [];
 	this.time = 0;
@@ -991,14 +1060,18 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 							thisEnemy.damage(thisBullet.damage);
 							//drops
 							if (thisEnemy.health <= 0) {
-								for (let i=0;i<this.lootAmount;i++) {
+								if (this.confirmedDrop != null) {
 									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
-									spawnItem(lootGen(this.dropRariety).base.id, dropPos);
+									spawnItem(this.confirmedDrop, dropPos);
+								}
+								for (let i=0,length=rangeInt(this.lootAmount.x, this.lootAmount.y);i<length;i++) {
+									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
+									spawnItem(getLootTable(this.lootAmount, this.dropRariety, this.dropTypeExclude, this.dropNameExclude), dropPos);
 								}
 								let dropDrugAmount = rangeInt(this.drugAmount.x, this.drugAmount.y);
 								for (let i=0;i<dropDrugAmount;i++) {
 									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
-									spawnItem(getRandomByType("drug", this.dropRariety).base.id, dropPos);
+									spawnItem(getRandomByType("drug", this.dropRariety, this.dropNameExclude), dropPos);
 								}
 							}
 							thisBullet.base.destroy();
