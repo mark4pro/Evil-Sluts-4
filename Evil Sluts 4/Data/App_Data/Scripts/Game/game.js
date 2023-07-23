@@ -1089,35 +1089,31 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 const death_screen =new deathScreen();
 
 function deathScreen (){
-	let thisNameTag =tag("deathScreen");
-	let deadButtonLink =new buttonLink(null, null, recCollision, ()=>{console.log("test")}, null, null, new Vector2("rgba(1, 1, 1, 0.5)", "rgba(1, 1, 1, 1)"), null);
-	this.isShowing =getByNameTag(thisNameTag, 2, false, true) !=null;
-	this.show =() =>{
-		if (!this.isShowing && currentPlayer.dead){
-			let background =new Rectangle(8, new baseObject(true, new nameTag("background", "deathScreen"), screen.resolution, screen.halfResolution, new colorData("black")));
-			let deathText =new Text(8, "dead", new baseObject(true, new nameTag("deadtxt", "deathScreen"), new Vector2("30px Arial"), new Vector2(screen.halfResolution.x, 20), new  colorData("green")));
-			let deadButton =new Rectangle(8, new baseObject(true, new nameTag("daedButton", "deathScreen"), new Vector2(200, 50), screen.halfResolution, new colorData("grey"), new Shadow(new Vector2(5, 5), "rgba(1, 1, 1, 0.5)", 5)));
-			let deadButtonTxt =new Text(8, "RESPAWN", new baseObject(true, new nameTag("deadButtontxt", "deathScreen"), new Vector2("30px Arial"), screen.halfResolution, new  colorData("green")));
-			deadButtonLink.object =deadButton;
-			deadButtonLink.textObj =deadButtonTxt;
+	let thisNameTag = tag("deathScreen");
+	let deadButtonLink = new buttonLink(null, null, recCollision, () => {console.log("test")}, null, null, new Vector2("rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 1)"), null);
+	this.isShowing = getByNameTag(thisNameTag, 2, false, true) != null;
+	this.show = () => {
+		if (!this.isShowing && currentPlayer.dead) {
+			let background = new Rectangle(8, new baseObject(true, new nameTag("background", "deathScreen"), screen.resolution, screen.halfResolution, new colorData("black")));
+			let deathText = new Text(8, "You are dead...", new baseObject(true, new nameTag("deathtxt", "deathScreen"), new Vector2("80px Arial"), new Vector2(screen.halfResolution.x, 50), new  colorData("red")));
+			let deadButton = new Rectangle(8, new baseObject(true, new nameTag("deathButton", "deathScreen"), new Vector2(200, 50), screen.halfResolution, new colorData("grey", 1), new Shadow(new Vector2(5, 5), "rgba(255, 255, 255, 0.2)", 5)));
+			let deadButtonTxt = new Text(8, "RESPAWN", new baseObject(true, new nameTag("deathButtontxt", "deathScreen"), new Vector2("30px Arial"), screen.halfResolution, new colorData("white")));
+			deadButtonLink.object = deadButton;
+			deadButtonLink.textObj = deadButtonTxt;
 			deadButtonLink.link();
 		}
 	}
-	this.hide =() =>{
-		if (this.isShowing && !currentPlayer.dead){
+	this.hide = () => {
+		if (this.isShowing && !currentPlayer.dead) {
 			deadButtonLink.unlink();
 			deleteByNameTag(thisNameTag, 2, true);
-			
 		}
 	}
 	const update =() =>{
-		
-			this.isShowing =getByNameTag(thisNameTag, 2, false, true) !=null;
-				if (this.isShowing){
+		this.isShowing = getByNameTag(thisNameTag, 2, false, true) != null;
+		if (this.isShowing) {
 			deadButtonLink.update();
-			
-			
-					}
+		}
 		this.show();
 		this.hide();
 	}
