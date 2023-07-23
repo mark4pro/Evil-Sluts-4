@@ -718,6 +718,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	}
 	
 	this.load = function(pos=null) {
+		this.unload();
 		if (pos != null) {
 			this.pos = pos;
 		}
@@ -1090,7 +1091,6 @@ const death_screen =new deathScreen();
 
 function deathScreen (){
 	let thisNameTag = tag("deathScreen");
-	let deadButtonLink = new buttonLink(null, null, recCollision, () => {console.log("test")}, null, null, new Vector2("rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 1)"), null);
 	this.isShowing = getByNameTag(thisNameTag, 2, false, true) != null;
 	this.show = () => {
 		if (!this.isShowing && currentPlayer.dead) {
@@ -1104,18 +1104,19 @@ function deathScreen (){
 		}
 	}
 	this.hide = () => {
-		if (this.isShowing && !currentPlayer.dead) {
+		if (this.isShowing && currentPlayer.dead) {
 			deadButtonLink.unlink();
 			deleteByNameTag(thisNameTag, 2, true);
+			currentPlayer.respawn();
 		}
 	}
+	let deadButtonLink = new buttonLink(null, null, recCollision, this.hide, null, null, new Vector2("rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 1)"), null);
 	const update =() =>{
 		this.isShowing = getByNameTag(thisNameTag, 2, false, true) != null;
 		if (this.isShowing) {
 			deadButtonLink.update();
 		}
 		this.show();
-		this.hide();
 	}
 	addUpdate(update, "death_screen");
 }
