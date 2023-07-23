@@ -393,6 +393,27 @@ function Vector2(x=0, y=0, r=0, o=0, s=0) {
 	this.rotateVector2 = function(vector2, rotation) {
 		return new Vector2(Math.cos(rotation)*(vector2.x-this.x)-Math.sin(rotation)*(vector2.y-this.y)+this.x, Math.sin(rotation)*(vector2.x-this.x)+Math.cos(rotation)*(vector2.y-this.y)+this.y);
 	}
+	//Clamp x and or y values
+	//min = number or vector2
+	//max = number or vector2
+	//opt = both, x, y
+	this.clamp = function(min, max, opt="both") {
+		switch (opt) {
+			case "x":
+			case "X":
+				this.x = clamp(this.x, min, max);
+			break;
+			case "y":
+			case "Y":
+				this.y = clamp(this.y, min, max);
+			break;
+			case "both":
+			case "Both":
+				this.x = clamp(this.x, min, max);
+				this.y = clamp(this.y, min, max);
+			break;
+		}
+	}
 }
 
 //Fills a vector2's x and y values with a single number
@@ -736,6 +757,7 @@ function colorData(color="white", alpha=1, comp=0) {
 	this.color = color;
 	this.alpha = alpha;
 	this.compMode = comp;
+	this.imageData = imageData;
 	this.mode = {
 		0:"source-over",
 		1:"source-in",
@@ -865,8 +887,15 @@ function imageData(id="", src="", size=new Vector2()) {
 	this.getSrc = function() {
 		return data.src;
 	}
+	this.setSrc = function(src="") {
+		data.src = src;
+	}
 	this.getSize = function() {
 		return new Vector2(data.width, data.height);
+	}
+	this.setSize = function(size=new Vector2()) {
+		data.width = size.x;
+		data.height = size.y;
 	}
 }
 
@@ -1143,22 +1172,26 @@ function spriteMind(clipPos=new Vector2(), clipSize=null) {
 }
 
 //Sprite animator
-function spriteAnimator(image=null, size=ZERO, speed=1, loop=false) {
+function spriteAnimator(image=null, size=ZERO, speed=1, loop=false, autoPlay=true) {
 	this.image = image;
 	this.size = size;
 	this.speed = speed;
 	this.loop = loop;
 	this.object = null;
-	this.play = true;
+	this.play = autoPlay;
+	this.autoPlay = autoPlay;
 	let pos = new Vector2(1,1);
 	let time = 0;
 	this.setObject = function(object=null) {
 		this.object = object;
 	}
-	this.play = function() {
+	this.play = () => {
 		this.play = true;
 	}
-	this.update = function() {
+	this.pause = () => {
+		this.play = false;
+	}
+	this.update = () => {
 		if (this.play && this.image != null && this.object != null) {
 			let frameSize = this.image.getSize().divV(this.size);
 			let framePos = pos.multiV(frameSize);
@@ -1173,7 +1206,7 @@ function spriteAnimator(image=null, size=ZERO, speed=1, loop=false) {
 					pos.x = 0;
 					pos.y = 0;
 					if (!this.loop) {
-						this.play = false;
+						this.pause();
 					}
 				}
 				time = 0;
@@ -1187,7 +1220,73 @@ function spriteAnimator(image=null, size=ZERO, speed=1, loop=false) {
 		}
 	}
 	this.duplicate = function() {
-		return new spriteAnimator(this.image, this.size.duplicate(), this.speed, this.loop);
+		return new spriteAnimator(this.image, this.size.duplicate(), this.speed, this.loop, this.autoPlay);
+	}
+	this.dup = this.duplicate;
+}
+
+//Frame data for multi image animator
+function frameData(frameNumber=1, size=new Vector2(), scale=new Vector2(1, 1)) {
+	if (frameNumber < 1) {
+		frameNumber = 1;
+	}
+	this.frameNumber = frameNumber;
+	this.size = size;
+	this.scale = scale;
+}
+
+//Multi Image animator
+function multiImgAnimator(frameDataArray=[], imageNameBase="", imageType="png", animLength=0, speed=1, loop=false, autoPlay=true, path=imagePath) {
+	this.frameDataArray = frameDataArray;
+	this.imageNameBase = imageNameBase;
+	this.imageType = imageType;
+	this.animLength = animLength;
+	this.speed = speed;
+	this.loop = loop;
+	this.play = autoPlay;
+	this.autoPlay = autoPlay;
+	this.path = path;
+	let index = 1;
+	let time = 0;
+	this.setObject = function(object=null) {
+		this.object = object;
+	}
+	this.play = () => {
+		this.play = true;
+	}
+	this.pause = () => {
+		this.play = false;
+	}
+	this.update = () => {
+		if (this.play && this.object != null) {
+			index = clamp(index, 1, this.animLength);
+			time += this.speed*delta;
+			if (time >= 100) {
+				index++;
+				if (index > this.animLength) {
+					index = 1;
+					if (!this.loop) {
+						this.pause();
+					}
+				}
+				time = 0;
+			}
+			if (index <= this.animLength) {
+				const img = document.getElementById(this.object.base.color.color);
+				img.src = this.path+imageNameBase+frameDataArray[index-1].frameNumber+"."+this.imageType;
+				img.width = frameDataArray[index-1].size.x;
+				img.height = frameDataArray[index-1].size.y;
+				this.object.dSize = frameDataArray[index-1].size;
+				this.object.scale = frameDataArray[index-1].scale;
+			}
+		}
+		if (!this.play) {
+			index = 1;
+			time = 0;
+		}
+	}
+	this.duplicate = function() {
+		return new multiImgAnimator(this.frameDataArray, this.imageNameBase, this.animLength, this.speed, this.loop, this.autoPlay, this.path);
 	}
 	this.dup = this.duplicate;
 }
