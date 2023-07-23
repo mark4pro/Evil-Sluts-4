@@ -1087,7 +1087,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 
 
 //Death screen ya bitch
-const death_screen =new deathScreen();
+const death_screen = new deathScreen();
 
 function deathScreen (){
 	let thisNameTag = tag("deathScreen");
