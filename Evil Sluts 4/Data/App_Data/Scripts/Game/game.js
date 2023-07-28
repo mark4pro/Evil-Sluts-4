@@ -1173,6 +1173,9 @@ const mainUpdate = () => {
 };
 addUpdate(mainUpdate, "mainUpdate"); 
 
+//rayCasting
+
+
 //Controls
 let moveUpBttn = new key(
 	"Up",
@@ -1259,3 +1262,22 @@ let runBttn = new key(
 	false
 );
 
+let playerMovement = new controllerAxesBinding(1, (e)=>{
+	if (currentPlayer.loaded ){
+		if (!isPaused){
+		if(!e.r &&  !currentPlayer.dead){
+			currentPlayer.controller.moveDir.x = e.x;
+			currentPlayer.controller.moveDir.y = e.y;
+			
+		}
+		if (e.r || currentPlayer.dead){
+			currentPlayer.controller.moveDir.x = 0;
+			currentPlayer.controller.moveDir.y = 0;
+		}
+		}else{
+			currentPlayer.controller.moveDir.x = 0;
+			currentPlayer.controller.moveDir.y = 0;
+			
+		}
+	}
+}, "playerMovement", 0);
