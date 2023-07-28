@@ -2522,7 +2522,7 @@ function controllerMG() {
 	this.config = {};
 	
 	this.assignControllers = () => {
-		for (let i=1;i<this.players;i++) {
+		for (let i=1;i<=this.players;i++) {
 			if (this.config[i] != undefined) {
 				if (this.config[i].controllerId == undefined) {
 					this.config[i].controllerId = i-1;
@@ -2555,7 +2555,7 @@ function controllerMG() {
 			if (keybinder.controllerDiv.style.display != "block") {
 				keybinder.controllerDiv.style.display = "block";
 			}
-			for (let i=1;i<this.players;i++) {
+			for (let i=1;i<=this.players;i++) {
 				if (this.config[i] != undefined) {
 					let playerControls = this.config[i];
 					if (playerControls.axes != undefined) {

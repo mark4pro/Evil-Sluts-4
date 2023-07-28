@@ -1266,12 +1266,29 @@ let runBttn = new key(
 let playerMovement = new controllerAxesBinding(1, (e)=>{
 	if (currentPlayer.loaded){
 		if (!isPaused){
-			if(!e.r && !currentPlayer.dead){
-				currentPlayer.controller.moveDir.x = e.x;
-				currentPlayer.controller.moveDir.y = e.y;
-				
+			if(!e.r && !currentPlayer.dead) {
+				if (e.x != 0) {
+					if (e.x < 0) {
+						currentPlayer.controller.moveDir.x = Math.floor(e.x);
+					}
+					if (e.x > 0) {
+						currentPlayer.controller.moveDir.x = Math.ceil(e.x);
+					}
+				} else {
+					currentPlayer.controller.moveDir.x = 0;
+				}
+				if (e.y != 0) {
+					if (e.y < 0) {
+						currentPlayer.controller.moveDir.y = Math.floor(e.y);
+					}
+					if (e.y > 0) {
+						currentPlayer.controller.moveDir.y = Math.ceil(e.y);
+					}
+				} else {
+					currentPlayer.controller.moveDir.y = 0;
+				}
 			}
-			if (e.r || currentPlayer.dead){
+			if (e.r || currentPlayer.dead) {
 				currentPlayer.controller.moveDir.x = 0;
 				currentPlayer.controller.moveDir.y = 0;
 			}
