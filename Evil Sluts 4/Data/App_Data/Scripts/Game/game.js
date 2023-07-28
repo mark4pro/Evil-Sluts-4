@@ -6,6 +6,7 @@ engineSettings.Settings_Menu.Image_Smoothing = false;
 engineSettings.Settings_Menu.Show_Debug_Cursor = false;
 engineSettings.Addons = ["mapRenderer"];
 loadAddons();
+controllerManager.players = 1;
 
 //Custom paths
 const weaponPath = "Weapons/";
@@ -1281,3 +1282,4 @@ let playerMovement = new controllerAxesBinding(1, (e)=>{
 		}
 	}
 }, "playerMovement", 0);
+
