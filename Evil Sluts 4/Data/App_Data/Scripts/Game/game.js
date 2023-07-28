@@ -1264,21 +1264,20 @@ let runBttn = new key(
 );
 
 let playerMovement = new controllerAxesBinding(1, (e)=>{
-	if (currentPlayer.loaded ){
+	if (currentPlayer.loaded){
 		if (!isPaused){
-		if(!e.r &&  !currentPlayer.dead){
-			currentPlayer.controller.moveDir.x = e.x;
-			currentPlayer.controller.moveDir.y = e.y;
-			
-		}
-		if (e.r || currentPlayer.dead){
+			if(!e.r && !currentPlayer.dead){
+				currentPlayer.controller.moveDir.x = e.x;
+				currentPlayer.controller.moveDir.y = e.y;
+				
+			}
+			if (e.r || currentPlayer.dead){
+				currentPlayer.controller.moveDir.x = 0;
+				currentPlayer.controller.moveDir.y = 0;
+			}
+		} else {
 			currentPlayer.controller.moveDir.x = 0;
 			currentPlayer.controller.moveDir.y = 0;
-		}
-		}else{
-			currentPlayer.controller.moveDir.x = 0;
-			currentPlayer.controller.moveDir.y = 0;
-			
 		}
 	}
 }, "playerMovement", 0);
