@@ -2626,6 +2626,11 @@ function keyBinder() {
 	this.controllerDiv = null;
 	this.menuSize = new Vector2(800, 600);
 	this.menuScale = 1;
+	this.currentPlayerIndex = 1;
+	this.currentPlayerConfig = controllerManager.config[this.currentPlayerIndex];
+	if (this.currentPlayerConfig != undefined) {
+		this.playerControllerId = this.currentPlayerConfig.controllerId;
+	}
 	this.show = function() {
 		if (this.menu != null) {
 			this.menu.style.display = "block";
@@ -2705,9 +2710,154 @@ function keyBinder() {
 		this.controllerDiv.style.marginTop = "0px";
 		this.controllerDiv.style.marginBottom = "1px";
 		this.controllerDiv.style.width = "100%";
-		this.controllerDiv.style.height = "100px";
+		this.controllerDiv.style.height = "150px";
 		this.controllerDiv.style.boxShadow = "0px 5px black";
 		this.keySep.appendChild(this.controllerDiv);
+		//Title
+		this.controllerTitle = document.createElement('h1');
+		this.controllerTitle.innerHTML = "Controllers";
+		this.controllerTitle.style.textAlign = "center";
+		this.controllerTitle.style.color = "white";
+		this.controllerTitle.style.marginLeft = "0px";
+		this.controllerTitle.style.marginRight = "0px";
+		this.controllerTitle.style.marginTop = "0px";
+		this.controllerTitle.style.marginBottom = "0px";
+		this.controllerDiv.appendChild(this.controllerTitle);
+		//Player div
+		this.playerDiv = document.createElement('div');
+		this.playerDiv.id = "playerControllerIndex";
+		this.playerDiv.style.width = "300px";
+		this.playerDiv.style.height = "30px";
+		this.playerDiv.style.textAlign = "center";
+		this.playerDiv.style.margin = "0 auto";
+		this.controllerDiv.appendChild(this.playerDiv);
+		//Left player index button
+		this.leftPlayerIndexBttn = document.createElement('button');
+		this.leftPlayerIndexBttn.innerHTML = "<";
+		this.leftPlayerIndexBttn.style.backgroundColor = "lightgrey";
+		this.leftPlayerIndexBttn.style.width = "30px";
+		this.leftPlayerIndexBttn.style.height = "30px";
+		this.leftPlayerIndexBttn.style.display = "inline-block";
+		this.leftPlayerIndexBttn.style.position = "relative";
+		this.leftPlayerIndexBttn.style.top = "-5px";
+		this.leftPlayerIndexBttn.onmouseover = () => {
+			this.leftPlayerIndexBttn.style.backgroundColor = "grey";
+		};
+		this.leftPlayerIndexBttn.onmouseleave = () => {
+			this.leftPlayerIndexBttn.style.backgroundColor = "lightgrey";
+		};
+		this.leftPlayerIndexBttn.onclick = () => {
+			if (this.currentPlayerIndex > 1) {
+				this.currentPlayerIndex--;
+			}
+		};
+		this.playerDiv.appendChild(this.leftPlayerIndexBttn);
+		//Current player
+		this.currentPlayer = document.createElement('h1');
+		this.currentPlayer.innerHTML = "Player: 1";
+		this.currentPlayer.style.color = "white";
+		this.currentPlayer.style.marginLeft = "10px";
+		this.currentPlayer.style.marginRight = "10px";
+		this.currentPlayer.style.marginTop = "0px";
+		this.currentPlayer.style.marginBottom = "0px";
+		this.currentPlayer.style.display = "inline-block";
+		this.playerDiv.appendChild(this.currentPlayer);
+		//Right player index button
+		this.rightPlayerIndexBttn = document.createElement('button');
+		this.rightPlayerIndexBttn.innerHTML = ">";
+		this.rightPlayerIndexBttn.style.backgroundColor = "lightgrey";
+		this.rightPlayerIndexBttn.style.width = "30px";
+		this.rightPlayerIndexBttn.style.height = "30px";
+		this.rightPlayerIndexBttn.style.display = "inline-block";
+		this.rightPlayerIndexBttn.style.position = "relative";
+		this.rightPlayerIndexBttn.style.top = "-5px";
+		this.rightPlayerIndexBttn.onmouseover = () => {
+			this.rightPlayerIndexBttn.style.backgroundColor = "grey";
+		};
+		this.rightPlayerIndexBttn.onmouseleave = () => {
+			this.rightPlayerIndexBttn.style.backgroundColor = "lightgrey";
+		};
+		this.rightPlayerIndexBttn.onclick = () => {
+			if (this.currentPlayerIndex < controllerManager.players) {
+				this.currentPlayerIndex++;
+			}
+		};
+		this.playerDiv.appendChild(this.rightPlayerIndexBttn);
+		//Player controller div
+		this.playerControllerDiv = document.createElement('div');
+		this.playerControllerDiv.id = "playerControllerIndex";
+		this.playerControllerDiv.style.width = "300px";
+		this.playerControllerDiv.style.height = "30px";
+		this.playerControllerDiv.style.textAlign = "center";
+		this.playerControllerDiv.style.margin = "0 auto";
+		this.playerControllerDiv.style.marginTop = "5px";
+		this.controllerDiv.appendChild(this.playerControllerDiv);
+		//Left player index button
+		this.leftPlayerControllerIndexBttn = document.createElement('button');
+		this.leftPlayerControllerIndexBttn.innerHTML = "<";
+		this.leftPlayerControllerIndexBttn.style.backgroundColor = "lightgrey";
+		this.leftPlayerControllerIndexBttn.style.width = "30px";
+		this.leftPlayerControllerIndexBttn.style.height = "30px";
+		this.leftPlayerControllerIndexBttn.style.display = "inline-block";
+		this.leftPlayerControllerIndexBttn.style.position = "relative";
+		this.leftPlayerControllerIndexBttn.style.top = "-5px";
+		this.leftPlayerControllerIndexBttn.onmouseover = () => {
+			this.leftPlayerControllerIndexBttn.style.backgroundColor = "grey";
+		};
+		this.leftPlayerControllerIndexBttn.onmouseleave = () => {
+			this.leftPlayerControllerIndexBttn.style.backgroundColor = "lightgrey";
+		};
+		this.leftPlayerControllerIndexBttn.onclick = () => {
+			if (this.currentPlayerConfig != undefined && this.currentPlayerConfig.controllerId != undefined) {
+				if (this.playerControllerId > 0) {
+					this.currentPlayerConfig.controllerId--;
+				}
+			}
+		};
+		this.playerControllerDiv.appendChild(this.leftPlayerControllerIndexBttn);
+		//Current player controller
+		this.currentPlayerController = document.createElement('h1');
+		this.currentPlayerController.innerHTML = "Controller: 1";
+		this.currentPlayerController.style.color = "white";
+		this.currentPlayerController.style.marginLeft = "10px";
+		this.currentPlayerController.style.marginRight = "10px";
+		this.currentPlayerController.style.marginTop = "0px";
+		this.currentPlayerController.style.marginBottom = "0px";
+		this.currentPlayerController.style.display = "inline-block";
+		this.playerControllerDiv.appendChild(this.currentPlayerController);
+		//Right player index button
+		this.rightPlayerControllerIndexBttn = document.createElement('button');
+		this.rightPlayerControllerIndexBttn.innerHTML = ">";
+		this.rightPlayerControllerIndexBttn.style.backgroundColor = "lightgrey";
+		this.rightPlayerControllerIndexBttn.style.width = "30px";
+		this.rightPlayerControllerIndexBttn.style.height = "30px";
+		this.rightPlayerControllerIndexBttn.style.display = "inline-block";
+		this.rightPlayerControllerIndexBttn.style.position = "relative";
+		this.rightPlayerControllerIndexBttn.style.top = "-5px";
+		this.rightPlayerControllerIndexBttn.onmouseover = () => {
+			this.rightPlayerControllerIndexBttn.style.backgroundColor = "grey";
+		};
+		this.rightPlayerControllerIndexBttn.onmouseleave = () => {
+			this.rightPlayerControllerIndexBttn.style.backgroundColor = "lightgrey";
+		};
+		this.rightPlayerControllerIndexBttn.onclick = () => {
+			if (this.currentPlayerConfig != undefined && this.currentPlayerConfig.controllerId != undefined) {
+				if (this.playerControllerId < controllers.length-1) {
+					this.currentPlayerConfig.controllerId++;
+				}
+			}
+		};
+		this.playerControllerDiv.appendChild(this.rightPlayerControllerIndexBttn);
+		//Current player controller connected
+		this.currentControllerConnected = document.createElement('h1');
+		this.currentControllerConnected.innerHTML = "Connected: false";
+		this.currentControllerConnected.style.color = "white";
+		this.currentControllerConnected.style.marginLeft = "0px";
+		this.currentControllerConnected.style.marginRight = "0px";
+		this.currentControllerConnected.style.marginTop = "0px";
+		this.currentControllerConnected.style.marginBottom = "0px";
+		this.currentControllerConnected.style.display = "block";
+		this.playerControllerDiv.appendChild(this.currentControllerConnected);
 	}
 	const updater = () => {
 		this.menu.style.width = (this.menuSize.x*screen.getScale().x)+"px";
@@ -2737,6 +2887,39 @@ function keyBinder() {
 				}
 			});
 		});
+		//Controller stuff
+		this.currentPlayer.innerHTML = "Player: "+this.currentPlayerIndex;
+		if (this.currentPlayerIndex < 1) {
+			this.currentPlayerIndex = 1;
+		}
+		if (this.currentPlayerIndex > controllerManager.players) {
+			this.currentPlayerIndex = controllerManager.players;
+		}
+		if (controllerManager.players == 1) {
+			this.leftPlayerIndexBttn.style.display = "none";
+			this.rightPlayerIndexBttn.style.display = "none";
+		}
+		this.currentPlayerConfig = controllerManager.config[this.currentPlayerIndex];
+		if (this.currentPlayerConfig != undefined) {
+			this.playerControllerId = this.currentPlayerConfig.controllerId;
+		}
+		if (this.currentPlayerConfig != undefined && this.currentPlayerConfig.controllerId != undefined) {
+			this.leftPlayerControllerIndexBttn.style.display = "inline-block";
+			this.rightPlayerControllerIndexBttn.style.display = "inline-block";
+			this.currentPlayerController.innerHTML = "Controller: "+this.playerControllerId;
+			this.currentControllerConnected.innerHTML = "Connected: "+(controllers[this.playerControllerId] != null);
+		} else {
+			this.leftPlayerControllerIndexBttn.style.display = "none";
+			this.rightPlayerControllerIndexBttn.style.display = "none";
+			this.currentPlayerController.innerHTML = "Controller: None";
+			this.currentControllerConnected.innerHTML = "Connected: false";
+		}
+		if (this.playerControllerId < 0) {
+			this.playerControllerId = 0;
+		}
+		if (this.playerControllerId > controllers.length-1) {
+			this.playerControllerId = controllers.length-1;
+		}
 	}
 	this.createMenu();
 }
