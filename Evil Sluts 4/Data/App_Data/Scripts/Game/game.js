@@ -1263,7 +1263,7 @@ let runBttn = new key(
 	false
 );
 
-let playerMovement = new controllerAxesBinding(1, (e)=>{
+let playerMovement = new controllerAxisBinding(1, (e)=>{
 	if (currentPlayer.loaded){
 		if (!isPaused){
 			if(!e.r && !currentPlayer.dead) {

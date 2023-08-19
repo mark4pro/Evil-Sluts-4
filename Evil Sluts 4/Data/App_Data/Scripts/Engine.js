@@ -418,8 +418,16 @@ function Vector2(x=0, y=0, r=0, o=0, s=0) {
 
 //Fills a vector2's x and y values with a single number
 //Useful shortcut for making square objects
-function FillVec2(xy=0) {
+const FillVec2 = (xy=0) => {
 	return new Vector2(xy, xy);
+}
+
+const VecX = (x=0) => {
+	return new Vector2(x, 0);
+}
+
+const VecY = (y=0) => {
+	return new Vector2(0, y);
 }
 
 //Creates canvas
@@ -987,6 +995,7 @@ function Rectangle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.line = line;
 	this.type = "rectangle";
 	let points = [];
+	this.convex = false;
 	this.getPoints = function() {
 		return points;
 	}
@@ -1099,6 +1108,7 @@ function Sprite(layerNumber=1, base=EMPTY_OBJECT, animator=null) {
 	this.dSize = new Vector2(sprite.width, sprite.height);
 	this.scale = new Vector2(1, 1);
 	let points = [];
+	this.convex = false;
 	this.getPoints = function() {
 		return points;
 	}
@@ -1725,8 +1735,100 @@ function cirCollision(object_1, object_2) {
 	}
 }
 
+//point vs. polygon
+function pointInsidePolygon(vec, polygon) {
+    //also consider to use the'pointInsiderectangle' function for simpler tasks
+    /* sturcture of the polygon object:
+        {
+            points:[
+                {
+                    x:number,
+                    y:number
+                }
+            ]
+            //optional, if it has a precomputed bounding box, it has these properties as well:
+            xmin:number,
+            xmax:number,
+            ymin:number,
+            ymax:number,
+            convex:boolean
+        }
+    */
+	/*
+    //fast "false/maybe" test: check if the point is inside the outer bounding box of the polygon.
+    if(polygon.xmin === undefined){//if the bounding box of the polygon is not precomputed, then compute it.
+        var xmin = xmax = polygon.getPoints()[0].x;
+        var ymin = ymax = polygon.getPoints()[0].y;
+        for(var i = polygon.getPoints().length;--i;){
+            if(polygon.getPoints()[i].x < xmin){
+                xmin = polygon.getPoints()[i].x;
+            }
+            else if(polygon.getPoints()[i].x > xmax){
+                xmax = polygon.getPoints()[i].x;
+            };
+            if(polygon.getPoints()[i].y < ymin){
+                ymin = polygon.getPoints()[i].y;
+            }
+            else if(polygon.getPoints()[i].y > ymax){
+                ymax = polygon.getPoints()[i].y;
+            };
+        };
+        polygon.xmin = xmin;
+        polygon.xmax = xmax;
+        polygon.ymin = ymin;
+        polygon.ymax = ymax;
+    };
+    if(vec.x < polygon.xmin || vec.x > polygon.xmax){
+        return false;
+    }
+    else if(vec.y < polygon.xmin || vec.x > polygon.ymax){
+        return false;
+    };
+	*/
+    /* complete "true/false" test: check the number of times a ray from the point intersects the perimeter of the polygon
+     *  odd number  == inside
+     *  even number == outside
+     * I cast the ray along the x axis
+     */
+    var intersections = 0;
+    for(var i = polygon.getPoints().length;i--;){
+        var xpos = polygon.getPoints()[i].x - vec.x;//the polygon is translated with the test point in origo
+        var ypos = polygon.getPoints()[i].y - vec.y;
+        if(i){
+            var xpos2 = polygon.getPoints()[i - 1].x - vec.x;
+            var ypos2 = polygon.getPoints()[i - 1].y - vec.y;
+        }
+        else{//the last side of the polygon wraps around to the first point of the corner list, it requires special handling.
+            var xpos2 = polygon.getPoints()[polygon.getPoints().length - 1].x - vec.x;
+            var ypos2 = polygon.getPoints()[polygon.getPoints().length - 1].y - vec.y;
+        };
+        //each side of the polygon does potentially intersect the ray. I skip the iteration for those that do not.
+        if(xpos < 0 && xpos2 < 0){//the ray can not cross a side starting and ending at negative x, so no intersection then
+            continue;
+        }
+        else if(ypos * ypos2 > 0){//still no intersection if both y's have the same sign
+            continue;
+        }
+        else if(xpos + (xpos2 - xpos) * ypos/(ypos - ypos2) < 0){//intersections of the x-axis before x=0 do not count
+            continue;
+        }
+        else if(ypos === 0){//a corner may be exactly at the ray
+            continue;
+        };
+        //alert(xpos+","+ypos+","+xpos2+","+ypos2);
+        intersections++;
+        if(polygon.convex && intersections === 2){//a ray through a convex polygon can intersect at most 2 times
+            return false;
+        };
+    };
+    if(intersections % 2 === 0){
+        return false;
+    };
+    return true;
+};
+
 //circle vs. polygon
-function cirPolyCollision(object_1, object_2, controller_1=null, returnBool=true) {
+function cirPolyCollision(object_1, object_2, controller_1=null, returnBool=true, checkInside=false) {
 	let controller1 = controller_1;
 	let obj1pos = object_1.base.position;
 	let obj1size = object_1.base.size;
@@ -1734,7 +1836,7 @@ function cirPolyCollision(object_1, object_2, controller_1=null, returnBool=true
 	let t = getClosestPoint(obj1pos, object_2.getPoints());
 	let distance = t.distance(obj1pos);
 	let dir = getPolarDir(obj1pos, t);
-		if (distance <= obj1radius) {
+		if (distance <= obj1radius || (checkInside && pointInsidePolygon(obj1pos, object_2))) {
 			if (returnBool) {
 				return true;
 			} else {
@@ -1998,7 +2100,6 @@ function timer(time_=TIME(), active_=true, loop_=false, func_=null, id_="") {
 	this.func = func_;
 	let id = id_;
 	this.start = (reset=false) => {
-		console.log("fuck");
 		this.active = true;
 		if (reset) {
 			this.reset();
@@ -2486,31 +2587,31 @@ function controllerBttnBinding(player=1, func=null, funcName="", bttn=0, single=
 	this.dup = this.duplicate;
 }
 
-function controllerAxesBinding(player=1, func=null, funcName="", axes=0, deadzone=0.2) {
+function controllerAxisBinding(player=1, func=null, funcName="", axis=0, deadzone=0.2) {
 	this.player = player;
 	this.func = func;
 	this.funcName = funcName;
-	this.axes = axes; //0- left stick, 1- right stick
+	this.axis = axis; //0- left stick, 1- right stick
 	this.deadzone = deadzone;
-	if (axes > 1) {
-		this.axes = 1;
+	if (axis > 1) {
+		this.axis = 1;
 	}
-	if (axes < 0) {
-		this.axes = 0;
+	if (axis < 0) {
+		this.axis = 0;
 	}
 	if (controllerManager.config[this.player] == undefined) {
-		controllerManager.config[this.player] = {"axes":[]};
-		controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+		controllerManager.config[this.player] = {"axis":[]};
+		controllerManager.config[this.player].axis.push({"funcName":this.funcName,"func":this.func,"bttn":this.axis,"deadzone":this.deadzone});
 	} else {
-		if (controllerManager.config[this.player].axes == undefined) {
-			controllerManager.config[this.player].axes = [];
-			controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+		if (controllerManager.config[this.player].axis == undefined) {
+			controllerManager.config[this.player].axis = [];
+			controllerManager.config[this.player].axis.push({"funcName":this.funcName,"func":this.func,"bttn":this.axis,"deadzone":this.deadzone});
 		} else {
-			controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+			controllerManager.config[this.player].axis.push({"funcName":this.funcName,"func":this.func,"bttn":this.axis,"deadzone":this.deadzone});
 		}
 	}
 	this.duplicate = () => {
-		return new controllerBttnBinding(this.player, this.func, this.funcName, this.axes, this.deadzone);
+		return new controllerBttnBinding(this.player, this.func, this.funcName, this.axis, this.deadzone);
 	}
 	this.dup = this.duplicate;
 }
@@ -2558,20 +2659,20 @@ function controllerMG() {
 			for (let i=1;i<=this.players;i++) {
 				if (this.config[i] != undefined) {
 					let playerControls = this.config[i];
-					if (playerControls.axes != undefined) {
-						for (let a=0,length=playerControls.axes.length;a<length;a++) {
-							let axesData = playerControls.axes[a];
+					if (playerControls.axis != undefined) {
+						for (let a=0,length=playerControls.axis.length;a<length;a++) {
+							let axisData = playerControls.axis[a];
 							if (controllers[playerControls.controllerId] != undefined && controllers[playerControls.controllerId] != null) {
-								switch (axesData.bttn) {
+								switch (axisData.bttn) {
 									case 0:
-										let calLeft = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[0], controllers[playerControls.controllerId].axes[1]), axesData.deadzone);
+										let calLeft = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[0], controllers[playerControls.controllerId].axes[1]), axisData.deadzone);
 										playerControls.leftStick = calLeft;
-										axesData.func(playerControls.leftStick);
+										axisData.func(playerControls.leftStick);
 									break;
 									case 1:
-										let calRight = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[2], controllers[playerControls.controllerId].axes[3]), axesData.deadzone);
+										let calRight = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[2], controllers[playerControls.controllerId].axes[3]), axisData.deadzone);
 										playerControls.rightStick = calRight;
-										axesData.func(playerControls.rightStick);
+										axisData.func(playerControls.rightStick);
 									break;
 								}
 							}
