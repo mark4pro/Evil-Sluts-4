@@ -344,13 +344,14 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2())
 	}
 }
 
-function baseItem(id=0, rariety=1, size=new Vector2(16, 16), imageData=null) {
+function baseItem(id=0, rariety=1, cost=0, size=new Vector2(16, 16), imageData=null) {
 	this.id = id;
 	this.rariety = rariety;
+	this.cost = cost;
 	this.size = size;
 	this.imageData = imageData;
 	this.duplicate = () => {
-		return new baseItem(this.id, this.rariety, this.size, this.imageData);
+		return new baseItem(this.id, this.rariety, this.cost, this.size, this.imageData);
 	}
 }
 
@@ -600,6 +601,7 @@ const addToInventory = (item=null) => {
 
 const inventory = {
 	"weapons":[getItemsByType("weapon")[0]],
+	"armor":[],
 	"items":[],
 };
 
@@ -640,6 +642,7 @@ const getDroppedItems = () => {
 	}
 }
 
+//TODO: genStats function
 function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1, 10), size=ONE, speed=5, range=100, damage=new Vector2(), spreadPattern=[0]) {
 	this.name = name;
 	this.imageData = imageData;
@@ -659,10 +662,34 @@ const weaponTable = {
 	0:new weapon("Test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
 }
 
-const currentPlayer = new player(100, new Vector2(3, 7), new Vector2(100, 0.5, 0.1), 10, [getItemsByType("weapon")[0]], new Vector2(100, 100));
+let armorTypes = {
+	0:"Head",
+	1:"Chest",
+	2:"Legs",
+	3:"Feet"
+}
 
-function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vector2(100, 0.1), defence=10, weapons=[], ammo=new Vector2(100, 100)) {
+function armor(name="", imageData=null, size=ONE, armorType="", _defenceStatRange=ONE) {
+	this.name = name;
+	this.imageData = imageData;
+	this.size = size;
+	this.armorType = armorType;
+	let defenceStatRange = _defenceStatRange;
+	this.defenceStat = 0;
+	this.genStats = () => {
+			this.defenceStat = rangeFloat(defenceStatRange.x, defenceStatRange.y);
+	}
+}
+
+const armorTable = {
+	0:new armor("Test", null, ONE, armorTypes[0], Vec2(1,5)),
+}
+
+const currentPlayer = new player(100, new Vector2(3, 7), new Vector2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [], new Vector2(100, 100));
+
+function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vector2(100, 0.1), defence=10, weapons=[], armor=[], ammo=new Vector2(100, 100)) {
 	this.defence = defence;
+	this.armor = armor;
 	this.weapons = weapons;
 	this.ammo = ammo; //x- current ammo, y- max ammo
 	
