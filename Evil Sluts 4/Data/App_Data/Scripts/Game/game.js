@@ -344,6 +344,54 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2())
 	}
 }
 
+//TODO: genStats function
+function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1, 10), size=ONE, speed=5, range=100, damage=new Vector2(), spreadPattern=[0]) {
+	this.name = name;
+	this.imageData = imageData;
+	this.amountPerShot = amountPerShot;
+	if (this.amountPerShot <= 0) {
+		this.amountPerShot = 1;
+	}
+	this.fireTime = fireTime; //x- speed for timer, y- max time
+	this.size = size;
+	this.speed = speed;
+	this.range = range;
+	this.damage = damage; //x- min damage, y- max damage
+	this.spreadPattern = spreadPattern;
+}
+
+const weaponTable = {
+	0:new weapon("Test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
+}
+
+let armorTypes = {
+	0:"Head",
+	1:"Chest",
+	2:"Legs",
+	3:"Feet"
+}
+
+function armor(name="", imageData=null, size=ONE, armorType="", _defenceStatRange=ONE) {
+	this.name = name;
+	this.imageData = imageData;
+	this.size = size;
+	this.armorType = armorType;
+	let defenceStatRange = _defenceStatRange;
+	this.defenceStat = 0;
+	this.genStats = () => {
+			this.defenceStat = rangeFloat(defenceStatRange.x, defenceStatRange.y);
+	}
+	this.duplicate = () => {
+		let newArmor = new armor(this.name, this.imageData, this.size, this.armorType, defenceStatRange);
+		newArmor.defenceStat = this.defenceStat;
+		return newArmor;
+	}
+}
+
+const armorTable = {
+	0:new armor("Test", null, ONE, armorTypes[0], Vec2(1,5)),
+}
+
 function baseItem(id=0, rariety=1, cost=0, size=new Vector2(16, 16), imageData=null) {
 	this.id = id;
 	this.rariety = rariety;
@@ -371,7 +419,7 @@ function weaponItem(weaponId=0, base=new baseItems()) {
 	this.itemType = "weapon";
 	this.mainType = "weapons"; //What inventory array it goes into
 	this.equip = () => {
-		if (currentPlayer.loaded && currentPlayer.weapons.filter((i) => i.weaponId == this.weaponId).length == 0) {
+		if (currentPlayer.loaded && currentPlayer.weapons.length == 0 && currentPlayer.weapons.filter((i) => i.weaponId == this.weaponId).length == 0) {
 			currentPlayer.weapons.push(this);
 		}
 	}
@@ -389,47 +437,59 @@ function weaponItem(weaponId=0, base=new baseItems()) {
 	}
 }
 
-function armorItems(armorId=0, base=new baseItems()) {
+function armorItems(armorId=0, base=new baseItems(), veriant=null) {
 	this.armorId = armorId; 
 	this.base = base;
 	this.itemType = "armor";
-	this.mainType = "armors";
-this.equip = () => {
-	if (currentPlayer.loaded && currentPlayer.armor.filter((i) => i.armor == this.armorId).length ==0) {
-		currentPlayer.armor.push(this);
+	this.mainType = "armor";
+	this.armorVeriant = veriant
+	if (veriant == null) {
+		this.armorVeriant = armorTable[this.armorId].duplicate();
+		this.armorVeriant.genStats();
 	}
-}
-this.unequip = () => {
-if (currentPlayer.loaded && currentPlayer.weapons.filter((i) => i.weaponId == this.armorId).length != 0){
-currentPlayer.armor.forEach((w, i) => {
-	if (w.armorId == this.armorId) {
-	currentPlayer.armor.splice(i, 1);
-}
-});
-}                                                                                                                                                                                                                                                                                                                                        
-} 
-this.duplicate = () => {
-	return new armorItem(this.armorId, this.base.duplicate());
+	this.equip = () => {
+		if (currentPlayer.loaded && currentPlayer.armor.filter((i) => armorTable[i.armorId].armorType == armorTable[this.armorId].armorType).length == 0) {
+			currentPlayer.armor.push(this);
+		}
+	}
+	this.unequip = () => {
+		if (currentPlayer.loaded && currentPlayer.armor.filter((i) => i.armorId == this.armorId).length != 0){
+			currentPlayer.armor.forEach((w, i) => {
+				if (w.armorId == this.armorId) {
+					currentPlayer.armor.splice(i, 1);
+				}
+			});
+		} 
+	}
+	this.duplicate = (copyVeriant=false) => {
+		if (!copyVeriant) {
+			return new armorItems(this.armorId, this.base.duplicate());
+		} else {
+			return new armorItems(this.armorId, this.base.duplicate(), this.armorVeriant);
+		}
+	}
 }
 
 const globalExcludedDrops = [];
 
 const itemTable = [
 	//Items
-	new drugsItem("heroin", new baseItem(0, 1, new Vector2(32, 32), heroin_Img.getColor())),
-	new drugsItem("crack", new baseItem(1, 1, new Vector2(32, 32), crack_Img.getColor())),
-	new drugsItem("cocaine", new baseItem(2, 2, new Vector2(32, 32), cocaine_Img.getColor())),
-	new drugsItem("lsd", new baseItem(3, 5, new Vector2(32, 32), lsd_Img.getColor())),
-	new drugsItem("mushroom", new baseItem(4, 4, new Vector2(32, 32), mushroom_Img.getColor())),
-	new drugsItem("crocodile", new baseItem(5, 1, new Vector2(32, 32), crocodile_Img.getColor())),
-	new drugsItem("bath salts", new baseItem(6, 2, new Vector2(32, 32), bath_salts_Img.getColor())),
-	new drugsItem("DMT", new baseItem(7, 6, new Vector2(32, 32), dmt_Img.getColor())),
-	new drugsItem("meth", new baseItem(8, 1, new Vector2(32, 32), meth_Img.getColor())),
-	new drugsItem("smack", new baseItem(9, 3, new Vector2(32, 32), smack_Img.getColor())),
-	new drugsItem("chese", new baseItem(10, 10, new Vector2(32, 32), chese_Img.getColor())),
-	new drugsItem("your mom", new baseItem(11, 7, new Vector2(32, 32), your_mom_Img.getColor())),
+	new drugsItem("heroin", new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor())),
+	new drugsItem("crack", new baseItem(1, 1, 0, Vec2(32, 32), crack_Img.getColor())),
+	new drugsItem("cocaine", new baseItem(2, 2, 0, Vec2(32, 32), cocaine_Img.getColor())),
+	new drugsItem("lsd", new baseItem(3, 5, 0, Vec2(32, 32), lsd_Img.getColor())),
+	new drugsItem("mushroom", new baseItem(4, 4, 0, Vec2(32, 32), mushroom_Img.getColor())),
+	new drugsItem("crocodile", new baseItem(5, 1, 0, Vec2(32, 32), crocodile_Img.getColor())),
+	new drugsItem("bath salts", new baseItem(6, 2, 0, Vec2(32, 32), bath_salts_Img.getColor())),
+	new drugsItem("DMT", new baseItem(7, 6, 0, Vec2(32, 32), dmt_Img.getColor())),
+	new drugsItem("meth", new baseItem(8, 1, 0, Vec2(32, 32), meth_Img.getColor())),
+	new drugsItem("smack", new baseItem(9, 3, 0, Vec2(32, 32), smack_Img.getColor())),
+	new drugsItem("chese", new baseItem(10, 10, 0, Vec2(32, 32), chese_Img.getColor())),
+	new drugsItem("your mom", new baseItem(11, 7, 0, Vec2(32, 32), your_mom_Img.getColor())),
 	//Weapons
-	new weaponItem(0, new baseItem(101, 1, new Vector2(32, 32), bullet_1_Img.getColor())),
+	new weaponItem(0, new baseItem(101, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
+	//Armor
+	new armorItems(0, new baseItem(201, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
 ];
 
 const getItemName = (item) => {
@@ -440,6 +500,9 @@ const getItemName = (item) => {
 		break;
 		case "weapons":
 			result = weaponTable[item.weaponId].name;
+		break;
+		case "armor":
+			result = armorTable[item.armorId].name;
 		break;
 	}
 	return result;
@@ -632,7 +695,7 @@ const inventory = {
 const dropItem = (itemType="items", index=0) => {
 	let inventoryItem = inventory[itemType][index];
 	if (inventoryItem != undefined) {
-		let dup = inventoryItem.duplicate();
+		let dup = inventoryItem.duplicate(true);
 		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, currentPlayer.playerItemDropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
 		droppedItem.base.overridePositionUpdateFunction = true;
 		droppedItem.base.updatePosition = () => {
@@ -640,7 +703,7 @@ const dropItem = (itemType="items", index=0) => {
 				droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
 			}
 		}
-		droppedItem.item = inventoryItem.duplicate();
+		droppedItem.item = dup;
 		droppedItem.pickUp = () => {
 			addToInventory(droppedItem.item);
 			droppedItem.base.marked = true;
@@ -663,49 +726,6 @@ const getDroppedItems = () => {
 	} else {
 		return null;
 	}
-}
-
-//TODO: genStats function
-function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1, 10), size=ONE, speed=5, range=100, damage=new Vector2(), spreadPattern=[0]) {
-	this.name = name;
-	this.imageData = imageData;
-	this.amountPerShot = amountPerShot;
-	if (this.amountPerShot <= 0) {
-		this.amountPerShot = 1;
-	}
-	this.fireTime = fireTime; //x- speed for timer, y- max time
-	this.size = size;
-	this.speed = speed;
-	this.range = range;
-	this.damage = damage; //x- min damage, y- max damage
-	this.spreadPattern = spreadPattern;
-}
-
-const weaponTable = {
-	0:new weapon("Test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
-}
-
-let armorTypes = {
-	0:"Head",
-	1:"Chest",
-	2:"Legs",
-	3:"Feet"
-}
-
-function armor(name="", imageData=null, size=ONE, armorType="", _defenceStatRange=ONE) {
-	this.name = name;
-	this.imageData = imageData;
-	this.size = size;
-	this.armorType = armorType;
-	let defenceStatRange = _defenceStatRange;
-	this.defenceStat = 0;
-	this.genStats = () => {
-			this.defenceStat = rangeFloat(defenceStatRange.x, defenceStatRange.y);
-	}
-}
-
-const armorTable = {
-	0:new armor("Test", null, ONE, armorTypes[0], Vec2(1,5)),
 }
 
 const currentPlayer = new player(100, new Vector2(3, 7), new Vector2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [], new Vector2(100, 100));
@@ -1029,6 +1049,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			enemy.healthBar = enemyHealthBar;
 			enemy.healthBarLink = enemyHealthBarLink;
 			enemy.agro = false;
+			enemy.inRange = false;
 			
 			enemy.damage = (damage=10) => {
 				if (enemy.defense != 0) {
@@ -1087,8 +1108,10 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 				//Enemy movement code
 				if (thisDistance <= this.stopDistance) {
 					thisEnemy.base.position.s = 0;
+					thisEnemy.inRange = false;
 				} else {
 					thisEnemy.base.position.o = thisAngle;
+					thisEnemy.inRange = true;
 					let enemyDistanceFilter = collisionArray.filter((o) => thisEnemy.base.position.distance(o.base.position) <= 320);
 					let isTouchingWall = enemyDistanceFilter.some((w) => cirPolyCollision(thisEnemy, w));
 					for (let i=0,length=enemyDistanceFilter.length;i<length;i++) {
