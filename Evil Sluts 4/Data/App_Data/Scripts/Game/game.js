@@ -438,7 +438,7 @@ function weaponItem(weaponId=0, base=new baseItems(), veriant=null) {
 		this.weaponVeriant.genStats();
 	}
 	this.equip = () => {
-		if (currentPlayer.loaded && currentPlayer.weapons.length == 0 && currentPlayer.weapons.filter((i) => i.weaponId == this.weaponId).length == 0) {
+		if (currentPlayer.loaded && currentPlayer.weapons.filter((i) => i.weaponId == this.weaponId).length == 0) {
 			currentPlayer.weapons.push(this);
 		}
 	}
@@ -753,6 +753,7 @@ const getDroppedItems = () => {
 
 const currentPlayer = new player(100, new Vector2(3, 7), new Vector2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [], new Vector2(100, 100));
 
+//TODO: Implement armor functionality
 function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vector2(100, 0.1), defence=10, weapons=[], armor=[], ammo=new Vector2(100, 100)) {
 	this.defence = defence;
 	this.armor = armor;
@@ -1005,7 +1006,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 					this.currentWeapon = this.weapons.length-1;
 				}
 				if (this.weapons[this.currentWeapon] != undefined) {
-					this.currentWeaponData = weaponTable[this.weapons[this.currentWeapon].weaponId];
+					this.currentWeaponData = this.weapons[this.currentWeapon].weaponVeriant;
 				} else {
 					this.currentWeaponData = null;
 				}
@@ -1019,7 +1020,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 }
 
 //Add enemy spawn array / randomly get from array
-function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=10, speed=new Vector2(4, 5, 6, 7, 0.25), stopDistance=200, damage=new Vector2(6, 8), confirmedDrop=null, lootAmount=new Vector2(1, 4), drugAmount=new Vector2(1, 1), dropRariety=new Vector2(1, 3), dropTypeExclude=[], dropNameExclude=[]) {
+function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=10, speed=new Vector2(4, 5, 6, 7, 0.25), stopDistance=200, weaponId=0/**damage=new Vector2(6, 8)**/, confirmedDrop=null, lootAmount=new Vector2(1, 4), drugAmount=new Vector2(1, 1), dropRariety=new Vector2(1, 3), dropTypeExclude=[], dropNameExclude=[]) {
 	this.enemyName = enemyName;
 	this.enemySize = enemySize;
 	this.enemyPositions = enemyPositions; //can be an array of positions
@@ -1031,7 +1032,8 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 	this.defense = defense;
 	this.speed = speed; //x- min normal speed, y- max normal speed, r- min agro speed, o- max agro speed, s- health agro percent
 	this.stopDistance = stopDistance;
-	this.damage = damage; //x- min damage, y- max damage
+	this.weaponId = weaponId;
+	//this.damage = damage; //x- min damage, y- max damage
 	this.confirmedDrop = confirmedDrop; //drops this item when killed
 	this.lootAmount = lootAmount;
 	this.drugAmount = drugAmount; //x- min drugs, y- max drugs
@@ -1054,7 +1056,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			let enemyHealthBar = new Rectangle(4, new baseObject(false, new nameTag(this.enemyName+"_"+this.count+"_healthBar", "enemy_healthBar"), new Vector2(100, 5), enemyPos.subV(new Vector2(0, this.enemySize.div(2).y+10)), new colorData("darkgreen", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
 			let enemyHealthBarLink = new statusBar(enemyHealthBar, this.maxHealth, this.maxHealth, new Vector2("darkred", "darkgreen", 0.75));
 			let enemy = new Sprite(4, new baseObject(false, new nameTag(this.enemyName+"_"+this.count, "enemy"), this.enemySize, enemyPos, this.imgData, this.shadowData));
-			//Overwrite the movement function to fix fanky enemy movement
+			//Overwrite the movement function to fix janky enemy movement
 			enemy.base.overridePositionUpdateFunction = true; //Fixes movement jitter caused by the position update function not updating when the speed is 0
 			enemy.base.updatePosition = () => {
 				if (!isPaused && currentMap() != null) {
@@ -1064,7 +1066,8 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 				}
 			}
 			
-			enemy.damage = this.damage.duplicate();
+			enemy.weapon = weaponTable[this.weaponId].duplicate();
+			enemy.weapon.genStats();
 			enemy.speed = new Vector2(rangeFloat(this.speed.x, this.speed.y, 1), rangeFloat(this.speed.r, this.speed.o, 1));
 			enemy.defense = this.defense;
 			enemy.health = this.maxHealth;
@@ -1088,20 +1091,30 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			this.count++;
 		}
 	}
+	
 	this.shoot = () => {
-		for(enemy in this.enemies){
+		for(enemy of this.enemies) {
+			let bulletTime = T(MSecond(enemy.weapon.fireTime.y), true, false, () => {
+				let newBullet = new Sprite(5, new baseObject(false, new nameTag(enemy.weapon.name, "bullets"), enemy.weapon.size, enemy.base.position.dup(), enemy.weapon.imageData));
+				newBullet.base.position.s = -enemy.weapon.speed;
+				newBullet.base.position.r = newBullet.base.position.getRotation(currentPlayer.playerOBJ.base.position)+degToRad(180);
+				addObject(newBullet);
+			}, "Bullet_Timer");
 			if(enemy.inRange){
-				T(Second(5), true, true, () => {
-					let newBullet = new Sprite(3, new baseObject(false, new nameTag("bullet", "bullets"), Vec2(5, 5), enemy.base.position.dup(), bullet_1_Img.getColor()));
-					newBullet.base.position.s=5;
-					newBullet.base.position.r = newBullet.base.position.getRotation(currentPlayer.playerOBJ.base.position);
-					addObject(newBullet);
-				}, "");
+				console.log("TEST");
+				if (!bulletTime.active) {
+					bulletTime.start(true);
+				}
+			} else {
+				if (bulletTime.active) {
+					bulletTime.pause();
+				}
 			}
 		}
 	}
 	
 	const update = () => {
+		this.shoot();
 		//Spawns enemies
 		if (this.count < this.spawnAmount) {
 			this.time += this.spawnSpeed.x*delta;
@@ -1143,10 +1156,10 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 				//Enemy movement code
 				if (thisDistance <= this.stopDistance) {
 					thisEnemy.base.position.s = 0;
-					thisEnemy.inRange = false;
+					thisEnemy.inRange = true;
 				} else {
 					thisEnemy.base.position.o = thisAngle;
-					thisEnemy.inRange = true;
+					thisEnemy.inRange = false;
 					let enemyDistanceFilter = collisionArray.filter((o) => thisEnemy.base.position.distance(o.base.position) <= 320);
 					let isTouchingWall = enemyDistanceFilter.some((w) => cirPolyCollision(thisEnemy, w));
 					for (let i=0,length=enemyDistanceFilter.length;i<length;i++) {
