@@ -1,3 +1,4 @@
+/*Engine setup*/
 const engineSettings = {
 	"Image_Smoothing":false,
 	"Allow_Shadows":true,
@@ -17,6 +18,12 @@ const engineSettings = {
 	"Addons":[]
 };
 
+//Page setup
+document.body.style.userSelect = "none";
+document.body.allow = "clipboard-read; clipboard-write";
+document.documentElement.style.fontFamily = "Arial";
+
+//Engine global variables
 let isPaused = false;
 
 //Image folder path
@@ -40,15 +47,371 @@ const loadAddons = () => {
 }
 loadAddons();
 
+/*Math & Numbers*/
+//Math global variables
+const PI2 = Math.PI*2;
+
+//Vector class
+const Vector2 = function(x=0, y=0, r=0, o=0, s=0) {
+	this.x = x; //x
+	this.y = y; //y
+	this.r = r; //angle
+	this.o = o; //offset angle
+	this.s = s; //speed
+	//Set vector
+	this.set = (vector2) => {
+		this.x = vector2.x;
+		this.y = vector2.y;
+		this.r = vector2.r;
+		this.o = vector2.o;
+		this.s = vector2.s;
+	}
+	//Vector2 to array
+	this.array = () => {
+		return [this.x, this.y];
+	}
+	//Vector2 to angle
+	this.angle = (rad=true) => {
+		let calR = parseFloat(Math.atan2(this.y, this.x).toFixed(2));
+		if (rad) {
+			return calR;
+		} else {
+			let calD = Math.round(radToDeg(calR+1.57079633));
+			if (calR == 0) {
+				return 0;
+			} else {
+				return calD;
+			}
+		}
+	}
+	//Vector2 duplicate
+	this.duplicate = () => {
+		return new Vector2(this.x, this.y, this.r, this.o, this.s);
+	}
+	this.dup = this.duplicate;
+	//Compare vectors
+	this.same = (vector2=ZERO) => {
+		let result = false;
+		if (this.x == vector2.x && this.y == vector2.y) {
+			result = true;
+		}
+		return result;
+	}
+	//Get rotation between 2 vectors
+	this.getRotation = (vector2, rad=true) => {
+		this.vector2 = vector2;
+		if (rad) {
+			return ((Math.atan2(-this.y+this.vector2.y, -this.x+this.vector2.x)+degToRad(90))+PI2)%(PI2);
+		} else {
+			return radToDeg((Math.atan2(-this.y+this.vector2.y, -this.x+this.vector2.x)+degToRad(90)));
+		}
+	}
+	//Get polar directions
+	this.getPolarDir = (endVar) => {
+		let rot = Math.round(this.getRotation(endVar, false));
+		if (rot == 0 || rot == 360) {
+			return "North";
+		}
+		if ((rot > 0 && rot <= 45) || (rot > 45 && rot < 90)) {
+			return "NorthEast";
+		}
+		if (rot == 90) {
+			return "East";
+		}
+		if ((rot > 90 && rot <= 135) || (rot > 135 && rot < 180)) {
+			return "SouthEast";
+		}
+		if (rot == 180) {
+			return "South";
+		}
+		if ((rot > 180 && rot <= 225) || (rot > 225 && rot < 270)) {
+			return "SouthWest";
+		}
+		if (rot == 270) {
+			return "West";
+		}
+		if ((rot > 270 && rot <= 315) || (rot > 315 && rot < 360)) {
+			return "NorthWest";
+		}
+	}
+	//Gets closest point in an array of points
+	this.getClosestPoint = (arrayVec2) => {
+		let minDist;
+		let fTo;
+		let x;
+		let y;
+		let i;
+		let dist;
+			if (arrayVec2.length > 1) {
+				for (let n = 1 ; n < arrayVec2.length ; n++) {
+					if (arrayVec2[n] != undefined) {
+						if (arrayVec2[n].x != arrayVec2[n - 1].x) {
+						let a = (arrayVec2[n].y - arrayVec2[n - 1].y) / (arrayVec2[n].x - arrayVec2[n - 1].x);
+						let b = arrayVec2[n].y - a * arrayVec2[n].x;
+						dist = Math.abs(a * this.x + b - this.y) / Math.sqrt(a * a + 1);
+						}
+						else
+						dist = Math.abs(this.x - arrayVec2[n].x)
+						let rl2 = Math.pow(arrayVec2[n].y - arrayVec2[n - 1].y, 2) + Math.pow(arrayVec2[n].x - arrayVec2[n - 1].x, 2);
+						let ln2 = Math.pow(arrayVec2[n].y - this.y, 2) + Math.pow(arrayVec2[n].x - this.x, 2);
+						let lnm12 = Math.pow(arrayVec2[n - 1].y - this.y, 2) + Math.pow(arrayVec2[n - 1].x - this.x, 2);
+						let dist2 = Math.pow(dist, 2);
+						let calcrl2 = ln2 - dist2 + lnm12 - dist2;
+						if (calcrl2 > rl2)
+							dist = Math.sqrt(Math.min(ln2, lnm12));
+						if ((minDist == null) || (minDist > dist)) {
+							if (calcrl2 > rl2) {
+								if (lnm12 < ln2) {
+								fTo = 0;
+								}
+								else {
+								fTo = 1;
+								}
+							}
+							else {
+							fTo = ((Math.sqrt(lnm12 - dist2)) / Math.sqrt(rl2));
+							}
+						minDist = dist;
+						i = n;
+						}
+					}
+				}
+			let dx = arrayVec2[i - 1].x - arrayVec2[i].x;
+			let dy = arrayVec2[i - 1].y - arrayVec2[i].y;
+			x = arrayVec2[i - 1].x - (dx * fTo);
+			y = arrayVec2[i - 1].y - (dy * fTo);
+			}
+		return new Vector2(x, y);
+	}
+	//Simple math
+	this.add = (num) => {
+		return new Vector2(this.x+num, this.y+num);
+	}
+	this.addV = (vector2) => {
+		return new Vector2(this.x+vector2.x, this.y+vector2.y);
+	}
+	this.sub = (num) => {
+		return new Vector2(this.x-num, this.y-num);
+	}
+	this.subV = (vector2) => {
+		return new Vector2(this.x-vector2.x, this.y-vector2.y);
+	}
+	this.neg = (place="x") => { //"x" or "y"
+		place = place.toLowerCase();
+		if (place == "x") {
+			return new Vector2(-this.x, this.y);
+		}
+		if (place == "y") {
+			return new Vector2(this.x, -this.y);
+		}
+	}
+	this.multi = (num) => {
+		return new Vector2(this.x*num, this.y*num);
+	}
+	this.multiV = (vector2) => {
+		return new Vector2(this.x*vector2.x, this.y*vector2.y);
+	}
+	this.div = (num) => {
+		if (num == 0) {
+			num == 1;
+		}
+		return new Vector2(this.x/num, this.y/num);
+	}
+	this.divV = (vector2) => {
+		if (vector2.x == 0) {
+			vector2.x == 1;
+		}
+		if (vector2.y == 0) {
+			vector2.y == 1;
+		}
+		return new Vector2(this.x/vector2.x, this.y/vector2.y);
+	}
+	this.min = (vector2) => {
+		return new Vector2(Math.min(this.x, vector2.x), Math.min(this.y, vector2.y));
+	}
+	this.max = (vector2) => {
+		return new Vector2(Math.max(this.x, vector2.x), Math.max(this.y, vector2.y));
+	}
+	//Returns distance between 2 vectors
+	this.distance = (vector2=ZERO) => {
+		let dx = vector2.x-this.x;
+		let dy = vector2.y-this.y;
+		return Math.sqrt(dx*dx+dy*dy);
+	}
+	//Rotate point by this vector
+	this.rotateVector2 = (vector2, rotation) => {
+		return new Vector2(Math.cos(rotation)*(vector2.x-this.x)-Math.sin(rotation)*(vector2.y-this.y)+this.x, Math.sin(rotation)*(vector2.x-this.x)+Math.cos(rotation)*(vector2.y-this.y)+this.y);
+	}
+	//Clamp x and or y values
+	//min = number or vector2
+	//max = number or vector2
+	//opt = both, x, y
+	this.clamp = (min, max, opt="both") => {
+		switch (opt) {
+			case "x":
+			case "X":
+				this.x = clamp(this.x, min, max);
+			break;
+			case "y":
+			case "Y":
+				this.y = clamp(this.y, min, max);
+			break;
+			case "both":
+			case "Both":
+				this.x = clamp(this.x, min, max);
+				this.y = clamp(this.y, min, max);
+			break;
+		}
+	}
+}
+
+//Vector global variables
+const ZERO = new Vector2();
+const ONE = new Vector2(1, 1);
+const UP = new Vector2(0, -1);
+const UP_LEFT = new Vector2(-1, -1);
+const UP_RIGHT = new Vector2(1, -1);
+const DOWN = new Vector2(0, 1);
+const DOWN_LEFT = new Vector2(-1, 1);
+const DOWN_RIGHT = new Vector2(1, 1);
+const LEFT = new Vector2(-1, 0);
+const RIGHT = new Vector2(1, 0);
+
+//Fills a vector2's x and y values with a single number
+//Useful shortcut for making square objects
+const FillVec2 = (xy=0) => {
+	return new Vector2(xy, xy);
+}
+
+//Makes a new vector2 using x (y is 0)
+const VecX = (x=0) => {
+	return new Vector2(x, 0);
+}
+
+//Makes a new vector2 using y (x is 0)
+const VecY = (y=0) => {
+	return new Vector2(0, y);
+}
+
+//Shorthand function for creating vectors
+const Vec2 = (x=0, y=0, r=0, o=0, s=0) => {
+	return new Vector2(x, y, r, o, s);
+}
+
+//Checks number to see if it's even or odd
+const isEven = (num=0) => {
+	if ((num % 2) == 0) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+//Clamp to a range
+const clamp = (value=0, min=0, max=10) => {
+	if (value < min) {
+		value = min;
+	}
+	if (value > max) {
+		value = max;
+	}
+	return value;
+}
+
+//Radians to Degrees
+const radToDeg = (rad=0) => {
+	return ((rad*(180/Math.PI))+360)%360;
+}
+
+//Degrees to Radians
+const degToRad = (deg=0) => {
+	return ((deg/(180/Math.PI))+PI2)%PI2;
+}
+
+//Average
+const average = (nums=[0,0]) => {
+	return nums.reduce((a, b) => a+b,0)/nums.length;
+}
+
+//Helper function for random ints same as range just with less steps
+//Range functions can take Vector2's in the min argument
+const rangeInt = (min=0, max=1) => {
+	if (typeof min == "number") {
+		return Range(min, max, 0, false);
+	} else {
+		return Range(min.x, min.y, 0, false);
+	}
+}
+
+//Helper function for random floats same as range just with less steps
+//Range functions can take Vector2's in the min argument
+const rangeFloat = (min=0, max=1, dec_place=1) => {
+	if (typeof min == "number") {
+		return Range(min, max, dec_place);
+	} else {
+		return Range(min.x, min.y, min.r);
+	}
+}
+
+//Returns a random number between min and max
+//Range functions can take Vector2's in the min argument
+const Range = (min=0, max=1, dec_place=1, is_float=true) => {
+	let result = 0;
+	if (typeof min == "number") {
+		let factor = Math.pow(10, dec_place);
+		if (is_float) {
+			result = Math.random()*(max-min)+min;
+		} else {
+			result = Math.round(Math.random()*(max-min)+min);
+		}
+		return Math.round(result*factor)/factor;
+	} else {
+		let factor = Math.pow(10, min.r);
+		if (min.o) {
+			result = Math.random()*(min.y-min.x)+min.x;
+		} else {
+			result = Math.round(Math.random()*(min.y-min.x)+min.x);
+		}
+		return Math.round(result*factor)/factor;
+	}
+}
+
+/*Resources*/
+//Image data
+const imageData = function(id="", src="", size=new Vector2()) {
+	let data = document.createElement("img");
+	data.id = id;
+	data.src = src;
+	data.width = size.x;
+	data.height = size.y;
+	data.style.display = "none";
+	document.body.appendChild(data);
+	this.getColor = function(alpha=1, comp=0) {
+		return new colorData(data.id, alpha, comp);
+	}
+	this.getSrc = function() {
+		return data.src;
+	}
+	this.setSrc = function(src="") {
+		data.src = src;
+	}
+	this.getSize = function() {
+		return new Vector2(data.width, data.height);
+	}
+	this.setSize = function(size=new Vector2()) {
+		data.width = size.x;
+		data.height = size.y;
+	}
+}
+
 //Engine resources
 let Close_UI = new imageData("close_ui", imagePath+"Close_Icon.png", new Vector2(64, 64));
 let Close_UI_Hover = new imageData("close_ui_hover", imagePath+"Close_Icon_Hover.png", new Vector2(64, 64));
 let Settings_Icon = new imageData("settings_icon", imagePath+"Settings.png", new Vector2(50, 50));
 
-//Variables used for mods
-const modVars = new globalVars();
-
-function globalVars() {
+/*Utilities*/
+//variables used for mods
+const globalVars = function() {
 	this.modVarIndex = {};
 	this.deleteMod = (id="") => {
 		delete this.modVarIndex[id];
@@ -76,172 +439,21 @@ function globalVars() {
 	}
 }
 
+//GlobalVars global variables
+const modVars = new globalVars();
+
+//Gets a modVar
 const getModVar = (id="", name="") => {
 	return modVars.modVarIndex[id][name];
 }
 
+//Sets a modVar
 const setModVar = (id="", name="", value="") => {
 	modVars.modVarIndex[id][name] = value;
 }
 
-//Checks number to see if it's even or odd
-function isEven(num=0) {
-	if ((num % 2) == 0) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-//Clamp to a range
-function clamp(value=0, min=0, max=10) {
-	if (value < min) {
-		value = min;
-	}
-	if (value > max) {
-		value = max;
-	}
-	return value;
-}
-
-//Radians to Degrees
-function radToDeg(rad=0) {
-	return ((rad*(180/Math.PI))+360)%360;
-}
-
-//Degrees to Radians
-function degToRad(deg=0) {
-	return ((deg/(180/Math.PI))+PI2)%PI2;
-}
-
-//Average
-function average(nums=[0,0]) {
-	return nums.reduce((a, b) => a+b,0)/nums.length;
-}
-
-//Gets closest point in an array of points
-function getClosestPoint(pXy, aXys) {
-	let minDist;
-	let fTo;
-	let x;
-	let y;
-	let i;
-	let dist;
-		if (aXys.length > 1) {
-			for (let n = 1 ; n < aXys.length ; n++) {
-				if (aXys[n] != undefined) {
-					if (aXys[n].x != aXys[n - 1].x) {
-					let a = (aXys[n].y - aXys[n - 1].y) / (aXys[n].x - aXys[n - 1].x);
-					let b = aXys[n].y - a * aXys[n].x;
-					dist = Math.abs(a * pXy.x + b - pXy.y) / Math.sqrt(a * a + 1);
-					}
-					else
-					dist = Math.abs(pXy.x - aXys[n].x)
-					let rl2 = Math.pow(aXys[n].y - aXys[n - 1].y, 2) + Math.pow(aXys[n].x - aXys[n - 1].x, 2);
-					let ln2 = Math.pow(aXys[n].y - pXy.y, 2) + Math.pow(aXys[n].x - pXy.x, 2);
-					let lnm12 = Math.pow(aXys[n - 1].y - pXy.y, 2) + Math.pow(aXys[n - 1].x - pXy.x, 2);
-					let dist2 = Math.pow(dist, 2);
-					let calcrl2 = ln2 - dist2 + lnm12 - dist2;
-					if (calcrl2 > rl2)
-						dist = Math.sqrt(Math.min(ln2, lnm12));
-					if ((minDist == null) || (minDist > dist)) {
-						if (calcrl2 > rl2) {
-							if (lnm12 < ln2) {
-							fTo = 0;
-							}
-							else {
-							fTo = 1;
-							}
-						}
-						else {
-						fTo = ((Math.sqrt(lnm12 - dist2)) / Math.sqrt(rl2));
-						}
-					minDist = dist;
-					i = n;
-					}
-				}
-			}
-		let dx = aXys[i - 1].x - aXys[i].x;
-		let dy = aXys[i - 1].y - aXys[i].y;
-		x = aXys[i - 1].x - (dx * fTo);
-		y = aXys[i - 1].y - (dy * fTo);
-		}
-	return new Vector2(x, y);
-}
-
-function getPolarDir(startPoint, endPoint) {
-	let rot = Math.round(startPoint.getRotation(endPoint, false));
-	if (rot == 0 || rot == 360) {
-		return "North";
-	}
-	if ((rot > 0 && rot <= 45) || (rot > 45 && rot < 90)) {
-		return "NorthEast";
-	}
-	if (rot == 90) {
-		return "East";
-	}
-	if ((rot > 90 && rot <= 135) || (rot > 135 && rot < 180)) {
-		return "SouthEast";
-	}
-	if (rot == 180) {
-		return "South";
-	}
-	if ((rot > 180 && rot <= 225) || (rot > 225 && rot < 270)) {
-		return "SouthWest";
-	}
-	if (rot == 270) {
-		return "West";
-	}
-	if ((rot > 270 && rot <= 315) || (rot > 315 && rot < 360)) {
-		return "NorthWest";
-	}
-}
-
-//Helper function for random ints same as range just with less steps
-//Range functions can take Vector2's in the min argument
-function rangeInt(min=0, max=1) {
-	if (typeof min == "number") {
-		return Range(min, max, 0, false);
-	} else {
-		return Range(min.x, min.y, 0, false);
-	}
-}
-
-//Helper function for random floats same as range just with less steps
-//Range functions can take Vector2's in the min argument
-function rangeFloat(min=0, max=1, dec_place=1) {
-	if (typeof min == "number") {
-		return Range(min, max, dec_place);
-	} else {
-		return Range(min.x, min.y, min.r);
-	}
-}
-
-//Returns a random number between min and max
-//Range functions can take Vector2's in the min argument
-function Range(min=0, max=1, dec_place=1, is_float=true) {
-	let result = 0;
-	if (typeof min == "number") {
-		let factor = Math.pow(10, dec_place);
-		if (is_float) {
-			result = Math.random()*(max-min)+min;
-		} else {
-			result = Math.round(Math.random()*(max-min)+min);
-		}
-		return Math.round(result*factor)/factor;
-	} else {
-		let factor = Math.pow(10, min.r);
-		if (min.o) {
-			result = Math.random()*(min.y-min.x)+min.x;
-		} else {
-			result = Math.round(Math.random()*(min.y-min.x)+min.x);
-		}
-		return Math.round(result*factor)/factor;
-	}
-}
-
 //Checks if an array has everything from another
-function arrayCompare(arr=[], target=[], all=true) {
+const arrayCompare = (arr=[], target=[], all=true) => {
 	if (all) {
 		return target.every((item) => {
 			return arr.includes(item);
@@ -254,10 +466,10 @@ function arrayCompare(arr=[], target=[], all=true) {
 }
 
 //Returns matches in 2 arrays
-function arrayMatch(arr1=[], arr2=[]) {
-  var arr = [];
-  for(var i=0 ; i<arr1.length ; ++i) {
-    for(var j=0 ; j<arr2.length ; ++j) {
+const arrayMatch = (arr1=[], arr2=[]) => {
+  let arr = [];
+  for(let i=0 ; i<arr1.length ; ++i) {
+    for(let j=0 ; j<arr2.length ; ++j) {
       if(arr1[i] == arr2[j]) {
         arr.push(arr1[i]);
       }
@@ -266,166 +478,9 @@ function arrayMatch(arr1=[], arr2=[]) {
   return arr;
 }
 
-//Math variables
-const PI2 = Math.PI*2;
-
-//Vector class
-const ZERO = new Vector2();
-const ONE = new Vector2(1, 1);
-const UP = new Vector2(0, -1);
-const UP_LEFT = new Vector2(-1, -1);
-const UP_RIGHT = new Vector2(1, -1);
-const DOWN = new Vector2(0, 1);
-const DOWN_LEFT = new Vector2(-1, 1);
-const DOWN_RIGHT = new Vector2(1, 1);
-const LEFT = new Vector2(-1, 0);
-const RIGHT = new Vector2(1, 0);
-function Vector2(x=0, y=0, r=0, o=0, s=0) {
-	this.x = x; //x
-	this.y = y; //y
-	this.r = r; //angle
-	this.o = o; //offset angle
-	this.s = s; //speed
-	//Set vector
-	this.set = function(vector2) {
-		this.x = vector2.x;
-		this.y = vector2.y;
-		this.r = vector2.r;
-		this.o = vector2.o;
-		this.s = vector2.s;
-	}
-	//Vector2 to array
-	this.array = function() {
-		return [this.x, this.y];
-	}
-	//Vector2 to angle
-	this.angle = function(rad=true) {
-		let calR = parseFloat(Math.atan2(this.y, this.x).toFixed(2));
-		if (rad) {
-			return calR;
-		} else {
-			let calD = Math.round(radToDeg(calR+1.57079633));
-			if (calR == 0) {
-				return 0;
-			} else {
-				return calD;
-			}
-		}
-	}
-	//Vector2 duplicate
-	this.duplicate = function() {
-		return new Vector2(this.x, this.y, this.r, this.o, this.s);
-	}
-	this.dup = this.duplicate;
-	//Compare vectors
-	this.same = function(vector2=ZERO) {
-		let result = false;
-		if (this.x == vector2.x && this.y == vector2.y) {
-			result = true;
-		}
-		return result;
-	}
-	//Get rotation between 2 vectors
-	this.getRotation = function(vector2, rad=true) {
-		this.vector2 = vector2;
-		if (rad) {
-			return ((Math.atan2(-this.y+this.vector2.y, -this.x+this.vector2.x)+degToRad(90))+PI2)%(PI2);
-		} else {
-			return radToDeg((Math.atan2(-this.y+this.vector2.y, -this.x+this.vector2.x)+degToRad(90)));
-		}
-	}
-	//Simple math
-	this.add = function(num) {
-		return new Vector2(this.x+num, this.y+num);
-	}
-	this.addV = function(vector2) {
-		return new Vector2(this.x+vector2.x, this.y+vector2.y);
-	}
-	this.sub = function(num) {
-		return new Vector2(this.x-num, this.y-num);
-	}
-	this.subV = function(vector2) {
-		return new Vector2(this.x-vector2.x, this.y-vector2.y);
-	}
-	this.neg = function(place="x") { //"x" or "y"
-		place = place.toLowerCase();
-		if (place == "x") {
-			return new Vector2(-this.x, this.y);
-		}
-		if (place == "y") {
-			return new Vector2(this.x, -this.y);
-		}
-	}
-	this.multi = function(num) {
-		return new Vector2(this.x*num, this.y*num);
-	}
-	this.multiV = function(vector2) {
-		return new Vector2(this.x*vector2.x, this.y*vector2.y);
-	}
-	this.div = function(num) {
-		if (num == 0) {
-			num == 1;
-		}
-		return new Vector2(this.x/num, this.y/num);
-	}
-	this.divV = function(vector2) {
-		if (vector2.x == 0) {
-			vector2.x == 1;
-		}
-		if (vector2.y == 0) {
-			vector2.y == 1;
-		}
-		return new Vector2(this.x/vector2.x, this.y/vector2.y);
-	}
-	this.min = function(vector2) {
-		return new Vector2(Math.min(this.x, vector2.x), Math.min(this.y, vector2.y));
-	}
-	this.max = function(vector2) {
-		return new Vector2(Math.max(this.x, vector2.x), Math.max(this.y, vector2.y));
-	}
-	//Returns distance between 2 vectors
-	this.distance = function(vector2=ZERO) {
-		let dx = vector2.x-this.x;
-		let dy = vector2.y-this.y;
-		return Math.sqrt(dx*dx+dy*dy);
-	}
-	//Rotate point by this vector
-	this.rotateVector2 = function(vector2, rotation) {
-		return new Vector2(Math.cos(rotation)*(vector2.x-this.x)-Math.sin(rotation)*(vector2.y-this.y)+this.x, Math.sin(rotation)*(vector2.x-this.x)+Math.cos(rotation)*(vector2.y-this.y)+this.y);
-	}
-	//Clamp x and or y values
-	//min = number or vector2
-	//max = number or vector2
-	//opt = both, x, y
-	this.clamp = function(min, max, opt="both") {
-		switch (opt) {
-			case "x":
-			case "X":
-				this.x = clamp(this.x, min, max);
-			break;
-			case "y":
-			case "Y":
-				this.y = clamp(this.y, min, max);
-			break;
-			case "both":
-			case "Both":
-				this.x = clamp(this.x, min, max);
-				this.y = clamp(this.y, min, max);
-			break;
-		}
-	}
-}
-
-//Fills a vector2's x and y values with a single number
-//Useful shortcut for making square objects
-function FillVec2(xy=0) {
-	return new Vector2(xy, xy);
-}
-
+/*Core*/
 //Creates canvas
-const screen = new Screen();
-const ctx = screen.ctx;
-function Screen(id="canvas", size=new Vector2(800,450), mode=0) {
+const Screen = function(id="canvas", size=new Vector2(800,450), mode=0) {
 	document.documentElement.style.overflow = "hidden";
 	this.resolution = size;
 	this.halfResolution = this.resolution.div(2);
@@ -497,6 +552,10 @@ function Screen(id="canvas", size=new Vector2(800,450), mode=0) {
     }
     scaler();
 }
+
+//Screen global variables
+const screen = new Screen();
+const ctx = screen.ctx;
 
 //FPS Counter
 const FPS = {
@@ -581,11 +640,12 @@ const DELTA = {
 
 //Update loop
 let updateArray = [];
-function addUpdate(func, id, tag) {
+
+const addUpdate = (func, id, tag) => {
 	updateArray.push({"function":func,"id":id,"tag":tag});
 }
 
-function deleteUpdate(mode=1, op1, op2) {
+const deleteUpdate = (mode=1, op1, op2) => {
 	if (mode < 0) {
 		mode = 0;
 	}
@@ -605,7 +665,7 @@ function deleteUpdate(mode=1, op1, op2) {
 	}
 }
 
-function getUpdate(id=null, tag=null) {
+const getUpdate = (id=null, tag=null) => {
 	if (id != null && tag == null) {
 		return updateArray.filter((u) => {return u.id == id})[0];
 	}
@@ -632,7 +692,7 @@ const layer = {
 };
 
 let delta = 0;
-function Updater() {
+const Updater = () => {
 	FPS.updateFPS();
 	DELTA.updateDelta();
 	delta = DELTA.delta;
@@ -652,11 +712,9 @@ function Updater() {
 
 const updateInterval = setInterval(Updater, 1000/60);
 
-//Rendering Classes
+/*Renderer & Supporting functions*/
 //Shadow data
-const NO_SHADOW = new Shadow();
-const DEFAULT_SHADOW = new Shadow(ZERO, "black", 5);
-function Shadow(offset=ZERO, color="", blur=0) {
+const Shadow = function(offset=ZERO, color="", blur=0) {
 	this.offset = offset;
 	this.color = color;
 	this.blur = blur;
@@ -665,6 +723,15 @@ function Shadow(offset=ZERO, color="", blur=0) {
 	}
 	this.dup = this.duplicate;
 }
+
+//Shorthand function for shadow data
+const shadow = (offset=ZERO, color="", blur=0) => {
+	return new Shadow(offset, color, blur);
+}
+
+//Shadow global variables
+const NO_SHADOW = shadow();
+const DEFAULT_SHADOW = shadow(ZERO, "black", 5);
 
 //NameTag
 /**
@@ -678,8 +745,7 @@ same:
 	includes-
 		checks if the inputed data is included in the base nameTag
 **/
-const BLANK_NAMETAG = new nameTag();
-function nameTag(name="",tag="") {
+const nameTag = function(name="", tag="") {
 	this.name = name;
 	this.tag = tag;
 	this.same = function(nameTag=new nameTag(), mode=0, include=false) {
@@ -718,16 +784,27 @@ function nameTag(name="",tag="") {
 	}
 	this.dup = this.duplicate;
 }
+
+//Shorthand function for a nameTag
+const nt = (name="",tag="") => {
+	return new nameTag(name, tag);
+}
+
+//Makes a nametag only with a name
 const name = (name="") => {
 	return new nameTag(name);
 }
+
+//Makes a nametag only with a tag
 const tag = (tag="") => {
 	return new nameTag("", tag);
 }
 
+//Nametag global variables
+const BLANK_NAMETAG = nt();
+
 //Line data
-const DEFAULT_LINE = new lineData();
-function lineData(stroked=false, cap=0, width=1, dashOffset=0, pattern=[]) {
+const lineData = function(stroked=false, cap=0, width=1, dashOffset=0, pattern=[]) {
 	let caps = {
 		0:"butt",
 		1:"round",
@@ -750,10 +827,16 @@ function lineData(stroked=false, cap=0, width=1, dashOffset=0, pattern=[]) {
 	this.dup = this.duplicate;
 }
 
+//Shorthand function for line data
+const lineD = (stroked=false, cap=0, width=1, dashOffset=0, pattern=[]) => {
+	return new lineData(stroked, cap, width, dashOffset, pattern);
+}
+
+//Line data global variables
+const DEFAULT_LINE = lineD();
+
 //Color data
-const NO_COLOR = new colorData("");
-const DEFAULT_COLOR = new colorData();
-function colorData(color="white", alpha=1, comp=0) {
+const colorData = function(color="white", alpha=1, comp=0) {
 	this.color = color;
 	this.alpha = alpha;
 	this.compMode = comp;
@@ -839,8 +922,18 @@ function colorData(color="white", alpha=1, comp=0) {
 	}
 }
 
+//Shorthand function for color data
+const colorD = (color="white", alpha=1, comp=0) => {
+	return new colorData(color, alpha, comp);
+}
+
+//Color data global variables
+const NO_COLOR = new colorData("");
+const DEFAULT_COLOR = new colorData();
+
+/*REDO THIS SHIT*/
 //Gradient data
-function gradientData(type=0, start=new Vector2(), end=new Vector2(), colors=[]) {
+const gradientData = function(type=0, start=new Vector2(), end=new Vector2(), colors=[]) {
 	this.type = type;
 	this.start = start;
 	this.end = end;
@@ -872,35 +965,8 @@ function gradientData(type=0, start=new Vector2(), end=new Vector2(), colors=[])
 	this.dup = this.duplicate;
 }
 
-//Image data
-function imageData(id="", src="", size=new Vector2()) {
-	let data = document.createElement("img");
-	data.id = id;
-	data.src = src;
-	data.width = size.x;
-	data.height = size.y;
-	data.style.display = "none";
-	document.body.appendChild(data);
-	this.getColor = function(alpha=1, comp=0) {
-		return new colorData(data.id, alpha, comp);
-	}
-	this.getSrc = function() {
-		return data.src;
-	}
-	this.setSrc = function(src="") {
-		data.src = src;
-	}
-	this.getSize = function() {
-		return new Vector2(data.width, data.height);
-	}
-	this.setSize = function(size=new Vector2()) {
-		data.width = size.x;
-		data.height = size.y;
-	}
-}
-
 //Collision data
-/**
+/** NOT FINISHED
 	thisTag- the objects tag for others to search for
 	collideTagList- the list of tags to collide with
 	collisionType- the type of object it will rep in the collision function 
@@ -916,15 +982,14 @@ function imageData(id="", src="", size=new Vector2()) {
 	check for collision and resolve
 	**End**
 **/
-function collisionData(thisTag=null, collideTagList=null, collisionType="rec") {
+const collisionData = function(thisTag=null, collideTagList=null, collisionType="rec") {
 	this.thisTag = thisTag;
 	this.collideTagList = collideTagList;
 	this.collisionType = collisionType;
 }
 
 //Base for objects
-const EMPTY_OBJECT = new baseObject();
-function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZERO, color=DEFAULT_COLOR, shadow=NO_SHADOW, rotOrigin=null) {
+const baseObject = function(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZERO, color=DEFAULT_COLOR, shadow=NO_SHADOW, rotOrigin=null) {
 	this.autoAdd = autoAdd;
 	this.nameTag = nameTag;
 	this.size = size;
@@ -937,6 +1002,24 @@ function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZER
 	this.overridePositionUpdateFunction = false; //Always runs the update position function even when the speed is 0 if true;
 	if (this.rotOrigin == null) {
 		this.rotOrigin = this.position;
+	}
+	this.getColor = () => {
+		return this.color.color;
+	}
+	this.setColor = (color) => {
+		this.color.color = color;
+	}
+	this.getAlpha = () => {
+		return this.color.alpha;
+	}
+	this.setAlpha = (alpha) => {
+		this.color.alpha = alpha;
+	}
+	this.getComp = () => {
+		return this.color.compMode;
+	}
+	this.setComp = (comp) => {
+		this.color.compMode = comp;
 	}
 	this.updatePosition = function() {
 		if (!isPaused) {
@@ -954,8 +1037,16 @@ function baseObject(autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZER
 	this.dup = this.duplicate;
 }
 
+//Shorthand function for creating a base object
+const base = (autoAdd=true, nameTag=BLANK_NAMETAG, size=ZERO, position=ZERO, color=DEFAULT_COLOR, shadow=NO_SHADOW, rotOrigin=null) => {
+	return new baseObject(autoAdd, nameTag, size, position, color, shadow, rotOrigin);
+}
+
+//Base global variables
+const EMPTY_OBJECT = base();
+
 //Sets up object
-function setupObject(base=EMPTY_OBJECT, line=DEFAULT_LINE) {
+const setupObject = (base=EMPTY_OBJECT, line=DEFAULT_LINE) => {
 	ctx.imageSmoothingEnabled = engineSettings.Image_Smoothing;
 	ctx.globalAlpha = base.color.alpha;
 	ctx.globalCompositeOperation = base.color.comp;
@@ -980,13 +1071,13 @@ function setupObject(base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 }
 
 //Rectangle class
-const BLANK_OBJECT = new Rectangle(0, new baseObject(false));
-function Rectangle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
+const Rectangle = function(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.layerNumber = layerNumber;
 	this.base = base;
 	this.line = line;
 	this.type = "rectangle";
 	let points = [];
+	this.convex = false;
 	this.getPoints = function() {
 		return points;
 	}
@@ -1019,8 +1110,13 @@ function Rectangle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	}
 }
 
+//Shorthand function for creating a rectangle object
+const rectangle = (layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) => {
+	return new Rectangle(layerNumber, base, line);
+}
+
 //Circle class
-function Circle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
+const Circle = function(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.layerNumber = layerNumber;
 	this.base = base;
 	this.line = line;
@@ -1045,8 +1141,14 @@ function Circle(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	}
 }
 
+//Shorthand function for creating a circle object
+const circle = (layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) => {
+	return new Circle(layerNumber, base, line);
+}
+
+/*REDO THIS SHIT*/
 //Circle Lighting
-function Light(layerNumber=1, base=EMPTY_OBJECT, lightIntensity=new Vector2(), line=DEFAULT_LINE) {
+const Light = function(layerNumber=1, base=EMPTY_OBJECT, lightIntensity=new Vector2(), line=DEFAULT_LINE) {
 	this.layerNumber = layerNumber;
 	this.base = base;
 	this.lightIntensity = lightIntensity;
@@ -1088,8 +1190,8 @@ function Light(layerNumber=1, base=EMPTY_OBJECT, lightIntensity=new Vector2(), l
 	}
 }
 
-//Circle class
-function Sprite(layerNumber=1, base=EMPTY_OBJECT, animator=null) {
+//Sprite class
+const Sprite = function(layerNumber=1, base=EMPTY_OBJECT, animator=null) {
 	this.layerNumber = layerNumber;
 	this.base = base;
 	this.animator = animator;
@@ -1099,6 +1201,7 @@ function Sprite(layerNumber=1, base=EMPTY_OBJECT, animator=null) {
 	this.dSize = new Vector2(sprite.width, sprite.height);
 	this.scale = new Vector2(1, 1);
 	let points = [];
+	this.convex = false;
 	this.getPoints = function() {
 		return points;
 	}
@@ -1142,8 +1245,13 @@ function Sprite(layerNumber=1, base=EMPTY_OBJECT, animator=null) {
 	}
 }
 
+//Shorthand function for creating a sprite object
+const sprite = (layerNumber=1, base=EMPTY_OBJECT, animator=null) => {
+	return new Sprite(layerNumber, base, animator);
+}
+
 //Sprite controller
-function spriteMind(clipPos=new Vector2(), clipSize=null) {
+const spriteMind = function(clipPos=new Vector2(), clipSize=null) {
 	this.clipPos = clipPos;
 	this.clipSize = clipSize;
 	this.object = null;
@@ -1171,8 +1279,13 @@ function spriteMind(clipPos=new Vector2(), clipSize=null) {
 	this.dup = this.duplicate;
 }
 
+//Shorthand function for creating a sprite mind
+const spriteM = (clipPos=new Vector2(), clipSize=null) => {
+	return new spriteMind(clipPos, clipSize);
+}
+
 //Sprite animator
-function spriteAnimator(image=null, size=ZERO, speed=1, loop=false, autoPlay=true) {
+const spriteAnimator = function(image=null, size=ZERO, speed=1, loop=false, autoPlay=true) {
 	this.image = image;
 	this.size = size;
 	this.speed = speed;
@@ -1225,8 +1338,13 @@ function spriteAnimator(image=null, size=ZERO, speed=1, loop=false, autoPlay=tru
 	this.dup = this.duplicate;
 }
 
+//Shorthand function for creating a sprite animator
+const spriteA = (image=null, size=ZERO, speed=1, loop=false, autoPlay=true) => {
+	return new spriteAnimator(image, size, speed, loop, autoPlay);
+}
+
 //Frame data for multi image animator
-function frameData(frameNumber=1, size=new Vector2(), scale=new Vector2(1, 1)) {
+const frameData = function(frameNumber=1, size=new Vector2(), scale=new Vector2(1, 1)) {
 	if (frameNumber < 1) {
 		frameNumber = 1;
 	}
@@ -1235,8 +1353,13 @@ function frameData(frameNumber=1, size=new Vector2(), scale=new Vector2(1, 1)) {
 	this.scale = scale;
 }
 
+//Shorthand function for creating frame data
+const frameD = (frameNumber=1, size=new Vector2(), scale=new Vector2(1, 1)) => {
+	return new frameData(frameNumber, size, scale);
+}
+
 //Multi Image animator
-function multiImgAnimator(frameDataArray=[], imageNameBase="", imageType="png", animLength=0, speed=1, loop=false, autoPlay=true, path=imagePath) {
+const multiImgAnimator = function(frameDataArray=[], imageNameBase="", imageType="png", animLength=0, speed=1, loop=false, autoPlay=true, path=imagePath) {
 	this.frameDataArray = frameDataArray;
 	this.imageNameBase = imageNameBase;
 	this.imageType = imageType;
@@ -1291,10 +1414,15 @@ function multiImgAnimator(frameDataArray=[], imageNameBase="", imageType="png", 
 	this.dup = this.duplicate;
 }
 
+//Shorthand function for creating multi-image animator
+const multiImgA = (frameDataArray=[], imageNameBase="", imageType="png", animLength=0, speed=1, loop=false, autoPlay=true, path=imagePath) => {
+	return new multiImgAnimator(frameDataArray, imageNameBase, imageType, animLength, speed, loop, autoPlay, path);
+}
+
 //Text class
 //base.size = new Vector2(font: number, autoAlign: true|false, textAlign: left|right|center);
 //Add text scaling
-function Text(layerNumber=1, text="", base=EMPTY_OBJECT, line=DEFAULT_LINE) {
+const Text = function(layerNumber=1, text="", base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.layerNumber = layerNumber;
 	this.text = text;
 	this.base = base;
@@ -1336,9 +1464,12 @@ function Text(layerNumber=1, text="", base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	}
 }
 
-document.body.allow = "clipboard-read; clipboard-write";
+//Shorthand function for creating a text object
+const text = (layerNumber=1, text="", base=EMPTY_OBJECT, line=DEFAULT_LINE) => {
+	return new Text(layerNumber, text, base, line);
+}
 
-function TextBox(layerNumber=1, font="30px Arial", textColor="white", base=EMPTY_OBJECT, line=DEFAULT_LINE) {
+const TextBox = function(layerNumber=1, font="30px Arial", textColor="white", base=EMPTY_OBJECT, line=DEFAULT_LINE) {
 	this.layerNumber = layerNumber;
 	this.font = font;
 	this.textColor = textColor;
@@ -1357,7 +1488,7 @@ function TextBox(layerNumber=1, font="30px Arial", textColor="white", base=EMPTY
 	this.scrollSpeed = 0.25;
 	let scrollIndexReal = 0;
 	
-	//Scroll vars
+	//Scroll lets
 	this.scroll = true;
 	this.scrollMaxWaitTime = 10;
 	let scrollState = 0;
@@ -1536,8 +1667,13 @@ function TextBox(layerNumber=1, font="30px Arial", textColor="white", base=EMPTY
 	}
 }
 
+//Shorthand function for creating a text box object
+const textBox = (layerNumber=1, font="30px Arial", textColor="white", base=EMPTY_OBJECT, line=DEFAULT_LINE) => {
+	return new TextBox(layerNumber, font, textColor, base, line);
+}
+
 //Helper function to add objects (Basic)
-function addObject(object, layerNum=null) {
+const addObject = (object, layerNum=null) => {
 	object.base.autoAdd = true;
 	if (layerNum == null) { 
 		layer[object.layerNumber].push(object);
@@ -1548,7 +1684,7 @@ function addObject(object, layerNum=null) {
 }
 
 //Helper function to delete objects by nameTag 
-function deleteByNameTag(nameTag=BLANK_NAMETAG, mode=0, include=false) {
+const deleteByNameTag = (nameTag=BLANK_NAMETAG, mode=0, include=false) => {
 	for (let i=1;i<=layer.length;i++) {
 		layer[i] = layer[i].filter((o) => {
 			return !o.base.nameTag.same(nameTag, mode, include);
@@ -1558,7 +1694,7 @@ function deleteByNameTag(nameTag=BLANK_NAMETAG, mode=0, include=false) {
 }
 
 //Helper function to delete objects by nameTag 
-function deleteByMarked() {
+const deleteByMarked = () => {
 	for (let i=1;i<layer.length;i++) {
 		layer[i] = layer[i].filter((o) => !o.base.marked);
 	}
@@ -1566,7 +1702,7 @@ function deleteByMarked() {
 }
 
 //Helper function to get objects by nameTag
-function getByNameTag(nameTag=BLANK_NAMETAG, mode=0, returnIndex=false, include=false, getMode=0) {
+const getByNameTag = (nameTag=BLANK_NAMETAG, mode=0, returnIndex=false, include=false, getMode=0) => {
 	let results = [];
 	let result = null;
 	if (getMode < 0) {
@@ -1621,7 +1757,7 @@ function getByNameTag(nameTag=BLANK_NAMETAG, mode=0, returnIndex=false, include=
 }
 
 //Helper function to get objects by nameTag (and color)
-function getByColorData(colorData=NO_COLOR, colorMode=0, returnIndex=false, getMode=0) {
+const getByColorData = (colorData=NO_COLOR, colorMode=0, returnIndex=false, getMode=0) => {
 	let results = [];
 	let result = null;
 	if (getMode < 0) {
@@ -1676,7 +1812,7 @@ function getByColorData(colorData=NO_COLOR, colorMode=0, returnIndex=false, getM
 }
 
 //Renderer
-function Renderer() {
+const Renderer = () => {
 	ctx.clearRect(0, 0, screen.resolution.x, screen.resolution.y);
 	objectArray.forEach((i) => {
 		if (typeof i.base.size.x == "string" || (i.base.position.x-(i.base.size.x/2) <= screen.resolution.x && i.base.position.x+(i.base.size.x/2) >= 0 && i.base.position.y-(i.base.size.y/2) <= screen.resolution.y && i.base.position.y+(i.base.size.y/2) >= 0)) {
@@ -1688,9 +1824,9 @@ function Renderer() {
 	});
 }
 
-//collisions
-//rectangle vs. rectangle
-function recCollision(object_1, object_2) {
+/*Collisions*/
+//rectangle vs. rectangle **Add reaction, controller, and data**
+const recCollision = (object_1, object_2) => {
 	let obj1pos = object_1.base.position;
 	let obj1size = object_1.base.size;
 	let obj2pos = object_2.base.position;
@@ -1706,8 +1842,8 @@ function recCollision(object_1, object_2) {
 	}
 }
 
-//circle vs. circle
-function cirCollision(object_1, object_2) {
+//circle vs. circle **Add reaction, controller, and data**
+const cirCollision = (object_1, object_2) => {
 	let obj1pos = object_1.base.position;
 	let obj1size = object_1.base.size;
 	let obj1radius = average(obj1size.array())/2;
@@ -1725,16 +1861,108 @@ function cirCollision(object_1, object_2) {
 	}
 }
 
-//circle vs. polygon
-function cirPolyCollision(object_1, object_2, controller_1=null, returnBool=true) {
+//point vs. polygon
+const pointInsidePolygon = (vec, polygon) => {
+    //also consider to use the'pointInsiderectangle' function for simpler tasks
+    /* sturcture of the polygon object:
+        {
+            points:[
+                {
+                    x:number,
+                    y:number
+                }
+            ]
+            //optional, if it has a precomputed bounding box, it has these properties as well:
+            xmin:number,
+            xmax:number,
+            ymin:number,
+            ymax:number,
+            convex:boolean
+        }
+    */
+	/*
+    //fast "false/maybe" test: check if the point is inside the outer bounding box of the polygon.
+    if(polygon.xmin === undefined){//if the bounding box of the polygon is not precomputed, then compute it.
+        let xmin = xmax = polygon.getPoints()[0].x;
+        let ymin = ymax = polygon.getPoints()[0].y;
+        for(let i = polygon.getPoints().length;--i;){
+            if(polygon.getPoints()[i].x < xmin){
+                xmin = polygon.getPoints()[i].x;
+            }
+            else if(polygon.getPoints()[i].x > xmax){
+                xmax = polygon.getPoints()[i].x;
+            };
+            if(polygon.getPoints()[i].y < ymin){
+                ymin = polygon.getPoints()[i].y;
+            }
+            else if(polygon.getPoints()[i].y > ymax){
+                ymax = polygon.getPoints()[i].y;
+            };
+        };
+        polygon.xmin = xmin;
+        polygon.xmax = xmax;
+        polygon.ymin = ymin;
+        polygon.ymax = ymax;
+    };
+    if(vec.x < polygon.xmin || vec.x > polygon.xmax){
+        return false;
+    }
+    else if(vec.y < polygon.xmin || vec.x > polygon.ymax){
+        return false;
+    };
+	*/
+    /* complete "true/false" test: check the number of times a ray from the point intersects the perimeter of the polygon
+     *  odd number  == inside
+     *  even number == outside
+     * I cast the ray along the x axis
+     */
+    let intersections = 0;
+    for(let i = polygon.getPoints().length;i--;){
+        let xpos = polygon.getPoints()[i].x - vec.x;//the polygon is translated with the test point in origo
+        let ypos = polygon.getPoints()[i].y - vec.y;
+        if(i){
+            let xpos2 = polygon.getPoints()[i - 1].x - vec.x;
+            let ypos2 = polygon.getPoints()[i - 1].y - vec.y;
+        }
+        else{//the last side of the polygon wraps around to the first point of the corner list, it requires special handling.
+            let xpos2 = polygon.getPoints()[polygon.getPoints().length - 1].x - vec.x;
+            let ypos2 = polygon.getPoints()[polygon.getPoints().length - 1].y - vec.y;
+        };
+        //each side of the polygon does potentially intersect the ray. I skip the iteration for those that do not.
+        if(xpos < 0 && xpos2 < 0){//the ray can not cross a side starting and ending at negative x, so no intersection then
+            continue;
+        }
+        else if(ypos * ypos2 > 0){//still no intersection if both y's have the same sign
+            continue;
+        }
+        else if(xpos + (xpos2 - xpos) * ypos/(ypos - ypos2) < 0){//intersections of the x-axis before x=0 do not count
+            continue;
+        }
+        else if(ypos === 0){//a corner may be exactly at the ray
+            continue;
+        };
+        //alert(xpos+","+ypos+","+xpos2+","+ypos2);
+        intersections++;
+        if(polygon.convex && intersections === 2){//a ray through a convex polygon can intersect at most 2 times
+            return false;
+        };
+    };
+    if(intersections % 2 === 0){
+        return false;
+    };
+    return true;
+};
+
+//circle vs. edge/polygon **Add data**
+const cirPolyCollision = (object_1, object_2, controller_1=null, returnBool=true, checkInside=false) => {
 	let controller1 = controller_1;
 	let obj1pos = object_1.base.position;
 	let obj1size = object_1.base.size;
 	let obj1radius = average(obj1size.array())/2;
-	let t = getClosestPoint(obj1pos, object_2.getPoints());
+	let t = obj1pos.getClosestPoint(object_2.getPoints());
 	let distance = t.distance(obj1pos);
-	let dir = getPolarDir(obj1pos, t);
-		if (distance <= obj1radius) {
+	let dir = obj1pos.getPolarDir(t);
+		if (distance <= obj1radius || (checkInside && pointInsidePolygon(obj1pos, object_2))) {
 			if (returnBool) {
 				return true;
 			} else {
@@ -1803,8 +2031,27 @@ function cirPolyCollision(object_1, object_2, controller_1=null, returnBool=true
 		}
 }
 
+//circle vs. edge [return bool: true, edge: true, controller: false]
+const cVeCollision = (object_1, object_2, bool=true, controller=null) => {
+	if (bool) {
+		return cirPolyCollision(object_1, object_2, controller, true);
+	} else {
+		cirPolyCollision(object_1, object_2, controller, false);
+	}
+}
+
+//circle vs. polygon [return bool: true, edge: false, controller: false]
+const cVpCollision = (object_1, object_2, bool=true, controller=null) => {
+	if (bool) {
+		return cirPolyCollision(object_1, object_2, controller, true, true);
+	} else {
+		cirPolyCollision(object_1, object_2, controller, false, true);
+	}
+}
+
+/*More Utilities*/
 //Simple player movement controller
-function playerController(autoAdd=true, id="", object=null, maxSpeed=5, accel=new Vector2(0.1, 0.2), horizontalEdges=new Vector2(), verticalEdges=new Vector2()) {
+const playerController = function(autoAdd=true, id="", object=null, maxSpeed=5, accel=new Vector2(0.1, 0.2), horizontalEdges=new Vector2(), verticalEdges=new Vector2()) {
 	this.id = id;
 	this.object = object;
 	this.maxSpeed = maxSpeed;
@@ -1971,25 +2218,33 @@ function playerController(autoAdd=true, id="", object=null, maxSpeed=5, accel=ne
 	}
 }
 
-document.documentElement.style.fontFamily = "Arial";
+//Shorthand function for player controller
+const playerC = (autoAdd=true, id="", object=null, maxSpeed=5, accel=new Vector2(0.1, 0.2), horizontalEdges=new Vector2(), verticalEdges=new Vector2()) => {
+	return new playerController(autoAdd, id, object, maxSpeed, accel, horizontalEdges, verticalEdges);
+}
 
 //Timer
 const TIME = (hour=0, minute=0, second=0, millisecond=0) => {
 	return {"hour":hour, "minute":minute, "second":second, "millisecond":millisecond};
 }
+
 const Hour = (h=0) => {
 	return TIME(h);
 }
+
 const Minute = (m=0) => {
 	return TIME(0, m);
 }
+
 const Second = (s=0) => {
 	return TIME(0, 0, s);
 }
+
 const MSecond = (ms=0) => {
 	return TIME(0, 0, 0, ms);
 }
-function timer(time_=TIME(), active_=true, loop_=false, func_=null, id_="") {
+
+const timer = function(time_=TIME(), active_=true, loop_=false, func_=null, id_="") {
 	this.time_ = time_;
 	this.currentTime = TIME();
 	let startTime = Date.now();
@@ -1998,7 +2253,6 @@ function timer(time_=TIME(), active_=true, loop_=false, func_=null, id_="") {
 	this.func = func_;
 	let id = id_;
 	this.start = (reset=false) => {
-		console.log("fuck");
 		this.active = true;
 		if (reset) {
 			this.reset();
@@ -2030,52 +2284,14 @@ function timer(time_=TIME(), active_=true, loop_=false, func_=null, id_="") {
 	addUpdate(update, "timer_"+id);
 }
 
-//Mod loader helper function
-const ModLoader = new modLoader();
-
-function mod(path="", id="") {
-	this.path = path;
-	this.id = id;
-	this.load = function() {
-		let script = document.createElement('script');
-		script.id = this.id;
-		script.src = this.path;
-		ModLoader.modDiv.appendChild(script);
-		ModLoader.addVisual(this.id+"V");
-	}
-	this.unload = function() {
-		deleteUpdate(2, this.id);
-		deleteByNameTag(new nameTag("", this.id), 2, true);
-		for (let i=0;i<gameModeData.length;i++) {
-			deleteMap(this.id, i, true, true);
-		}
-		let domElements = Array.from(document.getElementsByClassName(this.id));
-		domElements.forEach((e) => {
-			e.remove();
-		});
-		try {
-			eval(this.id+"_unload()");
-		} catch (e) {}
-		try {
-			eval(this.id+"_Unload()");
-		} catch (e) {}
-		try {
-			getModVar(this.id, "unload")();
-		} catch (e) {}
-		try {
-			getModVar(this.id, "Unload")();
-		} catch (e) {}
-		modVars.deleteMod(this.id);
-		let script = document.getElementById(this.id);
-		let scriptV = document.getElementById(this.id+"V");
-		ModLoader.modDiv.removeChild(script);
-		ModLoader.modSep.removeChild(scriptV);
-	}
-	this.load();
+//Shorthand function for a timer
+const T = (time_=TIME(), active_=true, loop_=false, func_=null, id_="") => {
+	return new timer(time_, active_, loop_, func_, id_);
 }
 
+/*Mods*/
 //Mod loader
-function modLoader() {
+const modLoader = function() {
 	this.menu = null;
 	this.title = null;
 	this.input = null;
@@ -2296,11 +2512,149 @@ function modLoader() {
 	}
 }
 
-//Controller stuff
+//Mod loader global variables
+const ModLoader = new modLoader();
+
+//Mod loader helper function
+const mod = function(path="", id="") {
+	this.path = path;
+	this.id = id;
+	this.load = function() {
+		let script = document.createElement('script');
+		script.id = this.id;
+		script.src = this.path;
+		ModLoader.modDiv.appendChild(script);
+		ModLoader.addVisual(this.id+"V");
+	}
+	this.unload = function() {
+		deleteUpdate(2, this.id);
+		deleteByNameTag(new nameTag("", this.id), 2, true);
+		for (let i=0;i<gameModeData.length;i++) {
+			deleteMap(this.id, i, true, true);
+		}
+		let domElements = Array.from(document.getElementsByClassName(this.id));
+		domElements.forEach((e) => {
+			e.remove();
+		});
+		try {
+			eval(this.id+"_unload()");
+		} catch (e) {}
+		try {
+			eval(this.id+"_Unload()");
+		} catch (e) {}
+		try {
+			getModlet(this.id, "unload")();
+		} catch (e) {}
+		try {
+			getModlet(this.id, "Unload")();
+		} catch (e) {}
+		modVars.deleteMod(this.id);
+		let script = document.getElementById(this.id);
+		let scriptV = document.getElementById(this.id+"V");
+		ModLoader.modDiv.removeChild(script);
+		ModLoader.modSep.removeChild(scriptV);
+	}
+	this.load();
+}
+
+/*Controls*/
+//Controllers
 let controllers = {};
+
+//Controller manager
+const controllerMG = function() {
+	this.players = 0; //0- no support
+	this.connected = 0;
+	
+	this.config = {};
+	
+	this.assignControllers = () => {
+		for (let i=1;i<=this.players;i++) {
+			if (this.config[i] != undefined) {
+				if (this.config[i].controllerId == undefined) {
+					this.config[i].controllerId = i-1;
+				}
+			}
+		} 
+	}
+	this.assignControllers();
+	
+	this.calDeadzone = (vec, deadzone) => {
+		let m = Math.sqrt(vec.x*vec.x+vec.y*vec.y);
+		if (m < deadzone) {
+			return new Vector2(0, 0, true);
+		}
+		let over = m-deadzone;
+		let nover = over/(1-deadzone);
+		let nx = vec.x/m;
+		let ny = vec.y/m;
+		return new Vector2(clamp(nx*nover, -1, 1), clamp(ny*nover, -1, 1), (vec.x==0 && vec.y==0));
+	}
+	
+	const update = () => {
+		controllers = (navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []));
+		this.connected = controllers.filter((i)=>{return i!=null}).length;
+		if (this.players == 0) {
+			if (keybinder.controllerDiv.style.display != "none") {
+				keybinder.controllerDiv.style.display = "none";
+			}
+		} else {
+			if (keybinder.controllerDiv.style.display != "block") {
+				keybinder.controllerDiv.style.display = "block";
+			}
+			for (let i=1;i<=this.players;i++) {
+				if (this.config[i] != undefined) {
+					let playerControls = this.config[i];
+					if (playerControls.axis != undefined) {
+						for (let a=0,length=playerControls.axis.length;a<length;a++) {
+							let axisData = playerControls.axis[a];
+							if (controllers[playerControls.controllerId] != undefined && controllers[playerControls.controllerId] != null) {
+								switch (axisData.bttn) {
+									case 0:
+										let calLeft = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[0], controllers[playerControls.controllerId].axes[1]), axisData.deadzone);
+										playerControls.leftStick = calLeft;
+										axisData.func(playerControls.leftStick);
+									break;
+									case 1:
+										let calRight = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[2], controllers[playerControls.controllerId].axes[3]), axisData.deadzone);
+										playerControls.rightStick = calRight;
+										axisData.func(playerControls.rightStick);
+									break;
+								}
+							}
+						}
+					}
+					if (playerControls.controls != undefined) {
+						for (let c=0,length=playerControls.controls.length;c<length;c++) {
+							let bttnData = playerControls.controls[c];
+							if (controllers[playerControls.controllerId] != undefined && controllers[playerControls.controllerId] != null) {
+								let data = controllers[playerControls.controllerId].buttons[bttnData.bttn];
+								if (bttnData.single) {
+									if (data.pressed && !bttnData.lock) {
+										bttnData.func({"pressed":data.pressed,"touched":data.touched,"value":data.value});
+										bttnData.lock = true;
+									}
+									if (!data.pressed && bttnData.lock) {
+										bttnData.lock = false;
+									}
+								} else {
+									bttnData.func({"pressed":data.pressed,"touched":data.touched,"value":data.value});
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	addUpdate(update, "controller_manager");
+}
+
+//Controller manager global variables
 const controllerManager = new controllerMG();
 
-function controllerBttnBinding(player=1, func=null, funcName="", bttn=0, single=true) {
+//Button Binding function
+const controllerBttnBinding = function(player=1, func=null, funcName="", bttn=0, single=true) {
 	this.player = player;
 	this.func = func;
 	this.funcName = funcName;
@@ -2486,127 +2840,52 @@ function controllerBttnBinding(player=1, func=null, funcName="", bttn=0, single=
 	this.dup = this.duplicate;
 }
 
-function controllerAxesBinding(player=1, func=null, funcName="", axes=0, deadzone=0.2) {
+//Shorthand function for controller button binding
+const contBttnB = (player=1, func=null, funcName="", bttn=0, single=true) => {
+	return new controllerBttnBinding(player, func, funcName, bttn, single);
+}
+
+//Axis Binding function
+const controllerAxisBinding = function(player=1, func=null, funcName="", axis=0, deadzone=0.2) {
 	this.player = player;
 	this.func = func;
 	this.funcName = funcName;
-	this.axes = axes; //0- left stick, 1- right stick
+	this.axis = axis; //0- left stick, 1- right stick
 	this.deadzone = deadzone;
-	if (axes > 1) {
-		this.axes = 1;
+	if (axis > 1) {
+		this.axis = 1;
 	}
-	if (axes < 0) {
-		this.axes = 0;
+	if (axis < 0) {
+		this.axis = 0;
 	}
 	if (controllerManager.config[this.player] == undefined) {
-		controllerManager.config[this.player] = {"axes":[]};
-		controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+		controllerManager.config[this.player] = {"axis":[]};
+		controllerManager.config[this.player].axis.push({"funcName":this.funcName,"func":this.func,"bttn":this.axis,"deadzone":this.deadzone});
 	} else {
-		if (controllerManager.config[this.player].axes == undefined) {
-			controllerManager.config[this.player].axes = [];
-			controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+		if (controllerManager.config[this.player].axis == undefined) {
+			controllerManager.config[this.player].axis = [];
+			controllerManager.config[this.player].axis.push({"funcName":this.funcName,"func":this.func,"bttn":this.axis,"deadzone":this.deadzone});
 		} else {
-			controllerManager.config[this.player].axes.push({"funcName":this.funcName,"func":this.func,"bttn":this.axes,"deadzone":this.deadzone});
+			controllerManager.config[this.player].axis.push({"funcName":this.funcName,"func":this.func,"bttn":this.axis,"deadzone":this.deadzone});
 		}
 	}
 	this.duplicate = () => {
-		return new controllerBttnBinding(this.player, this.func, this.funcName, this.axes, this.deadzone);
+		return new controllerBttnBinding(this.player, this.func, this.funcName, this.axis, this.deadzone);
 	}
 	this.dup = this.duplicate;
 }
 
-function controllerMG() {
-	this.players = 0; //0- no support
-	this.connected = 0;
-	
-	this.config = {};
-	
-	this.assignControllers = () => {
-		for (let i=1;i<this.players;i++) {
-			if (this.config[i] != undefined) {
-				if (this.config[i].controllerId == undefined) {
-					this.config[i].controllerId = i-1;
-				}
-			}
-		} 
-	}
-	this.assignControllers();
-	
-	this.calDeadzone = (vec, deadzone) => {
-		let m = Math.sqrt(vec.x*vec.x+vec.y*vec.y);
-		if (m < deadzone) {
-			return new Vector2(0, 0, true);
-		}
-		let over = m-deadzone;
-		let nover = over/(1-deadzone);
-		let nx = vec.x/m;
-		let ny = vec.y/m;
-		return new Vector2(clamp(nx*nover, -1, 1), clamp(ny*nover, -1, 1), (vec.x==0 && vec.y==0));
-	}
-	
-	const update = () => {
-		controllers = (navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []));
-		this.connected = controllers.filter((i)=>{return i!=null}).length;
-		if (this.players == 0) {
-			if (keybinder.controllerDiv.style.display != "none") {
-				keybinder.controllerDiv.style.display = "none";
-			}
-		} else {
-			if (keybinder.controllerDiv.style.display != "block") {
-				keybinder.controllerDiv.style.display = "block";
-			}
-			for (let i=1;i<this.players;i++) {
-				if (this.config[i] != undefined) {
-					let playerControls = this.config[i];
-					if (playerControls.axes != undefined) {
-						for (let a=0,length=playerControls.axes.length;a<length;a++) {
-							let axesData = playerControls.axes[a];
-							if (controllers[playerControls.controllerId] != undefined && controllers[playerControls.controllerId] != null) {
-								switch (axesData.bttn) {
-									case 0:
-										let calLeft = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[0], controllers[playerControls.controllerId].axes[1]), axesData.deadzone);
-										playerControls.leftStick = calLeft;
-										axesData.func(playerControls.leftStick);
-									break;
-									case 1:
-										let calRight = this.calDeadzone(new Vector2(controllers[playerControls.controllerId].axes[2], controllers[playerControls.controllerId].axes[3]), axesData.deadzone);
-										playerControls.rightStick = calRight;
-										axesData.func(playerControls.rightStick);
-									break;
-								}
-							}
-						}
-					}
-					if (playerControls.controls != undefined) {
-						for (let c=0,length=playerControls.controls.length;c<length;c++) {
-							let bttnData = playerControls.controls[c];
-							if (controllers[playerControls.controllerId] != undefined && controllers[playerControls.controllerId] != null) {
-								let data = controllers[playerControls.controllerId].buttons[bttnData.bttn];
-								if (bttnData.single) {
-									if (data.pressed && !bttnData.lock) {
-										bttnData.func({"pressed":data.pressed,"touched":data.touched,"value":data.value});
-										bttnData.lock = true;
-									}
-									if (!data.pressed && bttnData.lock) {
-										bttnData.lock = false;
-									}
-								} else {
-									bttnData.func({"pressed":data.pressed,"touched":data.touched,"value":data.value});
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	addUpdate(update, "controller_manager");
+//Shorthand function for controller axis binding
+const contAxisB = (player=1, func=null, funcName="", axis=0, deadzone=0.2) => {
+	return new controllerAxisBinding(player, func, funcName, axis, deadzone);
 }
 
+//Controller connected function
 window.addEventListener("gamepadconnected", (e) => {
   controllerManager.assignControllers();
 });
 
+//Controller disconnected function
 window.addEventListener("gamepaddisconnected", (e) => {
   controllerManager.assignControllers();
 });
@@ -2616,9 +2895,7 @@ const keys = [];
 const keyBuffer = [];
 let keyLock = false;
 
-const keybinder = new keyBinder();
-
-function keyBinder() {
+const keyBinder = function() {
 	this.menu = null;
 	this.title = null;
 	this.keySep = null;
@@ -2626,6 +2903,11 @@ function keyBinder() {
 	this.controllerDiv = null;
 	this.menuSize = new Vector2(800, 600);
 	this.menuScale = 1;
+	this.currentPlayerIndex = 1;
+	this.currentPlayerConfig = controllerManager.config[this.currentPlayerIndex];
+	if (this.currentPlayerConfig != undefined) {
+		this.playerControllerId = this.currentPlayerConfig.controllerId;
+	}
 	this.show = function() {
 		if (this.menu != null) {
 			this.menu.style.display = "block";
@@ -2705,9 +2987,154 @@ function keyBinder() {
 		this.controllerDiv.style.marginTop = "0px";
 		this.controllerDiv.style.marginBottom = "1px";
 		this.controllerDiv.style.width = "100%";
-		this.controllerDiv.style.height = "100px";
+		this.controllerDiv.style.height = "150px";
 		this.controllerDiv.style.boxShadow = "0px 5px black";
 		this.keySep.appendChild(this.controllerDiv);
+		//Title
+		this.controllerTitle = document.createElement('h1');
+		this.controllerTitle.innerHTML = "Controllers";
+		this.controllerTitle.style.textAlign = "center";
+		this.controllerTitle.style.color = "white";
+		this.controllerTitle.style.marginLeft = "0px";
+		this.controllerTitle.style.marginRight = "0px";
+		this.controllerTitle.style.marginTop = "0px";
+		this.controllerTitle.style.marginBottom = "0px";
+		this.controllerDiv.appendChild(this.controllerTitle);
+		//Player div
+		this.playerDiv = document.createElement('div');
+		this.playerDiv.id = "playerControllerIndex";
+		this.playerDiv.style.width = "300px";
+		this.playerDiv.style.height = "30px";
+		this.playerDiv.style.textAlign = "center";
+		this.playerDiv.style.margin = "0 auto";
+		this.controllerDiv.appendChild(this.playerDiv);
+		//Left player index button
+		this.leftPlayerIndexBttn = document.createElement('button');
+		this.leftPlayerIndexBttn.innerHTML = "<";
+		this.leftPlayerIndexBttn.style.backgroundColor = "lightgrey";
+		this.leftPlayerIndexBttn.style.width = "30px";
+		this.leftPlayerIndexBttn.style.height = "30px";
+		this.leftPlayerIndexBttn.style.display = "inline-block";
+		this.leftPlayerIndexBttn.style.position = "relative";
+		this.leftPlayerIndexBttn.style.top = "-5px";
+		this.leftPlayerIndexBttn.onmouseover = () => {
+			this.leftPlayerIndexBttn.style.backgroundColor = "grey";
+		};
+		this.leftPlayerIndexBttn.onmouseleave = () => {
+			this.leftPlayerIndexBttn.style.backgroundColor = "lightgrey";
+		};
+		this.leftPlayerIndexBttn.onclick = () => {
+			if (this.currentPlayerIndex > 1) {
+				this.currentPlayerIndex--;
+			}
+		};
+		this.playerDiv.appendChild(this.leftPlayerIndexBttn);
+		//Current player
+		this.currentPlayer = document.createElement('h1');
+		this.currentPlayer.innerHTML = "Player: 1";
+		this.currentPlayer.style.color = "white";
+		this.currentPlayer.style.marginLeft = "10px";
+		this.currentPlayer.style.marginRight = "10px";
+		this.currentPlayer.style.marginTop = "0px";
+		this.currentPlayer.style.marginBottom = "0px";
+		this.currentPlayer.style.display = "inline-block";
+		this.playerDiv.appendChild(this.currentPlayer);
+		//Right player index button
+		this.rightPlayerIndexBttn = document.createElement('button');
+		this.rightPlayerIndexBttn.innerHTML = ">";
+		this.rightPlayerIndexBttn.style.backgroundColor = "lightgrey";
+		this.rightPlayerIndexBttn.style.width = "30px";
+		this.rightPlayerIndexBttn.style.height = "30px";
+		this.rightPlayerIndexBttn.style.display = "inline-block";
+		this.rightPlayerIndexBttn.style.position = "relative";
+		this.rightPlayerIndexBttn.style.top = "-5px";
+		this.rightPlayerIndexBttn.onmouseover = () => {
+			this.rightPlayerIndexBttn.style.backgroundColor = "grey";
+		};
+		this.rightPlayerIndexBttn.onmouseleave = () => {
+			this.rightPlayerIndexBttn.style.backgroundColor = "lightgrey";
+		};
+		this.rightPlayerIndexBttn.onclick = () => {
+			if (this.currentPlayerIndex < controllerManager.players) {
+				this.currentPlayerIndex++;
+			}
+		};
+		this.playerDiv.appendChild(this.rightPlayerIndexBttn);
+		//Player controller div
+		this.playerControllerDiv = document.createElement('div');
+		this.playerControllerDiv.id = "playerControllerIndex";
+		this.playerControllerDiv.style.width = "300px";
+		this.playerControllerDiv.style.height = "30px";
+		this.playerControllerDiv.style.textAlign = "center";
+		this.playerControllerDiv.style.margin = "0 auto";
+		this.playerControllerDiv.style.marginTop = "5px";
+		this.controllerDiv.appendChild(this.playerControllerDiv);
+		//Left player index button
+		this.leftPlayerControllerIndexBttn = document.createElement('button');
+		this.leftPlayerControllerIndexBttn.innerHTML = "<";
+		this.leftPlayerControllerIndexBttn.style.backgroundColor = "lightgrey";
+		this.leftPlayerControllerIndexBttn.style.width = "30px";
+		this.leftPlayerControllerIndexBttn.style.height = "30px";
+		this.leftPlayerControllerIndexBttn.style.display = "inline-block";
+		this.leftPlayerControllerIndexBttn.style.position = "relative";
+		this.leftPlayerControllerIndexBttn.style.top = "-5px";
+		this.leftPlayerControllerIndexBttn.onmouseover = () => {
+			this.leftPlayerControllerIndexBttn.style.backgroundColor = "grey";
+		};
+		this.leftPlayerControllerIndexBttn.onmouseleave = () => {
+			this.leftPlayerControllerIndexBttn.style.backgroundColor = "lightgrey";
+		};
+		this.leftPlayerControllerIndexBttn.onclick = () => {
+			if (this.currentPlayerConfig != undefined && this.currentPlayerConfig.controllerId != undefined) {
+				if (this.playerControllerId > 0) {
+					this.currentPlayerConfig.controllerId--;
+				}
+			}
+		};
+		this.playerControllerDiv.appendChild(this.leftPlayerControllerIndexBttn);
+		//Current player controller
+		this.currentPlayerController = document.createElement('h1');
+		this.currentPlayerController.innerHTML = "Controller: 1";
+		this.currentPlayerController.style.color = "white";
+		this.currentPlayerController.style.marginLeft = "10px";
+		this.currentPlayerController.style.marginRight = "10px";
+		this.currentPlayerController.style.marginTop = "0px";
+		this.currentPlayerController.style.marginBottom = "0px";
+		this.currentPlayerController.style.display = "inline-block";
+		this.playerControllerDiv.appendChild(this.currentPlayerController);
+		//Right player index button
+		this.rightPlayerControllerIndexBttn = document.createElement('button');
+		this.rightPlayerControllerIndexBttn.innerHTML = ">";
+		this.rightPlayerControllerIndexBttn.style.backgroundColor = "lightgrey";
+		this.rightPlayerControllerIndexBttn.style.width = "30px";
+		this.rightPlayerControllerIndexBttn.style.height = "30px";
+		this.rightPlayerControllerIndexBttn.style.display = "inline-block";
+		this.rightPlayerControllerIndexBttn.style.position = "relative";
+		this.rightPlayerControllerIndexBttn.style.top = "-5px";
+		this.rightPlayerControllerIndexBttn.onmouseover = () => {
+			this.rightPlayerControllerIndexBttn.style.backgroundColor = "grey";
+		};
+		this.rightPlayerControllerIndexBttn.onmouseleave = () => {
+			this.rightPlayerControllerIndexBttn.style.backgroundColor = "lightgrey";
+		};
+		this.rightPlayerControllerIndexBttn.onclick = () => {
+			if (this.currentPlayerConfig != undefined && this.currentPlayerConfig.controllerId != undefined) {
+				if (this.playerControllerId < controllers.length-1) {
+					this.currentPlayerConfig.controllerId++;
+				}
+			}
+		};
+		this.playerControllerDiv.appendChild(this.rightPlayerControllerIndexBttn);
+		//Current player controller connected
+		this.currentControllerConnected = document.createElement('h1');
+		this.currentControllerConnected.innerHTML = "Connected: false";
+		this.currentControllerConnected.style.color = "white";
+		this.currentControllerConnected.style.marginLeft = "0px";
+		this.currentControllerConnected.style.marginRight = "0px";
+		this.currentControllerConnected.style.marginTop = "0px";
+		this.currentControllerConnected.style.marginBottom = "0px";
+		this.currentControllerConnected.style.display = "block";
+		this.playerControllerDiv.appendChild(this.currentControllerConnected);
 	}
 	const updater = () => {
 		this.menu.style.width = (this.menuSize.x*screen.getScale().x)+"px";
@@ -2737,16 +3164,59 @@ function keyBinder() {
 				}
 			});
 		});
+		//Controller stuff
+		this.currentPlayer.innerHTML = "Player: "+this.currentPlayerIndex;
+		if (this.currentPlayerIndex < 1) {
+			this.currentPlayerIndex = 1;
+		}
+		if (this.currentPlayerIndex > controllerManager.players) {
+			this.currentPlayerIndex = controllerManager.players;
+		}
+		if (controllerManager.players == 1) {
+			this.leftPlayerIndexBttn.style.display = "none";
+			this.rightPlayerIndexBttn.style.display = "none";
+		}
+		this.currentPlayerConfig = controllerManager.config[this.currentPlayerIndex];
+		if (this.currentPlayerConfig != undefined) {
+			this.playerControllerId = this.currentPlayerConfig.controllerId;
+		}
+		if (this.currentPlayerConfig != undefined && this.currentPlayerConfig.controllerId != undefined) {
+			this.leftPlayerControllerIndexBttn.style.display = "inline-block";
+			this.rightPlayerControllerIndexBttn.style.display = "inline-block";
+			this.currentPlayerController.innerHTML = "Controller: "+this.playerControllerId;
+			this.currentControllerConnected.innerHTML = "Connected: "+(controllers[this.playerControllerId] != null);
+		} else {
+			this.leftPlayerControllerIndexBttn.style.display = "none";
+			this.rightPlayerControllerIndexBttn.style.display = "none";
+			this.currentPlayerController.innerHTML = "Controller: None";
+			this.currentControllerConnected.innerHTML = "Connected: false";
+		}
+		if (this.playerControllerId < 0) {
+			this.playerControllerId = 0;
+		}
+		if (this.playerControllerId > controllers.length-1) {
+			this.playerControllerId = controllers.length-1;
+		}
 	}
 	this.createMenu();
 }
 
-function keyData(key="", location=0) {
+//Keybinder global variables
+const keybinder = new keyBinder();
+
+//Key data
+const keyData = function(key="", location=0) {
 	this.key = key;
 	this.location = location;
 }
 
-function key(id="", thisKeys=[], functions=new Vector2(), ifPaused=true) {
+//Shorthand function for key data
+const keyD = (key="", location=0) => {
+	return new keyData(key, location);
+}
+
+//Key
+const key = function(id="", thisKeys=[], functions=new Vector2(), ifPaused=true) {
 	this.id = id;
 	this.keys = thisKeys;
 	this.functions = functions;
@@ -2869,7 +3339,12 @@ function key(id="", thisKeys=[], functions=new Vector2(), ifPaused=true) {
 	keys.push(this);
 }
 
-function updateKey() {
+//Shorthand function for key
+const K = (id="", thisKeys=[], functions=new Vector2(), ifPaused=true) => {
+	return new key(id, thisKeys, functions, ifPaused);
+}
+
+const updateKey = () => {
 	if (!keyLock) {
 		keys.forEach((k) => {
 			if (k.compare(keyBuffer)) {
@@ -2888,12 +3363,15 @@ function updateKey() {
 }
 addUpdate(updateKey, "key_updater");
 
+//Key down function
 document.addEventListener("keydown",(e) => {
 	let check = keyBuffer.every((i) => i.key.toUpperCase() != e.key.toUpperCase());
 	if (check && !keyLock) {
 		keyBuffer.push({"key":e.key,"location":e.location});
 	}
 }, false);	
+
+//Key up function
 document.addEventListener("keyup",(e) => {
 	if (!keyLock) {
 		keys.forEach((k) => {
@@ -2915,10 +3393,202 @@ document.addEventListener("keyup",(e) => {
 	}
 }, false);
 
-//Options menu
-const OptionsMenu = new optionsMenu();
+//Cursor
+const cursor = function() {
+	this.offset = new Vector2();
+	this.cursor = new Rectangle(8, new baseObject(true, new nameTag("cursor", "Engine"), new Vector2(5, 5), new Vector2(-100, -100), new colorData("red")));
+	this.setImage = function(data=null) {
+		if (data != null) {
+			deleteByNameTag(this.cursor.base.nameTag);
+			this.cursor = new Sprite(8, new baseObject(true, new nameTag("cursor", "Engine"), new Vector2(5, 5), new Vector2(-100, -100), data));
+		}
+	}
+	const update = () => {
+		if (this.cursor.type == "rectangle" && engineSettings.Debug.Show_Debug_Cursor) {
+			this.cursor.base.color.alpha = 1;
+			if (mouseData().b0 && !mouseData().b1 && !mouseData().b2) {
+				this.cursor.base.color = new colorData("green");
+			}
+			if (mouseData().b1 && !mouseData().b0 && !mouseData().b2) {
+				this.cursor.base.color = new colorData("yellow");
+			}
+			if (mouseData().b2 && !mouseData().b0 && !mouseData().b1) {
+				this.cursor.base.color = new colorData("orange");
+			}
+			if (!mouseData().b0 && !mouseData().b1 && !mouseData().b2) {
+				this.cursor.base.color = new colorData("red");
+			}
+		}
+		if (this.cursor.type == "rectangle" && !engineSettings.Debug.Show_Debug_Cursor) {
+			this.cursor.base.color.alpha = 0; 
+		}
+		if (getByNameTag(this.cursor.base.nameTag) != null) {
+			this.cursor.base.position = mouseData().pos.addV(this.offset);
+		} else {
+			addObject(this.cursor);
+		}
+		if (!layer[8][layer[8].length-1].base.nameTag.same(this.cursor.base.nameTag)) {
+			let index = getByNameTag(this.cursor.base.nameTag, 0, true);
+			layer[8].push(layer[8].splice(index, 1)[0]);
+			loaded = false;
+		}
+	}
+	addUpdate(update, "cursor");
+}
 
-function optionsMenu() {
+//Cursor global variables
+const Cursor = new cursor();
+
+//Gets the cursor
+const getCursor = () => {
+	return Cursor.cursor;
+}
+
+//Mouse
+let mousePos = new Vector2();
+let mousePressed = [false,false,false];
+let mouseWheel = 0;
+
+//Gets the mouse data
+const mouseData = () => {
+	return {"pos":new Vector2((mousePos.x/screen.getScale().x), (mousePos.y/screen.getScale().y)), "b0":mousePressed[0], "b1":mousePressed[1], "b2":mousePressed[2], "wheel":mouseWheel};
+};
+
+//Mouse move function
+window.addEventListener("mousemove", function(event) {
+	mousePos = new Vector2(event.clientX, event.clientY);
+});
+
+//Double click ignore
+window.addEventListener("dblclick", function(event) {
+	event.preventDefault();
+});
+
+//Mouse wheel function
+window.addEventListener("wheel", (e) => {
+	mouseWheel = e.deltaY;
+});
+
+//Mouse down function
+window.onmousedown = function(event){
+	switch(event.button) {
+		case 0:
+			mousePressed[0] = true;
+		break;
+		case 1:
+			mousePressed[1] = true;
+			event.preventDefault();
+		break;
+		case 2:
+			mousePressed[2] = true;
+			event.preventDefault();
+		break;
+	}
+}
+
+//Context menu ignore
+window.addEventListener("contextmenu", function(e){
+	e.preventDefault();
+}, false);
+
+//Mouse up function
+window.onmouseup = function(event){
+	switch(event.button) {
+		case 0:
+			mousePressed[0] = false;
+		break;
+		case 1:
+			mousePressed[1] = false;
+		break;
+		case 2:
+			mousePressed[2] = false;
+		break;
+	}
+}
+
+//Touch
+//Touch start function
+window.addEventListener("touchstart", function(event) {
+	mousePressed[0] = true;
+	mousePos = new Vector2(event.touches[0].clientX, event.touches[0].clientY);
+});
+
+//Touch end function
+window.addEventListener("touchend", function(event) {
+	mousePressed[0] = false;
+});
+
+//Touch move function
+window.addEventListener("touchmove", function(event) {
+	mousePos = new Vector2(event.touches[0].clientX, event.touches[0].clientY);
+});
+
+//UI Button class
+const buttonLink = function(object=null, textObj=null, collision=null, func=null, hoverColor=null, hoverTextColor=null, hoverShadowColor=null, hoverShadowTextColor=null) {
+	this.object = object; //Button object
+	this.textObj = textObj; //Button text object
+	this.collision = collision; //Collision function
+	this.func = func; //Function to run when clicked
+	this.hoverColor = hoverColor; //Vector2 used for changing color on hover | x- normal color, y- hover color | null if not used
+	this.hoverTextColor = hoverTextColor; //Vector2 used for changing color on hover | x- normal color, y- hover color | null if not used
+	this.hoverShadowColor = hoverShadowColor; //Vector2 used for changing shadow color on hover | x- normal color, y- hover color | null if not used
+	this.hoverShadowTextColor = hoverShadowTextColor; //Vector2 used for changing shadow color on hover | x- normal color, y- hover color | null if not used
+	let execute = false;
+	const update = () => this.update();
+	this.link = function() {
+		addUpdate(update, "button_"+this.object.base.nameTag.name);
+	}
+	this.unlink = function() {
+		deleteUpdate(1, "button_"+this.object.base.nameTag.name);
+	}
+	this.update = function() {
+		if (collision(Cursor.cursor, this.object)) {
+			//Hover code
+			if (this.hoverColor != null) {
+				this.object.base.color = this.hoverColor.y;
+			}
+			if (this.hoverTextColor != null) {
+				this.textObj.base.color = this.hoverTextColor.y;
+			}
+			if (this.hoverShadowColor != null) {
+				this.object.base.shadow.color = this.hoverShadowColor.y;
+			}
+			if (this.hoverShadowTextColor != null) {
+				this.textObj.base.shadow.color = this.hoverShadowTextColor.y;
+			}
+			//On click code
+			if (mouseData().b0 && !execute) {
+				func();
+				execute = true;
+			}
+		} else {
+			if (this.hoverColor != null) {
+				this.object.base.color = this.hoverColor.x;
+			}
+			if (this.hoverTextColor != null) {
+				this.textObj.base.color = this.hoverTextColor.x;
+			}
+			if (this.hoverShadowColor != null) {
+				this.object.base.shadow.color = this.hoverShadowColor.x;
+			}
+			if (this.hoverShadowTextColor != null) {
+				this.textObj.base.shadow.color = this.hoverShadowTextColor.x;
+			}
+		}
+		if (!mouseData().b0) {
+			execute = false;
+		}
+	}
+} 
+
+//Shorthand function for a button link
+const bttnL = (object=null, textObj=null, collision=null, func=null, hoverColor=null, hoverTextColor=null, hoverShadowColor=null, hoverShadowTextColor=null) => {
+	return new buttonLink(object, textObj, collision, func, hoverColor, hoverTextColor, hoverShadowColor, hoverShadowTextColor);
+}
+
+/*Menus (Most of them)*/
+//Options menu
+const optionsMenu = function() {
 	this.active = false;
 	this.menuSize = new Vector2(800, 600);
 	this.menuScale = 1;
@@ -3293,21 +3963,11 @@ function optionsMenu() {
 	addUpdate(update, "settings menu");
 }
 
+//Options menu global variables
+const OptionsMenu = new optionsMenu();
+
 //Settings menu
-const SettingsMenu = new settingsMenu();
-
-function menuToggle() {
-	if (keyLock) {
-		return;
-	}
-	if (!SettingsMenu.active && !keyLock) {
-		SettingsMenu.show();
-	} else {
-		SettingsMenu.hide();
-	}
-}
-
-function settingsMenu() {
+const settingsMenu = function() {
 	this.active = false;
 	this.iconHovered = false;
 	this.menuSize = new Vector2(800, 600);
@@ -3507,193 +4167,34 @@ function settingsMenu() {
 	addUpdate(update, "settings menu");
 }
 
+//Settings menu global variables
+const SettingsMenu = new settingsMenu();
+
+const menuToggle = () => {
+	if (keyLock) {
+		return;
+	}
+	if (!SettingsMenu.active && !keyLock) {
+		SettingsMenu.show();
+	} else {
+		SettingsMenu.hide();
+	}
+}
+
 //Engine Controls
-let MenuBttn = new key(
+let MenuBttn = K(
 	"Menu",
 	[
-		new keyData("Escape", 0)
+		keyD("Escape", 0)
 	],
 	new Vector2(null, menuToggle)
 );
 
-//UI Button class
-function buttonLink(object=null, textObj=null, collision=null, func=null, hoverColor=null, hoverTextColor=null, hoverShadowColor=null, hoverShadowTextColor=null) {
-	this.object = object; //Button object
-	this.textObj = textObj; //Button text object
-	this.collision = collision; //Collision function
-	this.func = func; //Function to run when clicked
-	this.hoverColor = hoverColor; //Vector2 used for changing color on hover | x- normal color, y- hover color | null if not used
-	this.hoverTextColor = hoverTextColor; //Vector2 used for changing color on hover | x- normal color, y- hover color | null if not used
-	this.hoverShadowColor = hoverShadowColor; //Vector2 used for changing shadow color on hover | x- normal color, y- hover color | null if not used
-	this.hoverShadowTextColor = hoverShadowTextColor; //Vector2 used for changing shadow color on hover | x- normal color, y- hover color | null if not used
-	let execute = false;
-	const update = () => this.update();
-	this.link = function() {
-		addUpdate(update, "button_"+this.object.base.nameTag.name);
-	}
-	this.unlink = function() {
-		deleteUpdate(1, "button_"+this.object.base.nameTag.name);
-	}
-	this.update = function() {
-		if (collision(Cursor.cursor, this.object)) {
-			//Hover code
-			if (this.hoverColor != null) {
-				this.object.base.color = this.hoverColor.y;
-			}
-			if (this.hoverTextColor != null) {
-				this.textObj.base.color = this.hoverTextColor.y;
-			}
-			if (this.hoverShadowColor != null) {
-				this.object.base.shadow.color = this.hoverShadowColor.y;
-			}
-			if (this.hoverShadowTextColor != null) {
-				this.textObj.base.shadow.color = this.hoverShadowTextColor.y;
-			}
-			//On click code
-			if (mouseData().b0 && !execute) {
-				func();
-				execute = true;
-			}
-		} else {
-			if (this.hoverColor != null) {
-				this.object.base.color = this.hoverColor.x;
-			}
-			if (this.hoverTextColor != null) {
-				this.textObj.base.color = this.hoverTextColor.x;
-			}
-			if (this.hoverShadowColor != null) {
-				this.object.base.shadow.color = this.hoverShadowColor.x;
-			}
-			if (this.hoverShadowTextColor != null) {
-				this.textObj.base.shadow.color = this.hoverShadowTextColor.x;
-			}
-		}
-		if (!mouseData().b0) {
-			execute = false;
-		}
-	}
-} 
-
-//Cursor
-const Cursor = new cursor();
-
-function cursor() {
-	this.offset = new Vector2();
-	this.cursor = new Rectangle(8, new baseObject(true, new nameTag("cursor", "Engine"), new Vector2(5, 5), new Vector2(-100, -100), new colorData("red")));
-	this.setImage = function(data=null) {
-		if (data != null) {
-			deleteByNameTag(this.cursor.base.nameTag);
-			this.cursor = new Sprite(8, new baseObject(true, new nameTag("cursor", "Engine"), new Vector2(5, 5), new Vector2(-100, -100), data));
-		}
-	}
-	const update = () => {
-		if (this.cursor.type == "rectangle" && engineSettings.Debug.Show_Debug_Cursor) {
-			this.cursor.base.color.alpha = 1;
-			if (mouseData().b0 && !mouseData().b1 && !mouseData().b2) {
-				this.cursor.base.color = new colorData("green");
-			}
-			if (mouseData().b1 && !mouseData().b0 && !mouseData().b2) {
-				this.cursor.base.color = new colorData("yellow");
-			}
-			if (mouseData().b2 && !mouseData().b0 && !mouseData().b1) {
-				this.cursor.base.color = new colorData("orange");
-			}
-			if (!mouseData().b0 && !mouseData().b1 && !mouseData().b2) {
-				this.cursor.base.color = new colorData("red");
-			}
-		}
-		if (this.cursor.type == "rectangle" && !engineSettings.Debug.Show_Debug_Cursor) {
-			this.cursor.base.color.alpha = 0; 
-		}
-		if (getByNameTag(this.cursor.base.nameTag) != null) {
-			this.cursor.base.position = mouseData().pos.addV(this.offset);
-		} else {
-			addObject(this.cursor);
-		}
-		if (!layer[8][layer[8].length-1].base.nameTag.same(this.cursor.base.nameTag)) {
-			let index = getByNameTag(this.cursor.base.nameTag, 0, true);
-			layer[8].push(layer[8].splice(index, 1)[0]);
-			loaded = false;
-		}
-	}
-	addUpdate(update, "cursor");
-}
-
-//Mouse
-let mousePos = new Vector2();
-let mousePressed = [false,false,false];
-let mouseWheel = 0;
-
-function mouseData() {
-	return {"pos":new Vector2((mousePos.x/screen.getScale().x), (mousePos.y/screen.getScale().y)), "b0":mousePressed[0], "b1":mousePressed[1], "b2":mousePressed[2], "wheel":mouseWheel};
-};
-
-window.addEventListener("mousemove", function(event) {
-	mousePos = new Vector2(event.clientX, event.clientY);
-});
-
-window.addEventListener("dblclick", function(event) {
-	event.preventDefault();
-});
-
-window.addEventListener("wheel", (e) => {
-	mouseWheel = e.deltaY;
-});
-
-document.body.style.userSelect = "none";
-
-window.onmousedown = function(event){
-	switch(event.button) {
-		case 0:
-			mousePressed[0] = true;
-		break;
-		case 1:
-			mousePressed[1] = true;
-			event.preventDefault();
-		break;
-		case 2:
-			mousePressed[2] = true;
-			event.preventDefault();
-		break;
-	}
-}
-
-window.addEventListener("contextmenu", function(e){
-	e.preventDefault();
-}, false);
-
-window.onmouseup = function(event){
-	switch(event.button) {
-		case 0:
-			mousePressed[0] = false;
-		break;
-		case 1:
-			mousePressed[1] = false;
-		break;
-		case 2:
-			mousePressed[2] = false;
-		break;
-	}
-}
-
-//Touch
-window.addEventListener("touchstart", function(event) {
-	mousePressed[0] = true;
-	mousePos = new Vector2(event.touches[0].clientX, event.touches[0].clientY);
-});
-
-window.addEventListener("touchend", function(event) {
-	mousePressed[0] = false;
-});
-
-window.addEventListener("touchmove", function(event) {
-	mousePos = new Vector2(event.touches[0].clientX, event.touches[0].clientY);
-});
-
+/*File stuff*/
 if (typeof require != "undefined") {
 	const { existsSync } = require('fs');
 
-	function checkDirectory(path) {
+	const checkDirectory = (path) => {
 		if (existsSync(path)) {
 			return true;
 		} else {
@@ -3702,16 +4203,17 @@ if (typeof require != "undefined") {
 	}
 }
 
-function getExtension(filePath) {
+const getExtension = (filePath) => {
     return filePath.split('.').pop();
 }
 
+/*Online*/
 //Server
 if (typeof require != "undefined") {
 	const { Server } = require("socket.io");
 	let gameServer = null;
 
-	function startServer(port=3000) {
+	const startServer = (port=3000) => {
 		gameServer = new Server(port);
 		gameServer.on('connection', (socket) => {
 		  console.log('a user connected');
@@ -3722,6 +4224,6 @@ if (typeof require != "undefined") {
 //Client
 let socket = null;
 
-function connect(ip="localhost", port="3000") {
+const connect = (ip="localhost", port="3000") => {
 	socket = io("ws://"+ip+":"+port);
 }

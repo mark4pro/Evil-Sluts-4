@@ -294,8 +294,8 @@ const VecY = (y=0) => {
 }
 
 //Shorthand function for creating vectors
-const Vec2 = (x=0, y=0) => {
-	return new Vector2(x, y);
+const Vec2 = (x=0, y=0, r=0, o=0, s=0) => {
+	return new Vector2(x, y, r, o, s);
 }
 
 //Checks number to see if it's even or odd
