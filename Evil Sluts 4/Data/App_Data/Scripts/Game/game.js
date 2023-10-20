@@ -1088,6 +1088,18 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			this.count++;
 		}
 	}
+	this.shoot = () => {
+		for(enemy in this.enemies){
+			if(enemy.inRange){
+				T(Second(5), true, true, () => {
+					let newBullet = new Sprite(3, new baseObject(false, new nameTag("bullet", "bullets"), Vec2(5, 5), enemy.base.position.dup(), bullet_1_Img.getColor()));
+					newBullet.base.position.s=5;
+					newBullet.base.position.r = newBullet.base.position.getRotation(currentPlayer.playerOBJ.base.position);
+					addObject(newBullet);
+				}, "");
+			}
+		}
+	}
 	
 	const update = () => {
 		//Spawns enemies
