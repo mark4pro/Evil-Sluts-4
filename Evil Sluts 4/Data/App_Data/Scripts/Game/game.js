@@ -344,8 +344,7 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2())
 	}
 }
 
-//TODO: genStats function
-function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1, 10), size=ONE, speed=5, range=100, damage=new Vector2(), spreadPattern=[0]) {
+function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1, 10), size=ONE, spreadPattern=[0], _speedRange=ONE, _rangeRange=ONE, _damageRange=ONE) {
 	this.name = name;
 	this.imageData = imageData;
 	this.amountPerShot = amountPerShot;
@@ -354,14 +353,29 @@ function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1
 	}
 	this.fireTime = fireTime; //x- speed for timer, y- max time
 	this.size = size;
-	this.speed = speed;
-	this.range = range;
-	this.damage = damage; //x- min damage, y- max damage
+	let speedRange = _speedRange;
+	this.speed = 0;
+	let rangeRange = _rangeRange;
+	this.range = 0;
+	let damageRange = _damageRange;
+	this.damage = 0; //x- min damage, y- max damage
 	this.spreadPattern = spreadPattern;
+	this.genStats = () => {
+		this.speed = rangeFloat(speedRange.x, speedRange.y);
+		this.range = rangeFloat(rangeRange.x, rangeRange.y);
+		this.damage = Vec2(rangeFloat(damageRange.x, damageRange.y), rangeFloat(damageRange.r, damageRange.o));
+	}
+	this.duplicate = () => {
+		let newWeapon = new weapon(this.name, this.imageData, this.amountPerShot, this.fireTime, this.size, this.spreadPattern, speedRange, rangeRange, damageRange);
+		newWeapon.speed = this.speed;
+		newWeapon.range = this.range;
+		newWeapon.damage = this.damage;
+		return newWeapon;
+	}
 }
 
 const weaponTable = {
-	0:new weapon("Test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), 10, 300, new Vector2(5, 10), [-12.5, -6.25, 0, 6.26, 12.5]),
+	0:new weapon("Test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), [-12.5, -6.25, 0, 6.26, 12.5], Vec2(10, 15), Vec2(50, 100), Vec2(1, 2, 5, 10)),
 }
 
 let armorTypes = {
@@ -413,11 +427,16 @@ function drugsItem(type="", base=new baseItems()) {
 	}
 }
 
-function weaponItem(weaponId=0, base=new baseItems()) {
+function weaponItem(weaponId=0, base=new baseItems(), veriant=null) {
 	this.weaponId = weaponId;
 	this.base = base;
 	this.itemType = "weapon";
 	this.mainType = "weapons"; //What inventory array it goes into
+	this.weaponVeriant = veriant;
+	if (veriant == null) {
+		this.weaponVeriant = weaponTable[this.weaponId].duplicate();
+		this.weaponVeriant.genStats();
+	}
 	this.equip = () => {
 		if (currentPlayer.loaded && currentPlayer.weapons.length == 0 && currentPlayer.weapons.filter((i) => i.weaponId == this.weaponId).length == 0) {
 			currentPlayer.weapons.push(this);
@@ -432,8 +451,12 @@ function weaponItem(weaponId=0, base=new baseItems()) {
 			});
 		}
 	}
-	this.duplicate = () => {
-		return new weaponItem(this.weaponId, this.base.duplicate());
+	this.duplicate = (copyVeriant=false) => {
+		if (!copyVeriant) {
+			return new weaponItem(this.weaponId, this.base.duplicate());
+		} else {
+			return new weaponItem(this.weaponId, this.base.duplicate(), this.weaponVeriant);
+		}
 	}
 }
 
@@ -442,7 +465,7 @@ function armorItems(armorId=0, base=new baseItems(), veriant=null) {
 	this.base = base;
 	this.itemType = "armor";
 	this.mainType = "armor";
-	this.armorVeriant = veriant
+	this.armorVeriant = veriant;
 	if (veriant == null) {
 		this.armorVeriant = armorTable[this.armorId].duplicate();
 		this.armorVeriant.genStats();
