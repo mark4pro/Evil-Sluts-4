@@ -388,6 +388,29 @@ function weaponItem(weaponId=0, base=new baseItems()) {
 	}
 }
 
+function armorItems(armorId=0, base=new baseItems()) {
+	this.armorId = armorId; 
+	this.base = base;
+	this.itemType = "armor";
+	this.mainType = "armors";
+this.equip = () => {
+	if (currentPlayer.loaded && currentPlayer.armor.filter((i) => i.armor == this.armorId).length ==0) {
+		currentPlayer.armor.push(this);
+	}
+}
+this.unequip = () => {
+if (currentPlayer.loaded && currentPlayer.weapons.filter((i) => i.weaponId == this.armorId).length != 0){
+currentPlayer.armor.forEach((w, i) => {
+	if (w.armorId == this.armorId) {
+	currentPlayer.armor.splice(i, 1);
+}
+});
+}                                                                                                                                                                                                                                                                                                                                        
+} 
+this.duplicate = () => {
+	return new armorItem(this.armorId, this.base.duplicate());
+}
+
 const globalExcludedDrops = [];
 
 const itemTable = [
