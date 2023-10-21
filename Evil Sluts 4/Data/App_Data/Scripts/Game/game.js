@@ -93,6 +93,23 @@ function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25
 	}
 	this.dup = this.duplicate;
 }
+//dialogue
+let questions = {
+  'buy weapon': 'There you fucker.',
+  'buy armor': 'Heres some fucking armor.',
+  'sell something': 'what the fuck do you want to sell?'
+}
+function ask(question){
+  if(typeof questions[question] !== "undefined"){
+    return questions[question];
+  } else {
+    return 'what the fuck is wrong with you!';
+  }
+}
+
+let answer = ask('buy armor');
+let answer = ask('buy weapon');
+let answer = ask('sell something');
 
 //Container object for the menu
 function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
