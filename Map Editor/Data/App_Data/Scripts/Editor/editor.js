@@ -100,6 +100,39 @@ let moveRightBttn = K(
 	Vec2(() => {if (currentMap() != null) {currentMap().dir.x = -1}}, () => {if (currentMap() != null) {currentMap().dir.x = 0}}),
 	true
 );
+let zoomLatch = false;
+let zoomIn = K(
+	"Zoom In",
+	[
+		keyD("+", 3)
+	],
+	Vec2(() => {
+		if (!zoomLatch) {
+			mapEditor.zoom("+");
+			zoomLatch = true;
+		}
+	},
+	() => {
+		zoomLatch = false;
+	}),
+	true
+);
+let zoomOut = K(
+	"Zoom Out",
+	[
+		keyD("-", 3)
+	],
+	Vec2(() => {
+		if (!zoomLatch) {
+			mapEditor.zoom("-");
+			zoomLatch = true;
+		}
+	},
+	() => {
+		zoomLatch = false;
+	}),
+	true
+);
 let reloadBttn = K(
 	"Reload",
 	[

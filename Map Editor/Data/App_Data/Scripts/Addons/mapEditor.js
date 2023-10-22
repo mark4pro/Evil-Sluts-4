@@ -42,8 +42,9 @@ function editor() {
 	
 	//Save map
 	this.saveMap = function() {
-		localStorage.setItem(this.nameTag.name, JSON.stringify(thisMap));
+		localStorage.setItem(this.nameTag.name, JSON.stringify(M(thisMap.locationId, thisMap.nameTag, thisMap.mapSize, Vec2(parseFloat(this.startPosXTxtBox.value), parseFloat(this.startPosYTxtBox.value)), Vec2(parseFloat(this.playerPosXTxtBox.value), parseFloat(this.playerPosYTxtBox.value)), thisMap.tileSize, thisMap.tiles)));
 		localStorage.setItem(this.nameTag.name+"_tile_data", JSON.stringify(this.tiles));
+		maps.length = 1;
 	}
 	
 	//Load map
@@ -60,7 +61,9 @@ function editor() {
 		this.playerPosYTxtBox.value = String(data.playerPosInit.y);
 		this.tileSizeXTxtBox.value = String(data.tileSize.x);
 		this.tileSizeYTxtBox.value = String(data.tileSize.y);
-		this.tiles = data.tiles;
+		data.tiles.forEach((t) => {
+			this.tiles.push(Tile(t.tableId, Vec2(t.pos.x, t.pos.y, t.pos.r, t.pos.o, t.pos.s), t.layerNum, t.tileTable));
+		});
 	}
 	
 	//UI
@@ -137,6 +140,24 @@ function editor() {
 			currentMap().dir = Vec2();
 		}
 		deleteMap(this.nameTag);
+	}
+	
+	//Zoom | +/-
+	this.zoom = (dir="+") => {
+		switch (dir) {
+			case "+":
+				if (config.scale != 5) {
+					config.scale += 0.25;
+					this.reload = true;
+				}
+			break;
+			case "-":
+				if (config.scale > 0.5) {
+					config.scale -= 0.25;
+					this.reload = true;
+				}
+			break;
+		}
 	}
 	
 	//Tools
