@@ -335,8 +335,8 @@ const average = (nums=[0,0]) => {
 
 //Valuates vars to see if they are true of false
 const valuate = (val) => {
-	if (typeof val != "undefined") {
-		return (val == 1 || val == true || (typeof val == "string" && val.toLowerCase() == "true") || val != null);
+	if (typeof val != "undefined" && val != null) {
+		return (val == 1 || val == true || (typeof val == "string" && val.toLowerCase() == "true"));
 	} else {
 		return false;
 	}
