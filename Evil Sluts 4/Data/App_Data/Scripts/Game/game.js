@@ -77,23 +77,6 @@ function mainMenu() {
 	addUpdate(update, "mainMenu");
 }
 
-//Item pickup menu
-const dropMenu = new pickUpMenu();
-
-const defaultContainerStyle = new ContainerStyle();
-function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25px Arial", visTxtShadow=new Shadow(new Vector2(5, 5), "black", 5), visBttnColor=new Vector2("#686868", "#959595"), visSize=25) {
-	this.visColor = visColor;
-	this.visTxtColor = visTxtColor;
-	this.visTxtFont = visTxtFont;
-	this.visTxtShadow = visTxtShadow;
-	this.visBttnColor = visBttnColor;
-	this.visSize = visSize;
-	this.duplicate = function() {
-		return new ContainerStyle(this.visColor, this.visTxtColor, this.visTxtFont, this.visTxtShadow, this.visBttnColor, this.visSize);
-	}
-	this.dup = this.duplicate;
-}
-
 //Dialogue
 function  dialogueUI(){
 	this.showing = true;
@@ -143,6 +126,23 @@ function dialogueManager() {
 	}
 	addUpdate(update, "dialogueMG");
 } 
+
+//Item pickup menu
+const dropMenu = new pickUpMenu();
+
+const defaultContainerStyle = new ContainerStyle();
+function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25px Arial", visTxtShadow=new Shadow(new Vector2(5, 5), "black", 5), visBttnColor=new Vector2("#686868", "#959595"), visSize=25) {
+	this.visColor = visColor;
+	this.visTxtColor = visTxtColor;
+	this.visTxtFont = visTxtFont;
+	this.visTxtShadow = visTxtShadow;
+	this.visBttnColor = visBttnColor;
+	this.visSize = visSize;
+	this.duplicate = function() {
+		return new ContainerStyle(this.visColor, this.visTxtColor, this.visTxtFont, this.visTxtShadow, this.visBttnColor, this.visSize);
+	}
+	this.dup = this.duplicate;
+}
 
 //Container object for the menu
 function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
