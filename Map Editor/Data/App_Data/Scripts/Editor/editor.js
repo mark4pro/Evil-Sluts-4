@@ -1,5 +1,7 @@
 //Setup
 screen.setResolution(Vec2(1280, 720));
+engineSettings.Settings_Menu.Image_Smoothing = false;
+engineSettings.Settings_Menu.Show_Debug_Cursor = false;
 engineSettings.Addons = ["mapRenderer", "mapEditor"];
 loadAddons();
 
