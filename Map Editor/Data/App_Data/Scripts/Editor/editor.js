@@ -67,7 +67,7 @@ addUpdate(mainUpdate, "mainUpdate");
 
 //Controls
 let moveUpBttn = K(
-	"moveUp",
+	"Up",
 	[
 		keyD("w", 0)
 	],
@@ -75,7 +75,7 @@ let moveUpBttn = K(
 	true
 );
 let moveDownBttn = K(
-	"moveDown",
+	"Down",
 	[
 		keyD("s", 0)
 	],
@@ -83,7 +83,7 @@ let moveDownBttn = K(
 	true
 );
 let moveLeftBttn = K(
-	"moveLeft",
+	"Left",
 	[
 		keyD("a", 0)
 	],
@@ -91,7 +91,7 @@ let moveLeftBttn = K(
 	true
 );
 let moveRightBttn = K(
-	"moveRight",
+	"Right",
 	[
 		keyD("d", 0)
 	],
@@ -99,7 +99,7 @@ let moveRightBttn = K(
 	true
 );
 let reloadBttn = K(
-	"reload",
+	"Reload",
 	[
 		keyD("r", 0)
 	],
