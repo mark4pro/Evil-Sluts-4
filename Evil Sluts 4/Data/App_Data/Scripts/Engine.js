@@ -413,6 +413,10 @@ const imageData = function(id="", src="", size=new Vector2()) {
 	}
 }
 
+const imageD = (id="", src="", size=new Vector2()) => {
+	return new imageData(id, src, size);
+}
+
 //Engine resources
 let Close_UI = new imageData("close_ui", imagePath+"Close_Icon.png", new Vector2(64, 64));
 let Close_UI_Hover = new imageData("close_ui_hover", imagePath+"Close_Icon_Hover.png", new Vector2(64, 64));

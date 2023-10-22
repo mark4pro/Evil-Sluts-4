@@ -1,7 +1,12 @@
 //Add image import to tile table link
-function tileTableLink(fileName="", funcName="") {
+const tileTableLink = function(fileName="", funcName="") {
 	this.fileName = fileName;
 	this.funcName = funcName;
+}
+
+//Shorthand function
+const tileTL = (fileName="", funcName="") => {
+	return new tileTableLink(fileName, funcName);
 }
 
 //Map Addon Config
@@ -9,7 +14,7 @@ const config = {
 	scale:2,
 	mapScrollSpeed:5,
 	tileTablesPath:"./Scripts/Tile_Tables/",
-	tileTables:[new tileTableLink("table_1", "this_table_1")],
+	tileTables:[],
 	mapsPath:"./Scripts/Maps/",
 	maps:[],
 };
@@ -50,7 +55,7 @@ loadMaps();
 let gameState = 0; //0- Main menu, 1- Gameplay
 let locationId = 0;
 
-function tile(tableId=0, pos=ZERO, layerNum=1, tileTable=null) {
+const tile = function(tableId=0, pos=ZERO, layerNum=1, tileTable=null) {
 	this.tableId = tableId;
 	this.pos = pos;
 	if (this.pos.x <= 0) {
@@ -66,9 +71,14 @@ function tile(tableId=0, pos=ZERO, layerNum=1, tileTable=null) {
 	}
 }
 
+//Shorthand function
+const Tile = (tableId=0, pos=ZERO, layerNum=1, tileTable=null) => {
+	return new tile(tableId, pos, layerNum, tileTable);
+}
+
 const maps = [];
 
-function map(locationId=0, thisNameTag=new nameTag(), mapSize=new Vector2(20, 20), mapPosInit=ZERO, playerPosInit=ZERO, tileSize=new Vector2(16, 16), tiles=[]) {
+const map = function(locationId=0, thisNameTag=nt(), mapSize=Vec2(20, 20), mapPosInit=ZERO, playerPosInit=ZERO, tileSize=Vec2(16, 16), tiles=[]) {
 	this.locationId = locationId;
 	this.nameTag = thisNameTag;
 	this.mapSize = mapSize;
@@ -78,32 +88,32 @@ function map(locationId=0, thisNameTag=new nameTag(), mapSize=new Vector2(20, 20
 	this.tiles = tiles;
 	
 	this.loaded = false;
-	this.dir = new Vector2();
-	this.oldMapPos = new Vector2();
+	this.dir = Vec2();
+	this.oldMapPos = Vec2();
 	this.mapPos = this.mapPosInit;
-	this.mapSizeReal = new Vector2();
-	this.mapHalfSizeReal = new Vector2();
+	this.mapSizeReal = Vec2();
+	this.mapHalfSizeReal = Vec2();
 	this.movingMap = false;
 	this.removeMap = false;
 	
 	let mapObjs = [];
 	let oldLength = 0;
 	
-	this.getTileByMapPos = function(mapPos=new Vector2(), layerNumber=1) {
+	this.getTileByMapPos = (mapPos=Vec2(), layerNumber=1) => {
 		return objectArray.filter((o) => (o.base.nameTag.tag == this.nameTag.name && o.mapPos.same(mapPos) && o.layerNumber == layerNumber));
 	}
 	
-	this.load = function(mapPos=null) {
+	this.load = (mapPos=null) => {
 		if (mapPos != null) {
 			this.mapPos = mapPos;
 		}
 		for (let i=0;i<this.tiles.length;i++) {
-			let thisTile = new tile(this.tiles[i].tableId, new Vector2(this.tiles[i].pos.x, this.tiles[i].pos.y), this.tiles[i].layerNum, this.tiles[i].tileTable);
+			let thisTile = Tile(this.tiles[i].tableId, Vec2(this.tiles[i].pos.x, this.tiles[i].pos.y), this.tiles[i].layerNum, this.tiles[i].tileTable);
 			if (typeof thisTile.tileTable == "string") {
 				thisTile.tileTable = eval(thisTile.tileTable);
 			}
 			if (thisTile.pos.x <= this.mapSize.x && thisTile.pos.y <= this.mapSize.y) {
-				let thisTilePos = new Vector2((thisTile.pos.x*this.tileSize.x*config.scale)-((this.tileSize.x*config.scale)/2), (thisTile.pos.y*this.tileSize.y*config.scale)-((this.tileSize.y*config.scale)/2));
+				let thisTilePos = Vec2((thisTile.pos.x*this.tileSize.x*config.scale)-((this.tileSize.x*config.scale)/2), (thisTile.pos.y*this.tileSize.y*config.scale)-((this.tileSize.y*config.scale)/2));
 				let newTileOBJ = thisTile.tileTable[thisTile.tableId].duplicate();
 				newTileOBJ.layerNumber = thisTile.layerNum;
 				newTileOBJ.mapPos = thisTile.pos;
@@ -118,8 +128,8 @@ function map(locationId=0, thisNameTag=new nameTag(), mapSize=new Vector2(20, 20
 		addUpdate(update, this.nameTag.name);
 	}
 	
-	this.unload = function() {
-		deleteByNameTag(new nameTag("", this.nameTag.name), 2, true);
+	this.unload = () => {
+		deleteByNameTag(nt("", this.nameTag.name), 2, true);
 		this.loaded = false;
 		deleteUpdate(1, this.nameTag.name);
 	}
@@ -152,6 +162,11 @@ function map(locationId=0, thisNameTag=new nameTag(), mapSize=new Vector2(20, 20
 	maps.push(this);
 }
 
+//Shorthand function
+const M = (locationId=0, thisNameTag=nt(), mapSize=Vec2(20, 20), mapPosInit=ZERO, playerPosInit=ZERO, tileSize=Vec2(16, 16), tiles=[]) => {
+	return new map(locationId, thisNameTag, mapSize, mapPosInit, playerPosInit, tileSize, tiles);
+}
+
 //Gets current map
 const currentMap = () => {
 	for (let i=0,mapsLength=maps.length;i<mapsLength;i++) {
@@ -182,7 +197,7 @@ const getMapTilePos = (vec2=ONE) => {
 }
 
 //Gets map by nameTag
-const getMap = (thisNameTag=new nameTag()) => {
+const getMap = (thisNameTag=nt()) => {
 	for (let i=0,mapsLength=maps.length;i<mapsLength;i++) {
 		if (maps[i].nameTag.same(thisNameTag)) {
 			return maps[i];
@@ -191,10 +206,10 @@ const getMap = (thisNameTag=new nameTag()) => {
 }
 
 //Deletes map by nameTag
-const deleteMap = (thisNameTag=new nameTag()) => {
+const deleteMap = (thisNameTag=nt()) => {
 	for (let i=0,mapsLength=maps.length;i<mapsLength;i++) {
 		if (maps[i].nameTag.same(thisNameTag)) {
-			deleteByNameTag(new nameTag("", maps[i].nameTag.name), 2);
+			deleteByNameTag(nt("", maps[i].nameTag.name), 2);
 			maps.splice(i, 1);
 		}
 	};

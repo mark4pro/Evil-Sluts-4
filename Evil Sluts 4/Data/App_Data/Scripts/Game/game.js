@@ -1,6 +1,6 @@
 //Setup
-screen.setResolution(new Vector2(1280, 720));
-Cursor.cursor.base.size = (new Vector2(14, 14));
+screen.setResolution(Vec2(1280, 720));
+Cursor.cursor.base.size = (Vec2(14, 14));
 Cursor.offset = Cursor.cursor.base.size.div(2);
 engineSettings.Settings_Menu.Image_Smoothing = false;
 engineSettings.Settings_Menu.Show_Debug_Cursor = false;
@@ -14,24 +14,24 @@ const itemPath = "Items/";
 
 //Images
 //Player
-let player_Img = new imageData("player", imagePath+"player_1.png", new Vector2(64, 128));
+let player_Img = imageD("player", imagePath+"player_1.png", Vec2(64, 128));
 //Weapons
-let bullet_1_Img = new imageData("heart", imagePath+weaponPath+"Heart.png", new Vector2(59, 91));
+let bullet_1_Img = imageD("heart", imagePath+weaponPath+"Heart.png", Vec2(59, 91));
 //Items
-let bath_salts_Img = new imageData("bath_salts", imagePath+itemPath+"bath_salts.png", new Vector2(32, 32));
-let cocaine_Img = new imageData("cocaine", imagePath+itemPath+"cocaine.png", new Vector2(32, 32));
-let crack_Img = new imageData("crack", imagePath+itemPath+"crack.png", new Vector2(32, 32));
-let crocodile_Img = new imageData("crocodile", imagePath+itemPath+"crocodile.png", new Vector2(32, 32));
-let dmt_Img = new imageData("dmt", imagePath+itemPath+"dmt.png", new Vector2(32, 32));
-let heroin_Img = new imageData("heroin", imagePath+itemPath+"heroin.png", new Vector2(32, 32));
-let lsd_Img = new imageData("lsd", imagePath+itemPath+"lsd.png", new Vector2(32, 32));
-let meth_Img = new imageData("meth", imagePath+itemPath+"meth.png", new Vector2(32, 32));
-let mushroom_Img = new imageData("mushroom", imagePath+itemPath+"mushroom.png", new Vector2(32, 32));
-let smack_Img = new imageData("smack", imagePath+itemPath+"smack.png", new Vector2(32, 32));
-let your_mom_Img = new imageData("your_mom", imagePath+itemPath+"your_mom.png", new Vector2(32, 32));
-let chese_Img = new imageData("chese", imagePath+itemPath+"chese.png", new Vector2(32, 32));
+let bath_salts_Img = imageD("bath_salts", imagePath+itemPath+"bath_salts.png", Vec2(32, 32));
+let cocaine_Img = imageD("cocaine", imagePath+itemPath+"cocaine.png", Vec2(32, 32));
+let crack_Img = imageD("crack", imagePath+itemPath+"crack.png", Vec2(32, 32));
+let crocodile_Img = imageD("crocodile", imagePath+itemPath+"crocodile.png", Vec2(32, 32));
+let dmt_Img = imageD("dmt", imagePath+itemPath+"dmt.png", Vec2(32, 32));
+let heroin_Img = imageD("heroin", imagePath+itemPath+"heroin.png", Vec2(32, 32));
+let lsd_Img = imageD("lsd", imagePath+itemPath+"lsd.png", Vec2(32, 32));
+let meth_Img = imageD("meth", imagePath+itemPath+"meth.png", Vec2(32, 32));
+let mushroom_Img = imageD("mushroom", imagePath+itemPath+"mushroom.png", Vec2(32, 32));
+let smack_Img = imageD("smack", imagePath+itemPath+"smack.png", Vec2(32, 32));
+let your_mom_Img = imageD("your_mom", imagePath+itemPath+"your_mom.png", Vec2(32, 32));
+let chese_Img = imageD("chese", imagePath+itemPath+"chese.png", Vec2(32, 32));
 //UI
-let pick_up_bttn_Img = new imageData("pick_up_bttn", imagePath+"pick_up.png", new Vector2(64, 32));
+let pick_up_bttn_Img = imageD("pick_up_bttn", imagePath+"pick_up.png", Vec2(64, 32));
 
 //Global vars
 let thisLoaded = false;
@@ -45,14 +45,14 @@ let saveData = {
 const menu = new mainMenu();
 
 function mainMenu() {
-	this.background = new Rectangle(1, new baseObject(false, new nameTag("background", "menu"), new Vector2(1280, 720), screen.halfResolution, new colorData("#1f9359")));
-	this.title = new Text(2, "Evil Sluts 4", new baseObject(false, new nameTag("title", "menu"), new Vector2("30px Arial", false, "center"), new Vector2(640, 100), colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	this.startBttn = new Rectangle(2, new baseObject(false, new nameTag("startBttn", "menu"), new Vector2(200, 50), new Vector2(640, 360), new colorData("grey"), new Shadow(new Vector2(5, 5), "black", 10)));
-	this.startBttnTxt = new Text(3, "Play", new baseObject(false, new nameTag("startBttnTxt", "menu"), new Vector2("30px Arial", false, "center"), new Vector2(640, 360), colorData("white"), new Shadow(new Vector2(2, 2), "black", 10)));
-	const startBttnFunc = new buttonLink(this.startBttn, this.startBttnTxt, recCollision, () => {
+	this.background = rectangle(1, base(false, nt("background", "menu"), Vec2(1280, 720), screen.halfResolution, colorD("#1f9359")));
+	this.title = text(2, "Evil Sluts 4", base(false, nt("title", "menu"), Vec2("30px Arial", false, "center"), Vec2(640, 100), colorData("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.startBttn = rectangle(2, base(false, nt("startBttn", "menu"), Vec2(200, 50), Vec2(640, 360), colorD("grey"), shadow(Vec2(5, 5), "black", 10)));
+	this.startBttnTxt = text(3, "Play", base(false, nt("startBttnTxt", "menu"), Vec2("30px Arial", false, "center"), Vec2(640, 360), colorData("white"), shadow(Vec2(2, 2), "black", 10)));
+	const startBttnFunc = bttnL(this.startBttn, this.startBttnTxt, recCollision, () => {
 		mousePressed[0] = false; //Fixes shooting when hitting play
 		gameState = 1;
-	}, new Vector2(new colorData("grey"), new colorData("lightgrey"))); 
+	}, Vec2(colorD("grey"), colorD("lightgrey"))); 
 	const update = () => {
 		if (typeof gameState != "undefined" && gameState == 0) {
 			//Add menu
@@ -90,8 +90,8 @@ function  dialogueUI(){
 	let option2Txt = null;
 	const update = () => {
 		if(getByNameTag(name("dialogueBox"), 1) == null && this.showing && valuate(gameState)){
-			this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), colorD("grey", 0.75)));
-			this.option1 = new Rectangle(8, new baseObject(true, new nameTag("option1", "UI"), Vec2(40, 30),this.dialogueBox.base.position.subV(Vec2(25, -50)), colorD("darkgrey", 0.75), shadow(FillVec2(5), "black", 5)));
+			this.dialogueBox = rectangle(8, base(true, nt("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), colorD("grey", 0.75)));
+			this.option1 = rectangle(8, base(true, nt("option1", "UI"), Vec2(40, 30), this.dialogueBox.base.position.subV(Vec2(25, -50)), colorD("darkgrey", 0.75), shadow(FillVec2(5), "black", 5)));
 		}
 	}
 	addUpdate(update, "dialogueUI");
@@ -133,7 +133,7 @@ function dialogueManager() {
 const dropMenu = new pickUpMenu();
 
 const defaultContainerStyle = new ContainerStyle();
-function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25px Arial", visTxtShadow=new Shadow(new Vector2(5, 5), "black", 5), visBttnColor=new Vector2("#686868", "#959595"), visSize=25) {
+function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25px Arial", visTxtShadow=shadow(Vec2(5, 5), "black", 5), visBttnColor=Vec2("#686868", "#959595"), visSize=25) {
 	this.visColor = visColor;
 	this.visTxtColor = visTxtColor;
 	this.visTxtFont = visTxtFont;
@@ -172,11 +172,11 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 		//Background
 		setupObject(this.base, DEFAULT_LINE);
 		points_1 = [
-			this.base.rotOrigin.rotateVector2(new Vector2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
-			this.base.rotOrigin.rotateVector2(new Vector2(this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
-			this.base.rotOrigin.rotateVector2(new Vector2(this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
-			this.base.rotOrigin.rotateVector2(new Vector2(-this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
-			this.base.rotOrigin.rotateVector2(new Vector2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r)];
+			this.base.rotOrigin.rotateVector2(Vec2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
+			this.base.rotOrigin.rotateVector2(Vec2(this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
+			this.base.rotOrigin.rotateVector2(Vec2(this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
+			this.base.rotOrigin.rotateVector2(Vec2(-this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
+			this.base.rotOrigin.rotateVector2(Vec2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r)];
 		let thisPath = new Path2D();
 		thisPath.moveTo(this.base.position.x, this.base.position.y);
 		for (let i=0;i<points_1.length;i++) {
@@ -186,13 +186,13 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 		ctx.save();
 		ctx.clip(thisPath);
 		//Vis bg
-		let visSize = new Vector2(this.base.size.x, this.objs.length*this.containerStyle.visSize);
+		let visSize = Vec2(this.base.size.x, this.objs.length*this.containerStyle.visSize);
 		points_2 = [
-				this.base.rotOrigin.rotateVector2(new Vector2(-visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
-				this.base.rotOrigin.rotateVector2(new Vector2(visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
-				this.base.rotOrigin.rotateVector2(new Vector2(visSize.x/2+this.base.position.x, visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
-				this.base.rotOrigin.rotateVector2(new Vector2(-visSize.x/2+this.base.position.x, visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
-				this.base.rotOrigin.rotateVector2(new Vector2(-visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r)];
+				this.base.rotOrigin.rotateVector2(Vec2(-visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
+				this.base.rotOrigin.rotateVector2(Vec2(visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
+				this.base.rotOrigin.rotateVector2(Vec2(visSize.x/2+this.base.position.x, visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
+				this.base.rotOrigin.rotateVector2(Vec2(-visSize.x/2+this.base.position.x, visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
+				this.base.rotOrigin.rotateVector2(Vec2(-visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r)];
 		let thisPath2 = new Path2D();
 		thisPath2.moveTo(this.base.position.x, this.base.position.y);
 		for (let i=0;i<points_2.length;i++) {
@@ -220,13 +220,13 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 			ctx.fillText(getItemName(this.objs[i-1].item), this.base.position.x-this.base.size.div(2).x+5, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2));
 		}
 		//Vis bttn
-		let visBttnSize = new Vector2(170, this.containerStyle.visSize);
+		let visBttnSize = Vec2(170, this.containerStyle.visSize);
 		ctx.shadowColor = NO_SHADOW.color;
 		ctx.shadowBlur = NO_SHADOW.blur;
 		ctx.shadowOffsetX = NO_SHADOW.offset.x;
 		ctx.shadowOffsetY = NO_SHADOW.offset.y;
 		for (let i=1,length=this.objs.length;i<=length;i++) {
-			let visBttnPos = new Vector2((this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y));
+			let visBttnPos = Vec2((this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y));
 			if (recCollision({"base":{"position":Cursor.cursor.base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)), "size":visBttnSize}}) && recCollision(Cursor.cursor, this)) {
 				ctx.fillStyle = this.containerStyle.visBttnColor.y;
 				if (mousePressed[0]) {
@@ -266,7 +266,7 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 }
 
 function pickUpMenu() {
-	this.size = new Vector2(600, 375);
+	this.size = Vec2(600, 375);
 	this.pos = screen.halfResolution.dup();
 	
 	let items = [];
@@ -291,8 +291,8 @@ function pickUpMenu() {
 		if (!this.isShowing) {
 			const compList = this.componentTable;
 			//Window setup
-			compList.Background = new Rectangle(8, new baseObject(true, new nameTag("Background", this.tag), this.size.duplicate(), this.pos.dup(), new colorData("grey", 0.6), new Shadow(new Vector2(5, 5), "black", 10)));
-			compList.MenuTitle = new Text(8, "Ground Items", new baseObject(true, new nameTag("MenuTitle", this.tag), new Vector2("25px Arial", false, "center"), new Vector2(0, (this.size.y/2)-15), new colorData("white", 0), new Shadow(new Vector2(5, 5), "black", 10)));
+			compList.Background = rectangle(8, base(true, nt("Background", this.tag), this.size.duplicate(), this.pos.dup(), colorD("grey", 0.6), shadow(Vec2(5, 5), "black", 10)));
+			compList.MenuTitle = text(8, "Ground Items", base(true, nt("MenuTitle", this.tag), Vec2("25px Arial", false, "center"), Vec2(0, (this.size.y/2)-15), colorD("white", 0), shadow(Vec2(5, 5), "black", 10)));
 			compList.MenuTitle.base.overridePositionUpdateFunction = true;
 			compList.MenuTitle.base.loaded = false;
 			compList.MenuTitle.base.updatePosition = () => {
@@ -305,7 +305,7 @@ function pickUpMenu() {
 				}
 			}
 			compList.MenuTitle.base.updatePosition();
-			compList.CloseBttn = new Sprite(8, new baseObject(true, new nameTag("CloseBttn", this.tag), new Vector2(20, 20), new Vector2(-((this.size.x/2)-12.5), (this.size.y/2)-12.5), Close_UI.getColor(0), new Shadow(new Vector2(5, 5), "black", 10)));
+			compList.CloseBttn = sprite(8, base(true, nt("CloseBttn", this.tag), Vec2(20, 20), Vec2(-((this.size.x/2)-12.5), (this.size.y/2)-12.5), Close_UI.getColor(0), shadow(Vec2(5, 5), "black", 10)));
 			compList.CloseBttn.base.overridePositionUpdateFunction = true;
 			compList.CloseBttn.base.loaded = false;
 			compList.CloseBttn.base.updatePosition = () => {
@@ -318,12 +318,12 @@ function pickUpMenu() {
 				}
 			}
 			compList.CloseBttn.base.updatePosition();
-			compList.CloseBttnLink = new buttonLink(compList.CloseBttn, null, recCollision, () => {
+			compList.CloseBttnLink = bttnL(compList.CloseBttn, null, recCollision, () => {
 				this.hide();
 				mousePressed[0] = false;
-			}, new Vector2(Close_UI.getColor(0.75), Close_UI_Hover.getColor(0.75)));
+			}, Vec2(Close_UI.getColor(0.75), Close_UI_Hover.getColor(0.75)));
 			compList.CloseBttnLink.link();
-			compList.ItemContainer = new Container(8, new baseObject(true, new nameTag("ItemContainer", this.tag), new Vector2(this.size.x, this.size.y-25), new Vector2(0, -12.5), new colorData("lightgrey", 0)), []);
+			compList.ItemContainer = new Container(8, base(true, nt("ItemContainer", this.tag), Vec2(this.size.x, this.size.y-25), Vec2(0, -12.5), colorD("lightgrey", 0)), []);
 			compList.ItemContainer.base.overridePositionUpdateFunction = true;
 			compList.ItemContainer.base.loaded = false;
 			compList.ItemContainer.base.updatePosition = () => {
@@ -340,7 +340,7 @@ function pickUpMenu() {
 	}
 	
 	this.hide = () => {
-		deleteByNameTag(new nameTag("", this.tag), 2, true);
+		deleteByNameTag(nt("", this.tag), 2, true);
 		this.componentTable.CloseBttnLink.unlink();
 		isPaused = false;
 		this.isShowing = false;
@@ -378,25 +378,25 @@ function pickUpMenu() {
 	addUpdate(update, "pickUpMenu");
 }
 
-function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=new Vector2()) {
+function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=Vec2()) {
 	this.obj = obj;
 	this.value = value;
 	this.maxValue = maxValue;
 	this.color = color; //x- end color, y- start color, r- alpha
 	this.gradient = new Rainbow();
-	this.setColors = (color=new Vector2()) => {
+	this.setColors = (color=Vec2()) => {
 		this.gradient.setSpectrum(this.color.x, this.color.y);
 	}
 	this.gradient.setNumberRange(0, this.maxValue);
 	this.setColors(this.color);
 	let sizeX = this.obj.base.size.duplicate().x;
 	this.update = () => {
-		this.obj.base.color = new colorData("#"+this.gradient.colorAt(this.value), this.color.r);
+		this.obj.base.color = colorD("#"+this.gradient.colorAt(this.value), this.color.r);
 		this.obj.base.size.x = sizeX*(this.value/(this.maxValue/100)/100);
 	}
 }
 
-function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1, 10), size=ONE, spreadPattern=[0], _speedRange=ONE, _rangeRange=ONE, _damageRange=ONE) {
+function weapon(name="", imageData=null, amountPerShot=1, fireTime=Vec2(1, 10), size=ONE, spreadPattern=[0], _speedRange=ONE, _rangeRange=ONE, _damageRange=ONE) {
 	this.name = name;
 	this.imageData = imageData;
 	this.amountPerShot = amountPerShot;
@@ -427,7 +427,7 @@ function weapon(name="", imageData=null, amountPerShot=1, fireTime=new Vector2(1
 }
 
 const weaponTable = {
-	0:new weapon("Test", bullet_1_Img.getColor(), 5, new Vector2(1, 10), new Vector2(10,10), [-12.5, -6.25, 0, 6.26, 12.5], Vec2(10, 15), Vec2(50, 100), Vec2(1, 2, 5, 10)),
+	0:new weapon("Test", bullet_1_Img.getColor(), 5, Vec2(1, 10), Vec2(10,10), [-12.5, -6.25, 0, 6.26, 12.5], Vec2(10, 15), Vec2(50, 100), Vec2(1, 2, 5, 10)),
 }
 
 let armorTypes = {
@@ -458,7 +458,7 @@ const armorTable = {
 	0:new armor("Test", null, ONE, armorTypes[0], Vec2(1,5)),
 }
 
-function baseItem(id=0, rariety=1, cost=0, size=new Vector2(16, 16), imageData=null) {
+function baseItem(id=0, rariety=1, cost=0, size=Vec2(16, 16), imageData=null) {
 	this.id = id;
 	this.rariety = rariety;
 	this.cost = cost;
@@ -634,7 +634,7 @@ const getItemsByType = (type="", mode=0, excluded=[]) => {
 }
 
 //Random loot by type
-const getRandomByType = (type="", rarietyRange=new Vector2(1, 10), nameExclude=[]) => {
+const getRandomByType = (type="", rarietyRange=Vec2(1, 10), nameExclude=[]) => {
 	if (rarietyRange.x < 1) {
 		rarietyRange.x = 0;
 	}
@@ -656,7 +656,7 @@ const getRandomByType = (type="", rarietyRange=new Vector2(1, 10), nameExclude=[
 }
 
 //Random loot
-const lootGen = (rarietyRange=new Vector2(1, 10), typeExclude=[], nameExclude=[]) => {
+const lootGen = (rarietyRange=Vec2(1, 10), typeExclude=[], nameExclude=[]) => {
 	if (rarietyRange.x < 1) {
 		rarietyRange.x = 0;
 	}
@@ -676,7 +676,7 @@ const lootGen = (rarietyRange=new Vector2(1, 10), typeExclude=[], nameExclude=[]
 	return itemRarietyPool[rangeInt(0, itemRarietyPool.length-1)];
 }
 
-const getLootTable = (amountRange=new Vector2(1, 10), rarietyRange=new Vector2(1, 10), typeExclude=[], nameExclude=[]) => {
+const getLootTable = (amountRange=Vec2(1, 10), rarietyRange=Vec2(1, 10), typeExclude=[], nameExclude=[]) => {
 	if (amountRange.x < 1) {
 		amountRange.x = 0;
 	}
@@ -721,7 +721,7 @@ const spawnItem = (id=0, dropPos=ZERO) => {
 	if (thisItem != undefined) {
 		if (!Array.isArray(id)) {
 			let dup = thisItem.duplicate();
-			let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+			let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
 			droppedItem.base.overridePositionUpdateFunction = true;
 			droppedItem.base.updatePosition = () => {
 				if (!isPaused && currentMap() != null) {
@@ -736,7 +736,7 @@ const spawnItem = (id=0, dropPos=ZERO) => {
 		} else {
 			for (let i=0,length=id.length;i<length;i++) {
 				let dup = thisItem[i].duplicate();
-				let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+				let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
 				droppedItem.base.overridePositionUpdateFunction = true;
 				droppedItem.base.updatePosition = () => {
 					if (!isPaused && currentMap() != null) {
@@ -771,7 +771,7 @@ const dropItem = (itemType="items", index=0) => {
 	let inventoryItem = inventory[itemType][index];
 	if (inventoryItem != undefined) {
 		let dup = inventoryItem.duplicate(true);
-		let droppedItem = new Sprite(2, new baseObject(true, new nameTag("itemDrop", "item"), dup.base.size, currentPlayer.playerItemDropPos, dup.base.imageData, new Shadow(new Vector2(5, -5), "black", 5)));
+		let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size, currentPlayer.playerItemDropPos, dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
 		droppedItem.base.overridePositionUpdateFunction = true;
 		droppedItem.base.updatePosition = () => {
 			if (!isPaused && currentMap() != null) {
@@ -792,7 +792,7 @@ const dropItem = (itemType="items", index=0) => {
 
 //Gets all drops items
 const getDroppedItems = () => {
-	let droppedItems = getByNameTag(new nameTag("itemDrop"), 1);
+	let droppedItems = getByNameTag(nt("itemDrop"), 1);
 	if (droppedItems != null && typeof droppedItems.length == "undefined") {
 		droppedItems = [droppedItems];
 	}
@@ -803,10 +803,10 @@ const getDroppedItems = () => {
 	}
 }
 
-const currentPlayer = new player(100, new Vector2(3, 7), new Vector2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [], new Vector2(100, 100));
+const currentPlayer = new player(100, Vec2(3, 7), Vec2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [], Vec2(100, 100));
 
 //TODO: Implement armor functionality
-function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vector2(100, 0.1), defence=10, weapons=[], armor=[], ammo=new Vector2(100, 100)) {
+function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1), defence=10, weapons=[], armor=[], ammo=Vec2(100, 100)) {
 	this.defence = defence;
 	this.armor = armor;
 	this.weapons = weapons;
@@ -815,44 +815,44 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 	this.lockWeapon = false;
 	let fireTime = 0;
 	let bulletAmount = 0;
-	this.size = new Vector2(32, 32);
+	this.size = Vec2(32, 32);
 	this.loaded = false;
-	this.nameTag = new nameTag("Jesus","player");
-	this.pos = new Vector2();
-	this.health = new Vector2(maxHealth, maxHealth); //x- current health, y- max health
+	this.nameTag = nt("Jesus","player");
+	this.pos = Vec2();
+	this.health = Vec2(maxHealth, maxHealth); //x- current health, y- max health
 	this.dead = false;
 	this.currentWeapon = 0;
 	this.currentWeaponData = null;
 	this.playerOBJ = null;
 	this.playerDir = -1;
-	this.playerItemDropPos = new Vector2();
-	this.bulletSpawn = new Vector2();
-	this.playerSpeed = new Vector2(playerSpeed.x, playerSpeed.y); //x- normal speed, y- running speed
+	this.playerItemDropPos = Vec2();
+	this.bulletSpawn = Vec2();
+	this.playerSpeed = Vec2(playerSpeed.x, playerSpeed.y); //x- normal speed, y- running speed
 	this.run = false;
-	this.stamina = new Vector2(maxStamina.x, maxStamina.x, maxStamina.y, maxStamina.r); //x- current stamina, y- max stamina, r- stamina recharge
-	this.controller = new playerController(false, "player", this.playerOBJ, this.playerSpeed.x, new Vector2(1, 0.5), new Vector2(100, 1180), new Vector2(100, 620));
+	this.stamina = Vec2(maxStamina.x, maxStamina.x, maxStamina.y, maxStamina.r); //x- current stamina, y- max stamina, r- stamina recharge
+	this.controller = playerC(false, "player", this.playerOBJ, this.playerSpeed.x, Vec2(1, 0.5), Vec2(100, 1180), Vec2(100, 620));
 	this.bttns = [];
 	this.playerBullets = [];
 	
 	//UI
 	//Health
-	this.healthBarTxt = new Text(8, "Health", new baseObject(false, new nameTag("healthBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 615), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
-	this.healthBar = new Rectangle(8, new baseObject(false, new nameTag("healthBar", "UI"), new Vector2(200, 25), new Vector2(640, 640), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
-	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, new Vector2("darkred", "darkgreen", 0.75));
+	this.healthBarTxt = text(8, "Health", base(false, nt("healthBarTxt", "UI"), Vec2("30px Arial", false, "center"), Vec2(640, 615), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 5)));
+	this.healthBar = rectangle(8, base(false, nt("healthBar", "UI"), Vec2(200, 25), Vec2(640, 640), colorD("black"), shadow(Vec2(5, 5), "black", 5)));
+	this.healthBarLink = new statusBar(this.healthBar, this.health.x, this.health.y, Vec2("darkred", "darkgreen", 0.75));
 	//Stamina
-	this.staminaBarTxt = new Text(8, "Stamina", new baseObject(false, new nameTag("staminaBarTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(640, 670), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
-	this.staminaBar = new Rectangle(8, new baseObject(false, new nameTag("staminaBar", "UI"), new Vector2(200, 25), new Vector2(640, 695), new colorData("black"), new Shadow(new Vector2(5, 5), "black", 5)));
-	this.staminaBarLink = new statusBar(this.staminaBar, this.stamina.x, this.stamina.y, new Vector2("ghostwhite", "darkblue", 0.75));
+	this.staminaBarTxt = text(8, "Stamina", base(false, nt("staminaBarTxt", "UI"), Vec2("30px Arial", false, "center"), Vec2(640, 670), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 5)));
+	this.staminaBar = rectangle(8, base(false, nt("staminaBar", "UI"), Vec2(200, 25), Vec2(640, 695), colorD("black"), shadow(Vec2(5, 5), "black", 5)));
+	this.staminaBarLink = new statusBar(this.staminaBar, this.stamina.x, this.stamina.y, Vec2("ghostwhite", "darkblue", 0.75));
 	//Weapon name
-	this.weaponNameTxt = new Text(8, "Weapon Name", new baseObject(false, new nameTag("weaponNameTxt", "UI"), new Vector2("30px Arial", false, "left"), new Vector2(10, 20), new colorData("purple", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.weaponNameTxt = text(8, "Weapon Name", base(false, nt("weaponNameTxt", "UI"), Vec2("30px Arial", false, "left"), Vec2(10, 20), colorD("purple", 0.75), shadow(Vec2(5, 5), "black", 5)));
 	//Ammo count
-	this.ammoCountTxt = new Text(8, "Ammo Count", new baseObject(false, new nameTag("ammoCount", "UI"), new Vector2("30px Arial", false, "left"), new Vector2(10, 50), new colorData("orange", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
+	this.ammoCountTxt = text(8, "Ammo Count", base(false, nt("ammoCount", "UI"), Vec2("30px Arial", false, "left"), Vec2(10, 50), colorD("orange", 0.75), shadow(Vec2(5, 5), "black", 5)));
 	//Pick up bttn
-	this.pickUpBttn = new Sprite(8, new baseObject(false, new nameTag("pickUpBttn", "UI_BTTN"), new Vector2(128, 64), new Vector2(1216, 688), pick_up_bttn_Img.getColor()));
-	this.droppedItemsTxt = new Text(8, "0", new baseObject(false, new nameTag("droppedItemsTxt", "UI"), new Vector2("30px Arial", false, "center"), new Vector2(1152, 656), new colorData("white", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
-	this.pickUpBttnLink = new buttonLink(this.pickUpBttn, this.droppedItemsTxt, recCollision, () => {
+	this.pickUpBttn = sprite(8, base(false, nt("pickUpBttn", "UI_BTTN"), Vec2(128, 64), Vec2(1216, 688), pick_up_bttn_Img.getColor()));
+	this.droppedItemsTxt = text(8, "0", base(false, nt("droppedItemsTxt", "UI"), Vec2("30px Arial", false, "center"), Vec2(1152, 656), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 5)));
+	this.pickUpBttnLink = bttnL(this.pickUpBttn, this.droppedItemsTxt, recCollision, () => {
 		dropMenu.init();
-	}, new Vector2(pick_up_bttn_Img.getColor(0.75), pick_up_bttn_Img.getColor(1)), new Vector2(new colorData("white", 0.75), new colorData("white", 1)), null, new Vector2("rgba(0,0,0,192)", "rgba(0,0,0,256)"));
+	}, Vec2(pick_up_bttn_Img.getColor(0.75), pick_up_bttn_Img.getColor(1)), Vec2(colorD("white", 0.75), colorD("white", 1)), null, Vec2("rgba(0,0,0,192)", "rgba(0,0,0,256)"));
 	
 	this.respawn = function(pos) {
 		if (pos != null) {
@@ -870,7 +870,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 			this.pos = pos;
 		}
 		currentMap().unload();
-		this.playerOBJ = new Sprite(4, new baseObject(true, this.nameTag, this.size.multi(config.scale), this.pos, player_Img.getColor(), new Shadow(new Vector2(5, -5), "black", 10)));
+		this.playerOBJ = sprite(4, base(true, this.nameTag, this.size.multi(config.scale), this.pos, player_Img.getColor(), shadow(Vec2(5, -5), "black", 10)));
 		this.playerOBJ.scale.x = this.playerDir;
 		this.controller.object = this.playerOBJ;
 		this.controller.activate();
@@ -915,11 +915,11 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 				}
 			} else {
 				//UI
-				if (this.bttns.length == 0 && getByNameTag(new nameTag("", "BTTN"), 2, false, true) != null) {
-					if (typeof getByNameTag(new nameTag("", "BTTN"), 2, false, true).length != "undefined") {
-						this.bttns = getByNameTag(new nameTag("", "BTTN"), 2, false, true);
+				if (this.bttns.length == 0 && getByNameTag(nt("", "BTTN"), 2, false, true) != null) {
+					if (typeof getByNameTag(nt("", "BTTN"), 2, false, true).length != "undefined") {
+						this.bttns = getByNameTag(nt("", "BTTN"), 2, false, true);
 					} else {
-						this.bttns = [getByNameTag(new nameTag("", "BTTN"), 2, false, true)];
+						this.bttns = [getByNameTag(nt("", "BTTN"), 2, false, true)];
 					}
 				}
 				if (this.bttns != null) {
@@ -981,19 +981,19 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 					this.playerOBJ.scale.x = this.playerDir;
 					switch (this.playerDir) {
 						case -1:
-							this.playerItemDropPos = this.playerOBJ.base.position.addV(new Vector2(-30, 80));
+							this.playerItemDropPos = this.playerOBJ.base.position.addV(Vec2(-30, 80));
 						break;
 						case 1:
-							this.playerItemDropPos = this.playerOBJ.base.position.addV(new Vector2(30, 80));
+							this.playerItemDropPos = this.playerOBJ.base.position.addV(Vec2(30, 80));
 						break;
 					}
 				}
 				switch (this.playerDir) {
 					case -1:
-						this.bulletSpawn = new Vector2(10, -60);
+						this.bulletSpawn = Vec2(10, -60);
 					break;
 					case 1:
-						this.bulletSpawn = new Vector2(-10, -60);
+						this.bulletSpawn = Vec2(-10, -60);
 					break;
 				}
 				if (currentMap() != null) {
@@ -1012,7 +1012,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered && this.playerOBJ != null && !this.dead) {
 					if (fireTime == 0 && this.ammo.x > 0) {
 						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
-							let newBullet = new Sprite(5, new baseObject(false, new nameTag("bullet_"+bulletAmount,"player_bullet_"+this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
+							let newBullet = sprite(5, base(false, nt("bullet_"+bulletAmount,"player_bullet_"+this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
 							let angle = this.playerOBJ.base.position.getRotation(Cursor.cursor.base.position, false)+180;
 							newBullet.base.nameTag.name = newBullet.base.nameTag.name+i;
 							newBullet.base.position.r = degToRad(this.currentWeaponData.spreadPattern[i]+angle);
@@ -1034,7 +1034,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 				if (bulletAmount > 1000) {
 					bulletAmount = 0;
 				}
-				this.playerBullets = getByNameTag(new nameTag("", "player_bullet"), 2, false, true);
+				this.playerBullets = getByNameTag(nt("", "player_bullet"), 2, false, true);
 				if (this.playerBullets != null) {
 					for (let i=0;i<this.playerBullets.length;i++) {
 						let dist = this.playerBullets[i].base.startPosition.distance(this.playerBullets[i].base.position);
@@ -1072,7 +1072,7 @@ function player(maxHealth=100, playerSpeed=new Vector2(3, 7), maxStamina=new Vec
 }
 
 //Add enemy spawn array / randomly get from array
-function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new Vector2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=new Vector2(0.5, 5), maxHealth=100, defense=10, speed=new Vector2(4, 5, 6, 7, 0.25), stopDistance=200, weaponId=0/**damage=new Vector2(6, 8)**/, confirmedDrop=null, lootAmount=new Vector2(1, 4), drugAmount=new Vector2(1, 1), dropRariety=new Vector2(1, 3), dropTypeExclude=[], dropNameExclude=[]) {
+function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=Vec2(0.5, 5), maxHealth=100, defense=10, speed=Vec2(4, 5, 6, 7, 0.25), stopDistance=200, weaponId=0/**damage=Vec2(6, 8)**/, confirmedDrop=null, lootAmount=Vec2(1, 4), drugAmount=Vec2(1, 1), dropRariety=Vec2(1, 3), dropTypeExclude=[], dropNameExclude=[]) {
 	this.enemyName = enemyName;
 	this.enemySize = enemySize;
 	this.enemyPositions = enemyPositions; //can be an array of positions
@@ -1096,7 +1096,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 	this.enemies = [];
 	this.time = 0;
 	this.count = 0;
-	let enemyPos = new Vector2();
+	let enemyPos = Vec2();
 	
 	this.spawn = () => {
 		if (typeof this.enemyPositions.length == "undefined") {
@@ -1105,14 +1105,14 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			enemyPos = this.enemyPositions[rangeInt(0, this.enemyPositions.length-1)];
 		}
 		if (this.count < this.spawnAmount) {
-			let enemyHealthBar = new Rectangle(4, new baseObject(false, new nameTag(this.enemyName+"_"+this.count+"_healthBar", "enemy_healthBar"), new Vector2(100, 5), enemyPos.subV(new Vector2(0, this.enemySize.div(2).y+10)), new colorData("darkgreen", 0.75), new Shadow(new Vector2(5, 5), "black", 5)));
-			let enemyHealthBarLink = new statusBar(enemyHealthBar, this.maxHealth, this.maxHealth, new Vector2("darkred", "darkgreen", 0.75));
-			let enemy = new Sprite(4, new baseObject(false, new nameTag(this.enemyName+"_"+this.count, "enemy"), this.enemySize, enemyPos, this.imgData, this.shadowData));
+			let enemyHealthBar = rectangle(4, base(false, nt(this.enemyName+"_"+this.count+"_healthBar", "enemy_healthBar"), Vec2(100, 5), enemyPos.subV(Vec2(0, this.enemySize.div(2).y+10)), colorD("darkgreen", 0.75), shadow(Vec2(5, 5), "black", 5)));
+			let enemyHealthBarLink = new statusBar(enemyHealthBar, this.maxHealth, this.maxHealth, Vec2("darkred", "darkgreen", 0.75));
+			let enemy = sprite(4, base(false, nt(this.enemyName+"_"+this.count, "enemy"), this.enemySize, enemyPos, this.imgData, this.shadowData));
 			//Overwrite the movement function to fix janky enemy movement
 			enemy.base.overridePositionUpdateFunction = true; //Fixes movement jitter caused by the position update function not updating when the speed is 0
 			enemy.base.updatePosition = () => {
 				if (!isPaused && currentMap() != null) {
-					let velocity = new Vector2(((enemy.base.position.s*Math.sin(enemy.base.position.o))*delta), -((enemy.base.position.s*Math.cos(enemy.base.position.o))*delta));
+					let velocity = Vec2(((enemy.base.position.s*Math.sin(enemy.base.position.o))*delta), -((enemy.base.position.s*Math.cos(enemy.base.position.o))*delta));
 					enemy.base.startPosition = enemy.base.startPosition.duplicate().addV(velocity);
 					enemy.base.position = enemy.base.startPosition.duplicate().addV(currentMap().mapPos);
 				}
@@ -1120,7 +1120,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 			
 			enemy.weapon = weaponTable[this.weaponId].duplicate();
 			enemy.weapon.genStats();
-			enemy.speed = new Vector2(rangeFloat(this.speed.x, this.speed.y, 1), rangeFloat(this.speed.r, this.speed.o, 1));
+			enemy.speed = Vec2(rangeFloat(this.speed.x, this.speed.y, 1), rangeFloat(this.speed.r, this.speed.o, 1));
 			enemy.defense = this.defense;
 			enemy.health = this.maxHealth;
 			enemy.maxHealth = this.maxHealth;
@@ -1147,7 +1147,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 	this.shoot = () => {
 		for(enemy of this.enemies) {
 			let bulletTime = T(MSecond(enemy.weapon.fireTime.y), true, false, () => {
-				let newBullet = new Sprite(5, new baseObject(false, new nameTag(enemy.weapon.name, "bullets"), enemy.weapon.size, enemy.base.position.dup(), enemy.weapon.imageData));
+				let newBullet = sprite(5, base(false, nt(enemy.weapon.name, "bullets"), enemy.weapon.size, enemy.base.position.dup(), enemy.weapon.imageData));
 				newBullet.base.position.s = -enemy.weapon.speed;
 				newBullet.base.position.r = newBullet.base.position.getRotation(currentPlayer.playerOBJ.base.position)+degToRad(180);
 				addObject(newBullet);
@@ -1198,7 +1198,7 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 				//Clamp health
 				thisEnemy.health = clamp(thisEnemy.health, 0, thisEnemy.maxHealth);
 				//Health bar code
-				thisEnemy.healthBar.base.position = thisEnemy.base.position.subV(new Vector2(0, this.enemySize.div(2).y+10));
+				thisEnemy.healthBar.base.position = thisEnemy.base.position.subV(Vec2(0, this.enemySize.div(2).y+10));
 				thisEnemy.healthBarLink.value = thisEnemy.health;
 				thisEnemy.healthBarLink.update();
 				//Agro check
@@ -1236,16 +1236,16 @@ function enemySpawner(enemyName="", enemySize=new Vector2(), enemyPositions=[new
 							//drops
 							if (thisEnemy.health <= 0) {
 								if (this.confirmedDrop != null) {
-									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
+									let dropPos = Vec2(rangeFloat(thisEnemy.base.position.duplicate().subV(Vec2(50, 0)).x, thisEnemy.base.position.duplicate().addV(Vec2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(Vec2(0, 50)).y, thisEnemy.base.position.duplicate().addV(Vec2(0, 50)).y)).subV(currentMap().mapPos);
 									spawnItem(this.confirmedDrop, dropPos);
 								}
 								for (let i=0,length=rangeInt(this.lootAmount.x, this.lootAmount.y);i<length;i++) {
-									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
+									let dropPos = Vec2(rangeFloat(thisEnemy.base.position.duplicate().subV(Vec2(50, 0)).x, thisEnemy.base.position.duplicate().addV(Vec2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(Vec2(0, 50)).y, thisEnemy.base.position.duplicate().addV(Vec2(0, 50)).y)).subV(currentMap().mapPos);
 									spawnItem(getLootTable(this.lootAmount, this.dropRariety, this.dropTypeExclude, this.dropNameExclude), dropPos);
 								}
 								let dropDrugAmount = rangeInt(this.drugAmount.x, this.drugAmount.y);
 								for (let i=0;i<dropDrugAmount;i++) {
-									let dropPos = new Vector2(rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(50, 0)).x, thisEnemy.base.position.duplicate().addV(new Vector2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(new Vector2(0, 50)).y, thisEnemy.base.position.duplicate().addV(new Vector2(0, 50)).y)).subV(currentMap().mapPos);
+									let dropPos = Vec2(rangeFloat(thisEnemy.base.position.duplicate().subV(Vec2(50, 0)).x, thisEnemy.base.position.duplicate().addV(Vec2(50, 0)).x), rangeFloat(thisEnemy.base.position.duplicate().subV(Vec2(0, 50)).y, thisEnemy.base.position.duplicate().addV(Vec2(0, 50)).y)).subV(currentMap().mapPos);
 									spawnItem(getRandomByType("drug", this.dropRariety, this.dropNameExclude), dropPos);
 								}
 							}
@@ -1268,10 +1268,10 @@ function deathScreen (){
 	this.isShowing = getByNameTag(thisNameTag, 2, false, true) != null;
 	this.show = () => {
 		if (!this.isShowing && currentPlayer.dead) {
-			let background = new Rectangle(8, new baseObject(true, new nameTag("background", "deathScreen"), screen.resolution, screen.halfResolution, new colorData("black")));
-			let deathText = new Text(8, "You are dead...", new baseObject(true, new nameTag("deathtxt", "deathScreen"), new Vector2("80px Arial"), new Vector2(screen.halfResolution.x, 50), new  colorData("red")));
-			let deadButton = new Rectangle(8, new baseObject(true, new nameTag("deathButton", "deathScreen"), new Vector2(200, 50), screen.halfResolution, new colorData("grey", 1), new Shadow(new Vector2(5, 5), "rgba(255, 255, 255, 0.2)", 5)));
-			let deadButtonTxt = new Text(8, "RESPAWN", new baseObject(true, new nameTag("deathButtontxt", "deathScreen"), new Vector2("30px Arial"), screen.halfResolution, new colorData("white")));
+			let background = rectangle(8, base(true, nt("background", "deathScreen"), screen.resolution, screen.halfResolution, colorD("black")));
+			let deathText = text(8, "You are dead...", base(true, nt("deathtxt", "deathScreen"), Vec2("80px Arial"), Vec2(screen.halfResolution.x, 50), new  colorData("red")));
+			let deadButton = rectangle(8, base(true, nt("deathButton", "deathScreen"), Vec2(200, 50), screen.halfResolution, colorD("grey", 1), shadow(Vec2(5, 5), "rgba(255, 255, 255, 0.2)", 5)));
+			let deadButtonTxt = text(8, "RESPAWN", base(true, nt("deathButtontxt", "deathScreen"), Vec2("30px Arial"), screen.halfResolution, colorD("white")));
 			deadButtonLink.object = deadButton;
 			deadButtonLink.textObj = deadButtonTxt;
 			deadButtonLink.link();
@@ -1284,7 +1284,7 @@ function deathScreen (){
 			currentPlayer.respawn();
 		}
 	}
-	let deadButtonLink = new buttonLink(null, null, recCollision, this.hide, null, null, new Vector2("rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 1)"), null);
+	let deadButtonLink = bttnL(null, null, recCollision, this.hide, null, null, Vec2("rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 1)"), null);
 	const update =() =>{
 		this.isShowing = getByNameTag(thisNameTag, 2, false, true) != null;
 		if (this.isShowing) {
@@ -1301,14 +1301,14 @@ const mainUpdate = () => {
 	if (typeof map != "undefined") {
 		if (!thisLoaded) {
 			config.scale = 5;
-			config.tileTables = [new tileTableLink("table_1", "this_table_1")];
+			config.tileTables = [tileTL("table_1", "this_table_1")];
 			loadTileTables();
 			config.maps = ["test_map"];
 			loadMaps();
 			thisLoaded = true;
 		}
 		if (currentMap() == null) {
-			deleteByNameTag(new nameTag("", "enemy"), 2, true);
+			deleteByNameTag(nt("", "enemy"), 2, true);
 			deleteUpdate(1, "enemySpawner");
 		}
 		if (currentMap() != null && currentMap().loaded) {
@@ -1316,7 +1316,7 @@ const mainUpdate = () => {
 				currentPlayer.load(currentMap().playerPosInit);
 			}
 			if (!loadedCollisionArray) {
-				collisionArray = getByNameTag(new nameTag("collide", ""), 1, false, true);
+				collisionArray = getByNameTag(nt("collide", ""), 1, false, true);
 				if (collisionArray != null) {
 					loadedCollisionArray = true;
 				}
@@ -1351,12 +1351,12 @@ addUpdate(mainUpdate, "mainUpdate");
 
 
 //Controls
-let moveUpBttn = new key(
+let moveUpBttn = K(
 	"Up",
 	[
-		new keyData("w", 0)
+		keyD("w", 0)
 	],
-	new Vector2(() => {
+	Vec2(() => {
 		if (currentPlayer.loaded) {
 			if (!currentPlayer.dead) {
 				currentPlayer.controller.moveDir.y = -1;
@@ -1367,12 +1367,12 @@ let moveUpBttn = new key(
 	}, () => {currentPlayer.controller.moveDir.y = 0}),
 	true
 );
-let moveDownBttn = new key(
+let moveDownBttn = K(
 	"Down",
 	[
-		new keyData("s", 0)
+		keyD("s", 0)
 	],
-	new Vector2(() => {
+	Vec2(() => {
 		if (currentPlayer.loaded) {
 			if (!currentPlayer.dead) {
 				currentPlayer.controller.moveDir.y = 1;
@@ -1383,12 +1383,12 @@ let moveDownBttn = new key(
 	}, () => {currentPlayer.controller.moveDir.y = 0}),
 	true
 );
-let moveLeftBttn = new key(
+let moveLeftBttn = K(
 	"Left",
 	[
-		new keyData("a", 0)
+		keyD("a", 0)
 	],
-	new Vector2(() => {
+	Vec2(() => {
 		if (currentPlayer.loaded) {
 			if (!currentPlayer.dead) {
 				currentPlayer.controller.moveDir.x = -1;
@@ -1399,12 +1399,12 @@ let moveLeftBttn = new key(
 	}, () => {currentPlayer.controller.moveDir.x = 0}),
 	true
 );
-let moveRightBttn = new key(
+let moveRightBttn = K(
 	"Right",
 	[
-		new keyData("d", 0)
+		keyD("d", 0)
 	],
-	new Vector2(() => {
+	Vec2(() => {
 		if (currentPlayer.loaded) {
 			if (!currentPlayer.dead) {
 				currentPlayer.controller.moveDir.x = 1;
@@ -1415,12 +1415,12 @@ let moveRightBttn = new key(
 	}, () => {currentPlayer.controller.moveDir.x = 0}),
 	true
 );
-let runBttn = new key(
+let runBttn = K(
 	"Run",
 	[
-		new keyData("Shift", 1)
+		keyD("Shift", 1)
 	],
-	new Vector2(() => {
+	Vec2(() => {
 		if (currentPlayer.loaded) {
 			if (!currentPlayer.dead) {
 				currentPlayer.run = true;
@@ -1436,7 +1436,7 @@ let runBttn = new key(
 	false
 );
 
-let playerMovement = new controllerAxisBinding(1, (e)=>{
+let playerMovement = contAxisB(1, (e)=>{
 	if (currentPlayer.loaded){
 		if (!isPaused){
 			if(!e.r && !currentPlayer.dead) {
