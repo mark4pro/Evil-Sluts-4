@@ -89,7 +89,7 @@ function  dialogueUI(){
 	this.option2 = null;
 	let option2Txt = null;
 	const update = () => {
-		if(getByNameTag(name("dialogueBox")) == undefined && this.showing && !valuate(gameState)){
+		if(getByNameTag(name("dialogueBox"), 1) == undefined && this.showing && !valuate(gameState)){
 			this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), new colorData("grey", 0.75)));
 			this.option1 = new Rectangle(8, new baseObject(true, new nameTag("option1", "UI"), Vec2(40, 30),this.dialogueBox.base.position.subV(Vec2(25, -50)), new colorData("darkgrey", 0.75), new shadow("black", FillVec2(5), 5)));
 		}
