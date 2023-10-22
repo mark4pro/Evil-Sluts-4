@@ -109,7 +109,7 @@ function editor() {
 	this.rightBttn = rectangle(8, base(false, nt("rightBttn", "editor"), Vec2(50, 50), Vec2(1200, 600), colorD("grey", 1)));
 	this.rightBttnTxt = text(8, ">", base(false, nt("rightBttnTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1200, 600), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
 	this.rightBttnLink = bttnL(this.rightBttn, this.rightBttnTxt, recCollision, () => {
-		if (this.currentTileTable != null && this.currentTileNumber < this.currentTileTable.length) {
+		if (this.currentTileTable != null && this.currentTileNumber < this.currentTileTable.length-1) {
 			this.currentTileNumber++;
 		} else {
 			this.currentTileNumber = 0;

@@ -1,7 +1,7 @@
 //Setup
 screen.setResolution(Vec2(1280, 720));
-Cursor.cursor.base.size = (Vec2(14, 14));
-Cursor.offset = Cursor.cursor.base.size.div(2);
+getCursor().base.size = (Vec2(14, 14));
+Cursor.offset = getCursor().base.size.div(2);
 engineSettings.Settings_Menu.Image_Smoothing = false;
 engineSettings.Settings_Menu.Show_Debug_Cursor = false;
 engineSettings.Addons = ["mapRenderer"];
@@ -37,6 +37,7 @@ let pick_up_bttn_Img = imageD("pick_up_bttn", imagePath+"pick_up.png", Vec2(64, 
 let thisLoaded = false;
 let loadedCollisionArray = false;
 let collisionArray = null;
+let oldLocationId = -1;
 let saveData = {
 	"mapPos":null,
 	"playerPos":null,
@@ -227,7 +228,7 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 		ctx.shadowOffsetY = NO_SHADOW.offset.y;
 		for (let i=1,length=this.objs.length;i<=length;i++) {
 			let visBttnPos = Vec2((this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y));
-			if (recCollision({"base":{"position":Cursor.cursor.base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)), "size":visBttnSize}}) && recCollision(Cursor.cursor, this)) {
+			if (recCollision({"base":{"position":getCursor().base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)), "size":visBttnSize}}) && recCollision(getCursor(), this)) {
 				ctx.fillStyle = this.containerStyle.visBttnColor.y;
 				if (mousePressed[0]) {
 					this.objs[i-1].pickUp();
@@ -924,7 +925,7 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 				}
 				if (this.bttns != null) {
 					if (typeof this.bttns.length != "undefined") {
-						let isTouchBttns = this.bttns.some((b) => recCollision(Cursor.cursor, b)); 
+						let isTouchBttns = this.bttns.some((b) => recCollision(getCursor(), b)); 
 						if (isTouchBttns) {
 							this.lockWeapon = true;
 						} else {
@@ -1013,7 +1014,7 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 					if (fireTime == 0 && this.ammo.x > 0) {
 						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
 							let newBullet = sprite(5, base(false, nt("bullet_"+bulletAmount,"player_bullet_"+this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
-							let angle = this.playerOBJ.base.position.getRotation(Cursor.cursor.base.position, false)+180;
+							let angle = this.playerOBJ.base.position.getRotation(getCursor().base.position, false)+180;
 							newBullet.base.nameTag.name = newBullet.base.nameTag.name+i;
 							newBullet.base.position.r = degToRad(this.currentWeaponData.spreadPattern[i]+angle);
 							newBullet.base.position.s = -this.currentWeaponData.speed;
@@ -1303,13 +1304,16 @@ const mainUpdate = () => {
 			config.scale = 5;
 			config.tileTables = [tileTL("table_1", "this_table_1")];
 			loadTileTables();
-			config.maps = ["test_map"];
+			config.maps = ["test_map", "new_test_map"];
 			loadMaps();
 			thisLoaded = true;
 		}
-		if (currentMap() == null) {
+		if (oldLocationId != locationId) {
 			deleteByNameTag(nt("", "enemy"), 2, true);
 			deleteUpdate(1, "enemySpawner");
+			currentPlayer.loaded = false;
+			loadedCollisionArray = false;
+			oldLocationId = locationId;
 		}
 		if (currentMap() != null && currentMap().loaded) {
 			if (!currentPlayer.loaded) {
