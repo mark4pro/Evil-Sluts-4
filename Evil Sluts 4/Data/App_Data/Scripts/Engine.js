@@ -333,6 +333,15 @@ const average = (nums=[0,0]) => {
 	return nums.reduce((a, b) => a+b,0)/nums.length;
 }
 
+//Valuates vars to see if they are true of false
+const valuate = (val) => {
+	if (typeof val != "undefined") {
+		return (val == 1 || val == true || (typeof val == "string" && val.toLowerCase() == "true") || val != null);
+	} else {
+		return false;
+	}
+}
+
 //Helper function for random ints same as range just with less steps
 //Range functions can take Vector2's in the min argument
 const rangeInt = (min=0, max=1) => {
