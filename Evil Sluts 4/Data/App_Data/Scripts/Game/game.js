@@ -93,9 +93,8 @@ function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25
 	}
 	this.dup = this.duplicate;
 }
-//dialogue ui 
-const dUI = new dialogueUI();
 
+//Dialogue
 function  dialogueUI(){
 	this.showing = true;
 	this.showingOP1 = true;
@@ -105,7 +104,7 @@ function  dialogueUI(){
 	this.option2 = null;
 		const update = () => {
 			if(getByNameTag(name("dialogueBox")) == undefined && this.showing){
-			  this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), new colorData("grey", 0.75)));
+				this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), new colorData("grey", 0.75)));
 			  
 			
 			}
@@ -113,7 +112,6 @@ function  dialogueUI(){
 		addUpdate(update, "dialogueUI");
 }
 
-//dialogue
 function option(text="", nextId=0) {
 	this.text = text;
 	this.nextId = nextId;
@@ -127,6 +125,7 @@ function convo(id=0, text="", options=null) {
 }
 
 const dialogueMG = new dialogueManager();
+const dUI = new dialogueUI();
 
 function dialogueManager() {
 	let convos = [];
