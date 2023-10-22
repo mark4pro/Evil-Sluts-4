@@ -93,23 +93,57 @@ function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25
 	}
 	this.dup = this.duplicate;
 }
-//dialogue
-let questions = {
-  'buy weapon': 'There you fucker.',
-  'buy armor': 'Heres some fucking armor.',
-  'sell something': 'what the fuck do you want to sell?'
-}
-function ask(question){
-  if(typeof questions[question] !== "undefined"){
-    return questions[question];
-  } else {
-    return 'what the fuck is wrong with you!';
-  }
+//dialogue ui 
+const dUI = new dialogueUI();
+
+function  dialogueUI(){
+	this.showing = true;
+	this.showingOP1 = true;
+	this.showingOP2 = true;
+    this.dialogueBox = null;
+	this.option1 = null;
+	this.option2 = null;
+		const update = () => {
+			if(getByNameTag(name("dialogueBox")) == undefined && this.showing){
+			  this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), new colorData("grey", 0.75)));
+			  
+			
+			}
+		}
+		addUpdate(update, "dialogueUI");
 }
 
-let answer = ask('buy armor');
-let answer = ask('buy weapon');
-let answer = ask('sell something');
+//dialogue
+function option(text="", nextId=0) {
+	this.text = text;
+	this.nextId = nextId;
+}
+
+function convo(id=0, text="", options=null) {
+	this.id = id;
+	this.text = text;
+	this.options = options;
+	dialogueMG.addConvo(this);
+}
+
+const dialogueMG = new dialogueManager();
+
+function dialogueManager() {
+	let convos = [];
+	let thisConvo = null;
+	this.addConvo = (convo) => {
+		convos.push(convo);
+	}
+	this.readConvo = (id=0) => {
+		thisConvo = convos.filter(c => c.id == id);
+	}
+	const update = () => {
+		if (thisConvo != null) {
+			
+		}
+	}
+	addUpdate(update, "dialogueMG");
+} 
 
 //Container object for the menu
 function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
