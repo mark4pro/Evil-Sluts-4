@@ -83,16 +83,19 @@ function  dialogueUI(){
 	this.showingOP1 = true;
 	this.showingOP2 = true;
     this.dialogueBox = null;
+	let dialogue = null;
 	this.option1 = null;
+	let option1Txt = null;
 	this.option2 = null;
-		const update = () => {
-			if(getByNameTag(name("dialogueBox")) == undefined && this.showing && !valuate(gameState)){
-				this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), new colorData("grey", 0.75)));
-			  
-			
-			}
+	let option2Txt = null;
+	const update = () => {
+		if(getByNameTag(name("dialogueBox")) == undefined && this.showing && !valuate(gameState)){
+			this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), new colorData("grey", 0.75)));
+		  
+		
 		}
-		addUpdate(update, "dialogueUI");
+	}
+	addUpdate(update, "dialogueUI");
 }
 
 function option(text="", nextId=0) {
