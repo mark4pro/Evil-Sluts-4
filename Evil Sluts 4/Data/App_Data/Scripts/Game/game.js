@@ -94,7 +94,6 @@ function  dialogueUI(){
 			this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 150), Vec2(screen.halfResolution.x, screen.resolution.y-75), colorD("grey", 0.75)));
 			this.option1 = new Rectangle(8, new baseObject(true, new nameTag("option1", "UI"), Vec2(600, 50),this.dialogueBox.base.position.subV(Vec2(320, -50)), colorD("darkgrey", 0.75)));
 			this.option2 = new Rectangle(8, new baseObject(true, new nameTag("option2", "UI"), Vec2(600, 50),this.dialogueBox.base.position.subV(Vec2(-320, -50)), colorD("darkgrey", 0.75)));
-			
 		}
 	}
 	addUpdate(update, "dialogueUI");
@@ -130,7 +129,7 @@ function dialogueManager() {
 		}
 	}
 	addUpdate(update, "dialogueMG");
-} 
+}
 
 //Item pickup menu
 const dropMenu = new pickUpMenu();
@@ -918,6 +917,32 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 				}
 			} else {
 				//UI
+				if (dUI.showing) {
+					this.healthBar.base.setAlpha(0);
+					this.healthBarTxt.base.setAlpha(0);
+					this.staminaBar.base.setAlpha(0);
+					this.staminaBarTxt.base.setAlpha(0);
+					this.weaponNameTxt.base.setAlpha(0);
+					this.ammoCountTxt.base.setAlpha(0);
+					this.pickUpBttn.base.setAlpha(0);
+					this.droppedItemsTxt.base.setAlpha(0);
+					this.pickUpBttnLink.unlink();
+					isPaused = true;
+				}
+				if (!dUI.showing) {
+					this.healthBar.base.setAlpha(0.75);
+					this.healthBarTxt.base.setAlpha(0.75);
+					this.staminaBar.base.setAlpha(0.75);
+					this.staminaBarTxt.base.setAlpha(0.75);
+					this.weaponNameTxt.base.setAlpha(0.75);
+					this.ammoCountTxt.base.setAlpha(0.75);
+					this.pickUpBttn.base.setAlpha(0.75);
+					this.droppedItemsTxt.base.setAlpha(0.75);
+					this.healthBarLink.update();
+					this.staminaBarLink.update();
+					this.pickUpBttnLink.link();
+					isPaused = false;
+				}
 				if (this.bttns.length == 0 && getByNameTag(nt("", "BTTN"), 2, false, true) != null) {
 					if (typeof getByNameTag(nt("", "BTTN"), 2, false, true).length != "undefined") {
 						this.bttns = getByNameTag(nt("", "BTTN"), 2, false, true);
@@ -937,7 +962,6 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 				}
 				this.healthBarLink.value = this.health.x;
 				this.healthBarLink.maxValue = this.health.y;
-				this.healthBarLink.update();
 				this.health.x = clamp(this.health.x, 0, this.health.y);
 				if (this.health.x == 0) {
 					this.dead = true;
@@ -946,7 +970,6 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 				}
 				this.staminaBarLink.value = this.stamina.x;
 				this.staminaBarLink.maxValue = this.stamina.y;
-				this.staminaBarLink.update();
 				this.stamina.x = clamp(this.stamina.x, 0, this.stamina.y);
 				if(this.currentWeaponData != null){ 
 					this.weaponNameTxt.text = "Weapon Name: "+this.currentWeaponData.name;
@@ -1261,7 +1284,6 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 	}
 	addUpdate(update, "enemySpawner");
 }
-
 
 //Death screen ya bitch
 const death_screen = new deathScreen();
