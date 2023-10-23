@@ -45,10 +45,14 @@ function editor() {
 		localStorage.setItem(this.nameTag.name, JSON.stringify(M(thisMap.locationId, thisMap.nameTag, thisMap.mapSize, Vec2(parseFloat(this.startPosXTxtBox.value), parseFloat(this.startPosYTxtBox.value)), Vec2(parseFloat(this.playerPosXTxtBox.value), parseFloat(this.playerPosYTxtBox.value)), thisMap.tileSize, thisMap.tiles)));
 		localStorage.setItem(this.nameTag.name+"_tile_data", JSON.stringify(this.tiles));
 		maps.length = 1;
+		console.log("%cMap '"+this.nameTag.name+"' saved.", "color:green");
 	}
 	
 	//Load map
-	this.loadMap = function() {
+	this.loadMap = function(mapName=null) {
+		if (mapName != null) {
+			this.nameTag.name = mapName;
+		}
 		let data = JSON.parse(localStorage.getItem(this.nameTag.name));
 		let data_tiles = JSON.parse(localStorage.getItem(this.nameTag.name+"_tile_data"));
 		this.idTxtBox.value = String(data.locationId);
@@ -74,6 +78,11 @@ function editor() {
 	this.idTxt = text(8, "Id:", base(false, nt("idTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(940, 120), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
 	this.idTxtBox = textBox(8, "30px Arial", "white", base(false, nt("idTxtBox", "editor"), Vec2(50, 50), Vec2(1005, 120), colorD("black", 1)));
 	this.idTxtBox.value = "0";
+	this.saveBttn = rectangle(8, base(false, nt("saveBttn", "editor"), Vec2(80, 50), Vec2(1100, 120), colorD("grey")));
+	this.saveTxt = text(8, "Save", base(false, nt("saveTxt", "editor"), Vec2("30px Arial", false, "center"), Vec2(1100, 120), colorData("white"), shadow(Vec2(2, 2), "black", 10)));
+	this.saveFunc = bttnL(this.saveBttn, this.saveTxt, recCollision, () => {
+		this.saveMap();
+	}, Vec2(colorD("grey"), colorD("darkgrey"))); 
 	this.sizeXTxt = text(8, "Size: X-", base(false, nt("sizeXTxt", "editor"), Vec2("30px Arial", false, "left"), Vec2(940, 190), colorD("white"), shadow(Vec2(2, 2), "black", 10)));
 	this.sizeXTxtBox = textBox(8, "30px Arial", "white", base(false, nt("sizeXTxtBox", "editor"), Vec2(50, 50), Vec2(1075, 190), colorD("black", 1)));
 	this.sizeXTxtBox.value = "0";
@@ -214,6 +223,9 @@ function editor() {
 				addObject(this.nameTxtBox);
 				addObject(this.idTxt);
 				addObject(this.idTxtBox);
+				addObject(this.saveBttn);
+				addObject(this.saveTxt);
+				this.saveFunc.link();
 				addObject(this.sizeXTxt);
 				addObject(this.sizeXTxtBox);
 				addObject(this.sizeYTxt);
@@ -437,17 +449,27 @@ function editor() {
 				deleteByNameTag(this.sizeYTxt.base.nameTag);
 				deleteByNameTag(this.sizeXTxtBox.base.nameTag);
 				deleteByNameTag(this.sizeXTxt.base.nameTag);
+				deleteByNameTag(this.saveBttn.base.nameTag);
+				deleteByNameTag(this.saveTxt.base.nameTag);
 				deleteByNameTag(this.idTxtBox.base.nameTag);
 				deleteByNameTag(this.idTxt.base.nameTag);
 				deleteByNameTag(this.nameTxtBox.base.nameTag);
 				deleteByNameTag(this.nameTxt.base.nameTag);
 				deleteByNameTag(this.panel.base.nameTag);
+				this.saveFunc.unlink();
+				this.rightBttnLink.unlink();
+				this.leftBttnLink.unlink();
+				this.leftLayerBttnLink.unlink();
+				this.rightLayerBttnLink.unlink();
 			}
 			if (getByNameTag(this.gridNameTag, 0, false, true) != null) {
 				this.mapSize = Vec2();
 				this.gridSize = Vec2();
 				layer[8] = [];
 			}
+			deleteByNameTag(tag(this.nameTag.name), 2, true);
+			this.tiles = [];
+			gridTiles = [];
 		}
 	}
 	addUpdate(update, "editor");

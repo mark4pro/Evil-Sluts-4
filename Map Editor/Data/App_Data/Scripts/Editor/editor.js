@@ -16,10 +16,17 @@ const mainMenu = function() {
 	const newMapFunc = bttnL(this.newMapBttn, this.newMapTxt, recCollision, () => {
 		gameState = 1;
 	}, Vec2(colorD("grey"), colorD("lightgrey")));
+	this.loadMapName = textBox(2, "30px Arial", "white", base(false, nt("loadMapName", "menu"), Vec2(200, 50), Vec2(640, 420), colorD("black"), shadow(Vec2(5, 5), "black", 10)));
 	this.loadMapBttn = rectangle(2, base(false, nt("loadMapBttn", "menu"), Vec2(200, 50), Vec2(640, 360), colorD("grey"), shadow(Vec2(5, 5), "black", 10)));
 	this.loadMapTxt = text(3, "Load Map", base(false, nt("loadMapTxt", "menu"), Vec2("30px Arial", false, "center"), Vec2(640, 360), colorData("white"), shadow(Vec2(2, 2), "black", 10)));
 	const loadMapFunc = bttnL(this.loadMapBttn, this.loadMapTxt, recCollision, () => {
-		gameState = 1;
+		if (localStorage.getItem(this.loadMapName.value) != null) {
+			mapEditor.loadMap(this.loadMapName.value);
+			mousePressed[0] = false;
+			gameState = 1;
+		} else {
+			console.log("%cMap '"+this.loadMapName.value+"' does not exist.", "color:red");
+		}
 	}, Vec2(colorD("grey"), colorD("lightgrey"))); 
 	const update = () => this.update();
 	this.update = function() {
@@ -30,6 +37,7 @@ const mainMenu = function() {
 				loadMapFunc.link();
 				addObject(this.loadMapTxt);
 				addObject(this.loadMapBttn);
+				addObject(this.loadMapName);
 				addObject(this.newMapTxt);
 				addObject(this.newMapBttn);
 				addObject(this.title);
@@ -42,6 +50,7 @@ const mainMenu = function() {
 				loadMapFunc.unlink();
 				deleteByNameTag(this.loadMapTxt.base.nameTag);
 				deleteByNameTag(this.loadMapBttn.base.nameTag);
+				deleteByNameTag(this.loadMapName.base.nameTag);
 				deleteByNameTag(this.newMapTxt.base.nameTag);
 				deleteByNameTag(this.newMapBttn.base.nameTag);
 				deleteByNameTag(this.title.base.nameTag);
