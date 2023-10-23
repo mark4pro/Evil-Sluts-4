@@ -91,15 +91,10 @@ function  dialogueUI(){
 	let option2Txt = null;
 	const update = () => {
 		if(getByNameTag(name("dialogueBox"), 1) == null && this.showing && valuate(gameState)){
-<<<<<<< Updated upstream
-			this.dialogueBox = rectangle(8, base(true, nt("dialogueBox", "UI"), Vec2(screen.resolution.x, 100), Vec2(screen.halfResolution.x, screen.resolution.y-50), colorD("grey", 0.75)));
-			this.option1 = rectangle(8, base(true, nt("option1", "UI"), Vec2(40, 30), this.dialogueBox.base.position.subV(Vec2(25, -50)), colorD("darkgrey", 0.75), shadow(FillVec2(5), "black", 5)));
-=======
 			this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 150), Vec2(screen.halfResolution.x, screen.resolution.y-75), colorD("grey", 0.75)));
 			this.option1 = new Rectangle(8, new baseObject(true, new nameTag("option1", "UI"), Vec2(100, 50),this.dialogueBox.base.position.subV(Vec2(25, -50)), colorD("darkgrey", 0.75), shadow(FillVec2(5), "black", 5)));
 			this.option2 = new Rectangle(8, new baseObject(true, new nameTag("option2", "UI"), Vec2(100, 50),this.dialogueBox.base.position.subV(Vec2(50, -50)), colorD("darkgrey", 0.75), shadow(FillVec2(5), "black", 5)));
 			
->>>>>>> Stashed changes
 		}
 	}
 	addUpdate(update, "dialogueUI");
