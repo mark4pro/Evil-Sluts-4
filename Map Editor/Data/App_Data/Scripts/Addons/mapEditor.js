@@ -444,6 +444,7 @@ function editor() {
 				deleteByNameTag(this.leftBttnTxt.base.nameTag);
 				deleteByNameTag(this.leftBttn.base.nameTag);
 				deleteByNameTag(this.currentTileTxt.base.nameTag);
+				deleteByNameTag(nt("visCurrentTile", "editor"));
 				deleteByNameTag(this.tileSizeYTxtBox.base.nameTag);
 				deleteByNameTag(this.tileSizeYTxt.base.nameTag);
 				deleteByNameTag(this.tileSizeXTxtBox.base.nameTag);

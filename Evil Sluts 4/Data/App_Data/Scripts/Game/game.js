@@ -114,7 +114,7 @@ function  dialogueUI(){
 			}
 			if (this.showingOP1) {
 				if (getByNameTag(name("option1"), 1) == null) {
-					this.option1 = rectangle(8, base(true, nt("option1", "UI"), Vec2(600, 50), this.dialogueBox.base.position.subV(Vec2(320, -65)), colorD("darkgrey", 0.75)));
+					this.option1 = rectangle(8, base(true, nt("option1", "UI"), Vec2(600, 50), this.dialogueBox.base.position.subV(Vec2(320, -65)), colorD("darkgrey", 0.25)));
 				}
 				if (getByNameTag(name("option1Txt"), 1) == null) {
 					this.option1Txt = text(8, "", base(true, nt("option1Txt", "UI"), Vec2("30px arial", false, "center"), this.dialogueBox.base.position.subV(Vec2(320, -65)), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 10)));
@@ -129,7 +129,7 @@ function  dialogueUI(){
 			}
 			if (this.showingOP2) {
 				if (getByNameTag(name("option2"), 1) == null) {
-					this.option2 = rectangle(8, base(true, nt("option2", "UI"), Vec2(600, 50), this.dialogueBox.base.position.subV(Vec2(-320, -65)), colorD("darkgrey", 0.75)));
+					this.option2 = rectangle(8, base(true, nt("option2", "UI"), Vec2(600, 50), this.dialogueBox.base.position.subV(Vec2(-320, -65)), colorD("darkgrey", 0.25)));
 				}
 				if (getByNameTag(name("option2Txt"), 1) == null) {
 				this.option2Txt = text(8, "", base(true, nt("option2Txt", "UI"), Vec2("30px arial", false, "center"), this.dialogueBox.base.position.subV(Vec2(-320, -65)), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 10)));
@@ -232,8 +232,13 @@ function dialogueManager() {
 					dUI.showingOP1 = true;
 					if (dUI.dialogue != null && dUI.dialogue.text.length == thisConvo.text.length) {
 						dUI.option1Txt.text = thisConvo.options.x.text;
-						if (cVpCollision(getCursor(), dUI.option1) && mousePressed[0]) {
-							this.readConvo(thisConvo.options.x.nextId);
+						if (cVpCollision(getCursor(), dUI.option1)) {
+							dUI.option1.base.color.alpha = 0.75;
+							if (mousePressed[0]) {
+								this.readConvo(thisConvo.options.x.nextId);
+							}
+						} else {
+							dUI.option1.base.color.alpha = 0.25;
 						}
 					}
 				} else {
@@ -243,8 +248,13 @@ function dialogueManager() {
 					dUI.showingOP2 = true;
 					if (dUI.dialogue != null && dUI.dialogue.text.length == thisConvo.text.length) {
 						dUI.option2Txt.text = thisConvo.options.y.text;
-						if (cVpCollision(getCursor(), dUI.option2) && mousePressed[0]) {
-							this.readConvo(thisConvo.options.y.nextId);
+						if (cVpCollision(getCursor(), dUI.option2)) {
+							dUI.option2.base.color.alpha = 0.75;
+							if (mousePressed[0]) {
+								this.readConvo(thisConvo.options.y.nextId);
+							}
+						} else {
+							dUI.option2.base.color.alpha = 0.25;
 						}
 					}
 				} else {
