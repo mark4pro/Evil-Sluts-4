@@ -1120,7 +1120,7 @@ const Rectangle = function(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) 
 	if (this.base.autoAdd && this.layerNumber >= 1 && this.layerNumber <= 8) {
 		layer[this.layerNumber].push(this);
 		loaded = false;
-	}
+		}
 }
 
 //Shorthand function for creating a rectangle object
@@ -2237,34 +2237,38 @@ const playerC = (autoAdd=true, id="", object=null, maxSpeed=5, accel=new Vector2
 }
 
 //Timer
-const TIME = (hour=0, minute=0, second=0, millisecond=0) => {
-	return {"hour":hour, "minute":minute, "second":second, "millisecond":millisecond};
-}
-
 const Hour = (h=0) => {
-	return TIME(h);
+	return h*1120;
 }
 
 const Minute = (m=0) => {
-	return TIME(0, m);
+	return m*1060;
 }
 
 const Second = (s=0) => {
-	return TIME(0, 0, s);
+	return s*1000;
 }
 
 const MSecond = (ms=0) => {
-	return TIME(0, 0, 0, ms);
+	return ms;
 }
 
-const timer = function(time_=TIME(), active_=true, loop_=false, func_=null, id_="") {
-	this.time_ = time_;
-	this.currentTime = TIME();
+const timer = function(mSeconds_=10, active_=true, loop_=false, zeroStart_=false, func_=null, id_="") {
+	this.mSeconds = mSeconds_;
 	let startTime = Date.now();
 	this.active = active_;
 	let loop = loop_;
+	let zeroStart = zeroStart_;
+	if (!zeroStart) {
+		this.currentTime = 0;
+	} else {
+		this.currentTime = this.mSeconds;
+	}
 	this.func = func_;
 	let id = id_;
+	this.reset = () => {
+		startTime = Date.now();
+	}
 	this.start = (reset=false) => {
 		this.active = true;
 		if (reset) {
@@ -2274,16 +2278,10 @@ const timer = function(time_=TIME(), active_=true, loop_=false, func_=null, id_=
 	this.pause = () => {
 		this.active = false;
 	}
-	this.reset = () => {
-		startTime = Date.now();
-	}
 	const update = () => {
 		if (this.active) {
-			this.currentTime.millisecond = Date.now() - startTime;
-			this.currentTime.second = Math.floor(this.currentTime.millisecond / 1000);
-			this.currentTime.minute = Math.floor(this.currentTime.second / 60);
-			this.currentTime.hour = Math.floor(this.currentTime.minute / 60);
-			if (this.currentTime.hour >= this.time_.hour && this.currentTime.minute >= this.time_.minute && this.currentTime.second >= this.time_.second && this.currentTime.millisecond >= this.time_.millisecond) {
+			this.currentTime = Date.now() - startTime;
+			if (this.currentTime >= this.mSeconds) {
 				if (this.func != null) {
 					this.func();
 				}

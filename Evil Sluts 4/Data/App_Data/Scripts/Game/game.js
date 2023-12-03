@@ -83,17 +83,79 @@ function  dialogueUI(){
 	this.showing = true;
 	this.showingOP1 = true;
 	this.showingOP2 = true;
-    this.dialogueBox = null;
-	let dialogue = null;
-	this.option1 = null;
-	let option1Txt = null;
-	this.option2 = null;
-	let option2Txt = null;
+	this.pauseLatch = false;
+    let dialogueBox = null;
+	this.dialogue = null;
+	let option1 = null;
+	this.option1Txt = null;
+	let option2 = null;
+	this.option2Txt = null;
+	this.resetText = () => {
+		if (this.dialogue != null) {
+			this.dialogue.text = "";
+		}
+		if (this.option1Txt != null) {
+			this.option1Txt.text = "";
+		}
+		if (this.option2Txt != null) {
+			this.option2Txt.text = "";
+		}
+	}
 	const update = () => {
-		if(getByNameTag(name("dialogueBox"), 1) == null && this.showing && valuate(gameState)) {
-			this.dialogueBox = new Rectangle(8, new baseObject(true, new nameTag("dialogueBox", "UI"), Vec2(screen.resolution.x, 150), Vec2(screen.halfResolution.x, screen.resolution.y-75), colorD("grey", 0.75)));
-			this.option1 = new Rectangle(8, new baseObject(true, new nameTag("option1", "UI"), Vec2(600, 50),this.dialogueBox.base.position.subV(Vec2(320, -50)), colorD("darkgrey", 0.75)));
-			this.option2 = new Rectangle(8, new baseObject(true, new nameTag("option2", "UI"), Vec2(600, 50),this.dialogueBox.base.position.subV(Vec2(-320, -50)), colorD("darkgrey", 0.75)));
+		if(this.showing && valuate(gameState)) {
+			if (getByNameTag(name("dialogueBox"), 1) == null) {
+				dialogueBox = rectangle(8, base(true, nt("dialogueBox", "UI"), Vec2(screen.resolution.x, 180), Vec2(screen.halfResolution.x, screen.resolution.y-90), colorD("grey", 0.75)));
+			}
+			if (getByNameTag(name("dialogue"), 1) == null) {
+				this.dialogue = text(8, "", base(true, nt("dialogue", "UI"), Vec2("30px arial", false, "left"), Vec2(10, screen.resolution.y-150), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 10)));
+			}
+			if (this.showingOP1) {
+				if (getByNameTag(name("option1"), 1) == null) {
+					option1 = rectangle(8, base(true, nt("option1", "UI"), Vec2(600, 50), dialogueBox.base.position.subV(Vec2(320, -65)), colorD("darkgrey", 0.75)));
+				}
+			} else {
+				if (getByNameTag(name("option1"), 1) != null) {
+					deleteByNameTag(option1.base.nameTag);
+				}
+			}
+			if (this.showingOP2) {
+				if (getByNameTag(name("option2"), 1) == null) {
+					option2 = rectangle(8, base(true, nt("option2", "UI"), Vec2(600, 50), dialogueBox.base.position.subV(Vec2(-320, -65)), colorD("darkgrey", 0.75)));
+				}
+			} else {
+				if (getByNameTag(name("option2"), 1) != null) {
+					deleteByNameTag(option2.base.nameTag);
+				}
+			}
+			if (this.showingOP1 && this.showingOP2) {
+				option1.base.position.x = dialogueBox.base.position.x-320;
+				option1.base.size.x = 600;
+				option2.base.position.x = dialogueBox.base.position.x+320;
+				option2.base.size.x = 600;
+			}
+			if (this.showingOP1 && !this.showingOP2) {
+				option1.base.position.x = dialogueBox.base.position.x;
+				option1.base.size.x = 1240;
+			}
+			if (!this.showingOP1 && this.showingOP2) {
+				option2.base.position.x = dialogueBox.base.position.x;
+				option2.base.size.x = 1240;
+			}
+		}
+		if (getByNameTag(name("dialogueBox"), 1) != null && !this.showing) {
+			deleteByNameTag(dialogueBox.base.nameTag);
+			deleteByNameTag(this.dialogue.base.nameTag);
+			if (getByNameTag(name("option1"), 1) != null) {
+				deleteByNameTag(option1.base.nameTag);
+			}
+			if (getByNameTag(name("option2"), 1) != null) {
+				deleteByNameTag(option2.base.nameTag);
+			}
+		}
+		if (gameState == 0) {
+			this.showing = false;
+			this.showingOP1 = false;
+			this.showingOP2 = false;
 		}
 	}
 	addUpdate(update, "dialogueUI");
@@ -104,10 +166,12 @@ function option(text="", nextId=0) {
 	this.nextId = nextId;
 }
 
-function convo(id=0, text="", options=null) {
+function convo(name="", id=0, text="", options=null, nextId=null) {
+	this.name = name;
 	this.id = id;
 	this.text = text;
 	this.options = options;
+	this.nextId = nextId;
 	dialogueMG.addConvo(this);
 }
 
@@ -115,21 +179,59 @@ const dialogueMG = new dialogueManager();
 const dUI = new dialogueUI();
 
 function dialogueManager() {
+	this.dSpeed = 100;
 	let convos = [];
 	let thisConvo = null;
+	let thisTextTimer = null;
 	this.addConvo = (convo) => {
 		convos.push(convo);
 	}
 	this.readConvo = (id=0) => {
-		thisConvo = convos.filter(c => c.id == id);
+		dUI.resetText();
+		if (thisTextTimer != null) {
+			thisTextTimer.reset();
+		}
+		if (typeof id == "number") {
+			thisConvo = convos.filter(c => c.id == id)[0];
+		} else {
+			thisConvo = convos.filter(c => c.name == id)[0];
+		}
 	}
 	const update = () => {
 		if (thisConvo != null) {
-			
+			dUI.showing = true;
+			if (thisTextTimer == null) {
+				thisTextTimer = T(MSecond(this.dSpeed), true, true, true, ()=>{
+					let length = dUI.dialogue.text.length;
+					if (thisConvo != null && length != thisConvo.text.length) {
+						dUI.dialogue.text = dUI.dialogue.text+thisConvo.text[length];
+					}
+				}, "Text_Animation_1");
+			} else {
+				if (!thisTextTimer.active) {
+					thisTextTimer.start(true);
+				}
+			}
+			if (dUI.dialogue != null && dUI.dialogue.text.length == thisConvo.text.length && mousePressed[0]) {
+				if (thisConvo.nextId != null) {
+					this.readConvo(thisConvo.nextId);
+				} else {
+					if (thisConvo.options == null) {
+						thisTextTimer.pause();
+						thisConvo = null;
+					}
+				}
+			}
+		} else {
+			dUI.showing = false;
 		}
 	}
 	addUpdate(update, "dialogueMG");
 }
+
+//Test
+let testDialogue_1 = new convo("Test_1", 0, "Hello, how are you?", null, 1);
+let testDialogue_2 = new convo("Test_2", 1, "... Okay guess you ain't a talker.");
 
 //Item pickup menu
 const dropMenu = new pickUpMenu();
@@ -398,14 +500,14 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=Vec2()) {
 	}
 }
 
-function weapon(name="", imageData=null, amountPerShot=1, fireTime=Vec2(1, 10), size=ONE, spreadPattern=[0], _speedRange=ONE, _rangeRange=ONE, _damageRange=ONE) {
+function weapon(name="", imageData=null, amountPerShot=1, fireTime=ONE, size=ONE, spreadPattern=[0], _speedRange=ONE, _rangeRange=ONE, _damageRange=ONE) {
 	this.name = name;
 	this.imageData = imageData;
 	this.amountPerShot = amountPerShot;
 	if (this.amountPerShot <= 0) {
 		this.amountPerShot = 1;
 	}
-	this.fireTime = fireTime; //x- speed for timer, y- max time
+	this.fireTime = fireTime;
 	this.size = size;
 	let speedRange = _speedRange;
 	this.speed = 0;
@@ -429,7 +531,7 @@ function weapon(name="", imageData=null, amountPerShot=1, fireTime=Vec2(1, 10), 
 }
 
 const weaponTable = {
-	0:new weapon("Test", bullet_1_Img.getColor(), 5, Vec2(1, 10), Vec2(10,10), [-12.5, -6.25, 0, 6.26, 12.5], Vec2(10, 15), Vec2(50, 100), Vec2(1, 2, 5, 10)),
+	0:new weapon("Test", bullet_1_Img.getColor(), 5, Vec2(1,10), Vec2(10,10), [-12.5, -6.25, 0, 6.26, 12.5], Vec2(10, 15), Vec2(100, 200), Vec2(1, 2, 5, 10)),
 }
 
 let armorTypes = {
@@ -457,7 +559,10 @@ function armor(name="", imageData=null, size=ONE, armorType="", _defenceStatRang
 }
 
 const armorTable = {
-	0:new armor("Test", null, ONE, armorTypes[0], Vec2(1,5)),
+	0:new armor("Test", null, ONE, armorTypes[0], Vec2(1,6)),
+	1:new armor("Test2", null, ONE, armorTypes[1], Vec2(4,10)),
+	2:new armor("Test3", null, ONE, armorTypes[2], Vec2(2,8)),
+	3:new armor("Test4", null, ONE, armorTypes[3], Vec2(1,4)),
 }
 
 function baseItem(id=0, rariety=1, cost=0, size=Vec2(16, 16), imageData=null) {
@@ -505,6 +610,9 @@ function weaponItem(weaponId=0, base=new baseItems(), veriant=null) {
 			});
 		}
 	}
+	this.getWeapon = () => {
+		return this.weaponVeriant;
+	}
 	this.duplicate = (copyVeriant=false) => {
 		if (!copyVeriant) {
 			return new weaponItem(this.weaponId, this.base.duplicate());
@@ -538,6 +646,9 @@ function armorItems(armorId=0, base=new baseItems(), veriant=null) {
 			});
 		} 
 	}
+	this.getArmor = () => {
+		return this.armorVeriant;
+	}
 	this.duplicate = (copyVeriant=false) => {
 		if (!copyVeriant) {
 			return new armorItems(this.armorId, this.base.duplicate());
@@ -551,22 +662,25 @@ const globalExcludedDrops = [];
 
 const itemTable = [
 	//Items
-	new drugsItem("heroin", new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor())),
-	new drugsItem("crack", new baseItem(1, 1, 0, Vec2(32, 32), crack_Img.getColor())),
-	new drugsItem("cocaine", new baseItem(2, 2, 0, Vec2(32, 32), cocaine_Img.getColor())),
-	new drugsItem("lsd", new baseItem(3, 5, 0, Vec2(32, 32), lsd_Img.getColor())),
-	new drugsItem("mushroom", new baseItem(4, 4, 0, Vec2(32, 32), mushroom_Img.getColor())),
-	new drugsItem("crocodile", new baseItem(5, 1, 0, Vec2(32, 32), crocodile_Img.getColor())),
-	new drugsItem("bath salts", new baseItem(6, 2, 0, Vec2(32, 32), bath_salts_Img.getColor())),
+	new drugsItem("Heroin", new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor())),
+	new drugsItem("Crack", new baseItem(1, 1, 0, Vec2(32, 32), crack_Img.getColor())),
+	new drugsItem("Cocaine", new baseItem(2, 2, 0, Vec2(32, 32), cocaine_Img.getColor())),
+	new drugsItem("LSD", new baseItem(3, 5, 0, Vec2(32, 32), lsd_Img.getColor())),
+	new drugsItem("Shrooms", new baseItem(4, 4, 0, Vec2(32, 32), mushroom_Img.getColor())),
+	new drugsItem("Crocodile", new baseItem(5, 1, 0, Vec2(32, 32), crocodile_Img.getColor())),
+	new drugsItem("Bath Salts", new baseItem(6, 2, 0, Vec2(32, 32), bath_salts_Img.getColor())),
 	new drugsItem("DMT", new baseItem(7, 6, 0, Vec2(32, 32), dmt_Img.getColor())),
-	new drugsItem("meth", new baseItem(8, 1, 0, Vec2(32, 32), meth_Img.getColor())),
-	new drugsItem("smack", new baseItem(9, 3, 0, Vec2(32, 32), smack_Img.getColor())),
-	new drugsItem("chese", new baseItem(10, 10, 0, Vec2(32, 32), chese_Img.getColor())),
-	new drugsItem("your mom", new baseItem(11, 7, 0, Vec2(32, 32), your_mom_Img.getColor())),
+	new drugsItem("Meth", new baseItem(8, 1, 0, Vec2(32, 32), meth_Img.getColor())),
+	new drugsItem("Smack", new baseItem(9, 3, 0, Vec2(32, 32), smack_Img.getColor())),
+	new drugsItem("Cheese", new baseItem(10, 10, 0, Vec2(32, 32), chese_Img.getColor())),
+	new drugsItem("Your Mom", new baseItem(11, 7, 0, Vec2(32, 32), your_mom_Img.getColor())),
 	//Weapons
 	new weaponItem(0, new baseItem(101, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
 	//Armor
 	new armorItems(0, new baseItem(201, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
+	new armorItems(1, new baseItem(202, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
+	new armorItems(2, new baseItem(203, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
+	new armorItems(3, new baseItem(204, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
 ];
 
 const getItemName = (item) => {
@@ -764,7 +878,7 @@ const addToInventory = (item=null) => {
 
 const inventory = {
 	"weapons":[getItemsByType("weapon")[0]],
-	"armor":[],
+	"armor":[getItemsByType("armor")[0],getItemsByType("armor")[1],getItemsByType("armor")[2],getItemsByType("armor")[3]],
 	"items":[],
 };
 
@@ -805,12 +919,13 @@ const getDroppedItems = () => {
 	}
 }
 
-const currentPlayer = new player(100, Vec2(3, 7), Vec2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [], Vec2(100, 100));
+const currentPlayer = new player(100, Vec2(3, 7), Vec2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [inventory.armor[0]], Vec2(100, 100));
 
 //TODO: Implement armor functionality
-function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1), defence=10, weapons=[], armor=[], ammo=Vec2(100, 100)) {
-	this.defence = defence;
+function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1), baseDefence=10, weapons=[], armor=[], ammo=Vec2(100, 100)) {
+	this.baseDefence = baseDefence;
 	this.armor = armor;
+	this.defence = this.baseDefence;
 	this.weapons = weapons;
 	this.ammo = ammo; //x- current ammo, y- max ammo
 	
@@ -909,6 +1024,14 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 		this.health.x -= clamp(damage*(damage/this.defence), 0, this.health.y);
 	}
 	
+	this.calPlayerDefence = () => {
+		let value = this.baseDefence;
+		this.armor.forEach((a) => {
+			value = value+a.getArmor().defenceStat;
+		});
+		return value;
+	}
+	
 	const update = () => {
 		if (typeof gameState != "undefined") {
 			if (gameState == 0) {
@@ -928,6 +1051,7 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 					this.droppedItemsTxt.base.setAlpha(0);
 					this.pickUpBttnLink.unlink();
 					isPaused = true;
+					dUI.pauseLatch = false;
 				}
 				if (!dUI.showing) {
 					this.healthBar.base.setAlpha(0.75);
@@ -941,7 +1065,10 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 					this.healthBarLink.update();
 					this.staminaBarLink.update();
 					this.pickUpBttnLink.link();
-					isPaused = false;
+					if (!dUI.pauseLatch) {
+						isPaused = false;
+						dUI.pauseLatch = true;
+					}
 				}
 				if (this.bttns.length == 0 && getByNameTag(nt("", "BTTN"), 2, false, true) != null) {
 					if (typeof getByNameTag(nt("", "BTTN"), 2, false, true).length != "undefined") {
@@ -986,6 +1113,8 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 				} else {
 					this.droppedItemsTxt.text = "0";
 				}
+				//Calculate player defence
+				this.defence = this.calPlayerDefence();
 				//Player movement
 				if (this.controller.moveDir.x != 0) {
 					this.playerDir = -this.controller.moveDir.x;
@@ -1084,7 +1213,7 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 					this.currentWeapon = this.weapons.length-1;
 				}
 				if (this.weapons[this.currentWeapon] != undefined) {
-					this.currentWeaponData = this.weapons[this.currentWeapon].weaponVeriant;
+					this.currentWeaponData = this.weapons[this.currentWeapon].getWeapon();
 				} else {
 					this.currentWeaponData = null;
 				}
@@ -1152,6 +1281,8 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 			enemy.maxHealth = this.maxHealth;
 			enemy.healthBar = enemyHealthBar;
 			enemy.healthBarLink = enemyHealthBarLink;
+			enemy.fireTime = 0;
+			enemy.bulletAmount = 0;
 			enemy.agro = false;
 			enemy.inRange = false;
 			
@@ -1170,22 +1301,30 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 		}
 	}
 	
+	//TODO: Add bullet offsets
 	this.shoot = () => {
-		for(enemy of this.enemies) {
-			let bulletTime = T(MSecond(enemy.weapon.fireTime.y), true, false, () => {
-				let newBullet = sprite(5, base(false, nt(enemy.weapon.name, "bullets"), enemy.weapon.size, enemy.base.position.dup(), enemy.weapon.imageData));
-				newBullet.base.position.s = -enemy.weapon.speed;
-				newBullet.base.position.r = newBullet.base.position.getRotation(currentPlayer.playerOBJ.base.position)+degToRad(180);
-				addObject(newBullet);
-			}, "Bullet_Timer");
-			if(enemy.inRange){
-				console.log("TEST");
-				if (!bulletTime.active) {
-					bulletTime.start(true);
+		if (!isPaused) {
+			for(enemy of this.enemies) {
+				if (enemy.inRange) {
+					if (enemy.fireTime == 0) {
+						for (let i=0;i<enemy.weapon.amountPerShot;i++) {
+							let newBullet = sprite(5, base(false, nt("bullet_"+enemy.bulletAmount, "enemy_bullet_"+enemy.weapon.name), enemy.weapon.size, enemy.base.position.dup(), enemy.weapon.imageData));
+							let angle = newBullet.base.position.getRotation(currentPlayer.playerOBJ.base.position)+degToRad(180);
+							newBullet.base.position.s = -enemy.weapon.speed;
+							newBullet.base.position.r = degToRad(enemy.weapon.spreadPattern[i])+angle;
+							newBullet.damage = rangeFloat(enemy.weapon.damage.x, enemy.weapon.damage.y);
+							newBullet.range = enemy.weapon.range;
+							enemy.bulletAmount++;
+							addObject(newBullet);
+						}
+					}
+					enemy.fireTime += enemy.weapon.fireTime.x*delta;
+					if (enemy.fireTime > enemy.weapon.fireTime.y) {
+						enemy.fireTime = 0;
+					}
 				}
-			} else {
-				if (bulletTime.active) {
-					bulletTime.pause();
+				if (enemy.bulletAmount > 1000) {
+					enemy.bulletAmount = 0;
 				}
 			}
 		}
@@ -1276,6 +1415,20 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 								}
 							}
 							thisBullet.base.destroy();
+						}
+					}
+				}
+				//Enemy bullet code
+				let enemyBullets = getByNameTag(nt("", "enemy_bullet"), 2, false, true);
+				if (enemyBullets != null) {
+					for (let i=0;i<enemyBullets.length;i++) {
+						let dist = enemyBullets[i].base.startPosition.distance(enemyBullets[i].base.position);
+						if (dist > enemyBullets[i].range) {
+							enemyBullets[i].base.marked = true;
+						}
+						if (cirPolyCollision(enemyBullets[i], currentPlayer.playerOBJ)) {
+							currentPlayer.damagePlayer(enemyBullets[i].damage);
+							enemyBullets[i].base.destroy();
 						}
 					}
 				}

@@ -176,24 +176,23 @@ const currentMap = () => {
 	};
 }
 
-//Gets position of a tile
-const getMapTilePos = (vec2=ONE) => {
-	let thisMapSize = currentMap().mapSize;
-	let thisTileSize = currentMap().tileSize;
-	let thisMapPos = currentMap().mapPos;
-	if (vec2.x < 1) {
-		vec2.x = 0;
+//Gets tile by map tile pos
+const getTilesByTPos = (vec2=ZERO) => {
+	let tileArray = getByNameTag(tag(currentMap().nameTag.name), 2);
+	if (Array.isArray(tileArray)) {
+		return tileArray.filter(t => t.mapPos.same(vec2));
 	}
-	if (vec2.x > thisMapSize.x) {
-		vec2.x = thisMapSize.x;
-	}
-	if (vec2.y < 1) {
-		vec2.y = 0;
-	}
-	if (vec2.y > thisMapSize.y) {
-		vec2.y = thisMapSize.y;
-	}
-	return vec2.multiV(thisTileSize).multi(config.scale).addV(thisMapPos).subV(thisTileSize.multi(config.scale).div(2));
+}
+
+//Converts position to map tile pos
+const getTilePos = (vec2=ZERO) => {
+	let result =vec2.divV(currentMap().tileSize).div(config.scale).subV(currentMap().mapPos.divV(currentMap().tileSize).div(config.scale));
+	return Vec2(Math.floor(result.x), Math.floor(result.y));
+}
+
+//Gets tiles by pos
+const getTilesByPos = (vec2=ZERO) => {
+	return getTilesByTPos(getTilePos(vec2));
 }
 
 //Gets map by nameTag
