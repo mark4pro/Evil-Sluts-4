@@ -1930,16 +1930,17 @@ const pointInsidePolygon = (vec, polygon) => {
      * I cast the ray along the x axis
      */
     let intersections = 0;
-    for(let i = polygon.getPoints().length;i--;){
+    for (let i = polygon.getPoints().length;i--;) {
         let xpos = polygon.getPoints()[i].x - vec.x;//the polygon is translated with the test point in origo
         let ypos = polygon.getPoints()[i].y - vec.y;
-        if(i){
-            let xpos2 = polygon.getPoints()[i - 1].x - vec.x;
-            let ypos2 = polygon.getPoints()[i - 1].y - vec.y;
-        }
-        else{//the last side of the polygon wraps around to the first point of the corner list, it requires special handling.
-            let xpos2 = polygon.getPoints()[polygon.getPoints().length - 1].x - vec.x;
-            let ypos2 = polygon.getPoints()[polygon.getPoints().length - 1].y - vec.y;
+		let xpos2 = 0;
+		let ypos2 = 0;
+        if (i != 0) {
+            xpos2 = polygon.getPoints()[i - 1].x - vec.x;
+            ypos2 = polygon.getPoints()[i - 1].y - vec.y;
+        } else {//the last side of the polygon wraps around to the first point of the corner list, it requires special handling.
+            xpos2 = polygon.getPoints()[polygon.getPoints().length - 1].x - vec.x;
+            ypos2 = polygon.getPoints()[polygon.getPoints().length - 1].y - vec.y;
         };
         //each side of the polygon does potentially intersect the ray. I skip the iteration for those that do not.
         if(xpos < 0 && xpos2 < 0){//the ray can not cross a side starting and ending at negative x, so no intersection then

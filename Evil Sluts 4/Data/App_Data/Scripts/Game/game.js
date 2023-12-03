@@ -84,11 +84,11 @@ function  dialogueUI(){
 	this.showingOP1 = true;
 	this.showingOP2 = true;
 	this.pauseLatch = false;
-    let dialogueBox = null;
+    this.dialogueBox = null;
 	this.dialogue = null;
-	let option1 = null;
+	this.option1 = null;
 	this.option1Txt = null;
-	let option2 = null;
+	this.option2 = null;
 	this.option2Txt = null;
 	this.resetText = () => {
 		if (this.dialogue != null) {
@@ -104,52 +104,64 @@ function  dialogueUI(){
 	const update = () => {
 		if(this.showing && valuate(gameState)) {
 			if (getByNameTag(name("dialogueBox"), 1) == null) {
-				dialogueBox = rectangle(8, base(true, nt("dialogueBox", "UI"), Vec2(screen.resolution.x, 180), Vec2(screen.halfResolution.x, screen.resolution.y-90), colorD("grey", 0.75)));
+				this.dialogueBox = rectangle(8, base(true, nt("dialogueBox", "UI"), Vec2(screen.resolution.x, 180), Vec2(screen.halfResolution.x, screen.resolution.y-90), colorD("grey", 0.75)));
 			}
 			if (getByNameTag(name("dialogue"), 1) == null) {
 				this.dialogue = text(8, "", base(true, nt("dialogue", "UI"), Vec2("30px arial", false, "left"), Vec2(10, screen.resolution.y-150), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 10)));
 			}
 			if (this.showingOP1) {
 				if (getByNameTag(name("option1"), 1) == null) {
-					option1 = rectangle(8, base(true, nt("option1", "UI"), Vec2(600, 50), dialogueBox.base.position.subV(Vec2(320, -65)), colorD("darkgrey", 0.75)));
+					this.option1 = rectangle(8, base(true, nt("option1", "UI"), Vec2(600, 50), this.dialogueBox.base.position.subV(Vec2(320, -65)), colorD("darkgrey", 0.75)));
+				}
+				if (getByNameTag(name("option1Txt"), 1) == null) {
+					this.option1Txt = text(8, "", base(true, nt("option1Txt", "UI"), Vec2("30px arial", false, "center"), this.dialogueBox.base.position.subV(Vec2(320, -65)), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 10)));
 				}
 			} else {
 				if (getByNameTag(name("option1"), 1) != null) {
-					deleteByNameTag(option1.base.nameTag);
+					deleteByNameTag(this.option1.base.nameTag);
+				}
+				if (getByNameTag(name("option1Txt"), 1) != null) {
+					deleteByNameTag(this.option1Txt.base.nameTag);
 				}
 			}
 			if (this.showingOP2) {
 				if (getByNameTag(name("option2"), 1) == null) {
-					option2 = rectangle(8, base(true, nt("option2", "UI"), Vec2(600, 50), dialogueBox.base.position.subV(Vec2(-320, -65)), colorD("darkgrey", 0.75)));
+					this.option2 = rectangle(8, base(true, nt("option2", "UI"), Vec2(600, 50), this.dialogueBox.base.position.subV(Vec2(-320, -65)), colorD("darkgrey", 0.75)));
+				}
+				if (getByNameTag(name("option2Txt"), 1) == null) {
+				this.option2Txt = text(8, "", base(true, nt("option2Txt", "UI"), Vec2("30px arial", false, "center"), this.dialogueBox.base.position.subV(Vec2(-320, -65)), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 10)));
 				}
 			} else {
 				if (getByNameTag(name("option2"), 1) != null) {
-					deleteByNameTag(option2.base.nameTag);
+					deleteByNameTag(this.option2.base.nameTag);
+				}
+				if (getByNameTag(name("option2Txt"), 1) != null) {
+					deleteByNameTag(this.option2Txt.base.nameTag);
 				}
 			}
 			if (this.showingOP1 && this.showingOP2) {
-				option1.base.position.x = dialogueBox.base.position.x-320;
-				option1.base.size.x = 600;
-				option2.base.position.x = dialogueBox.base.position.x+320;
-				option2.base.size.x = 600;
+				this.option1.base.position.x = this.dialogueBox.base.position.x-320;
+				this.option1.base.size.x = 600;
+				this.option2.base.position.x = this.dialogueBox.base.position.x+320;
+				this.option2.base.size.x = 600;
 			}
 			if (this.showingOP1 && !this.showingOP2) {
-				option1.base.position.x = dialogueBox.base.position.x;
-				option1.base.size.x = 1240;
+				this.option1.base.position.x = this.dialogueBox.base.position.x;
+				this.option1.base.size.x = 1240;
 			}
 			if (!this.showingOP1 && this.showingOP2) {
-				option2.base.position.x = dialogueBox.base.position.x;
-				option2.base.size.x = 1240;
+				this.option2.base.position.x = this.dialogueBox.base.position.x;
+				this.option2.base.size.x = 1240;
 			}
 		}
 		if (getByNameTag(name("dialogueBox"), 1) != null && !this.showing) {
-			deleteByNameTag(dialogueBox.base.nameTag);
+			deleteByNameTag(this.dialogueBox.base.nameTag);
 			deleteByNameTag(this.dialogue.base.nameTag);
 			if (getByNameTag(name("option1"), 1) != null) {
-				deleteByNameTag(option1.base.nameTag);
+				deleteByNameTag(this.option1.base.nameTag);
 			}
 			if (getByNameTag(name("option2"), 1) != null) {
-				deleteByNameTag(option2.base.nameTag);
+				deleteByNameTag(this.option2.base.nameTag);
 			}
 		}
 		if (gameState == 0) {
@@ -213,16 +225,31 @@ function dialogueManager() {
 				}
 			}
 			if (thisConvo.options != null) {
-				if (thisConvo.options.x != 0) {
+				if (thisConvo.options != null && thisConvo.options.x != 0) {
 					dUI.showingOP1 = true;
+					if (dUI.dialogue != null && dUI.dialogue.text.length == thisConvo.text.length) {
+						dUI.option1Txt.text = thisConvo.options.x.text;
+						if (cVpCollision(getCursor(), dUI.option1) && mousePressed[0]) {
+							this.readConvo(thisConvo.options.x.nextId);
+						}
+					}
 				} else {
 					dUI.showingOP1 = false;
 				}
-				if (thisConvo.options.y != 0) {
+				if (thisConvo.options != null && thisConvo.options.y != 0) {
 					dUI.showingOP2 = true;
+					if (dUI.dialogue != null && dUI.dialogue.text.length == thisConvo.text.length) {
+						dUI.option2Txt.text = thisConvo.options.y.text;
+						if (cVpCollision(getCursor(), dUI.option2) && mousePressed[0]) {
+							this.readConvo(thisConvo.options.y.nextId);
+						}
+					}
 				} else {
 					dUI.showingOP2 = false;
 				}
+			} else {
+				dUI.showingOP1 = false;
+				dUI.showingOP2 = false;
 			}
 			if (dUI.dialogue != null && dUI.dialogue.text.length == thisConvo.text.length && mousePressed[0]) {
 				if (thisConvo.nextId != null) {
@@ -231,6 +258,7 @@ function dialogueManager() {
 					if (thisConvo.options == null) {
 						thisTextTimer.pause();
 						thisConvo = null;
+						mousePressed[0] = false;
 					}
 				}
 			}
