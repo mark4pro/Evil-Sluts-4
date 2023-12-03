@@ -33,6 +33,8 @@ let your_mom_Img = imageD("your_mom", imagePath+itemPath+"your_mom.png", Vec2(32
 let chese_Img = imageD("chese", imagePath+itemPath+"chese.png", Vec2(32, 32));
 //UI
 let pick_up_bttn_Img = imageD("pick_up_bttn", imagePath+"pick_up.png", Vec2(64, 32));
+//FX
+let explosion_Img = imageD("explosion", imagePath+effectPath+"Explosion_Frame_1.png", Vec2(45, 45));
 
 //Global vars
 let thisLoaded = false;
@@ -1581,7 +1583,7 @@ addUpdate(mainUpdate, "mainUpdate");
 
 //rayCasting
 
-
+sprite(6, base(true, nt(), Vec2(200, 200), screen.halfResolution, explosion_Img.getColor()), multiImgA([frameD(1, Vec2(45, 45)), frameD(2, Vec2(119, 113)), frameD(3, Vec2(196, 191)), frameD(4, Vec2(354, 342)), frameD(5, Vec2(345, 333)), frameD(6, Vec2(193,208)), frameD(7, Vec2(126, 136))], "Explosion_Frame_", "png", 7, 1, true, true, imagePath+effectPath));
 //Controls
 let moveUpBttn = K(
 	"Up",
