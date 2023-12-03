@@ -1,0 +1,12 @@
+Heroin- Slow the player
+Crack- Speed up the player for some time
+Cocaine- Speed up the player for some time +
+LSD- Weird visual effects
+Shrooms- Health | effect (maybe)
+Crocodile- Turns you green | scares enemies | takes health
+Bath Salts- Up defence
+DMT- Invincibility for some time
+Meth- Up attack speed for some time | upside down
+Smack- Up range for some time
+Cheese- Better stamina for some time
+Your Mom- Spider creature that does a lot of damage

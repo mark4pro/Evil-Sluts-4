@@ -170,7 +170,7 @@ function convo(name="", id=0, text="", options=null, nextId=null) {
 	this.name = name;
 	this.id = id;
 	this.text = text;
-	this.options = options;
+	this.options = options; //Vec2 of options
 	this.nextId = nextId;
 	dialogueMG.addConvo(this);
 }
@@ -212,6 +212,18 @@ function dialogueManager() {
 					thisTextTimer.start(true);
 				}
 			}
+			if (thisConvo.options != null) {
+				if (thisConvo.options.x != 0) {
+					dUI.showingOP1 = true;
+				} else {
+					dUI.showingOP1 = false;
+				}
+				if (thisConvo.options.y != 0) {
+					dUI.showingOP2 = true;
+				} else {
+					dUI.showingOP2 = false;
+				}
+			}
 			if (dUI.dialogue != null && dUI.dialogue.text.length == thisConvo.text.length && mousePressed[0]) {
 				if (thisConvo.nextId != null) {
 					this.readConvo(thisConvo.nextId);
@@ -224,14 +236,17 @@ function dialogueManager() {
 			}
 		} else {
 			dUI.showing = false;
+			dUI.showingOP1 = false;
+			dUI.showingOP2 = false;
 		}
 	}
 	addUpdate(update, "dialogueMG");
 }
 
 //Test
-let testDialogue_1 = new convo("Test_1", 0, "Hello, how are you?", null, 1);
+let testDialogue_1 = new convo("Test_1", 0, "Hello, how are you?", Vec2(new option("Good I guess...", 2), new option("...", 1)));
 let testDialogue_2 = new convo("Test_2", 1, "... Okay guess you ain't a talker.");
+let testDialogue_3 = new convo("Test_3", 2, "Cool I guess.");
 
 //Item pickup menu
 const dropMenu = new pickUpMenu();
