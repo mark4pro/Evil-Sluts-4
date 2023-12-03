@@ -30,7 +30,7 @@ let meth_Img = imageD("meth", imagePath+itemPath+"meth.png", Vec2(32, 32));
 let mushroom_Img = imageD("mushroom", imagePath+itemPath+"mushroom.png", Vec2(32, 32));
 let smack_Img = imageD("smack", imagePath+itemPath+"smack.png", Vec2(32, 32));
 let your_mom_Img = imageD("your_mom", imagePath+itemPath+"your_mom.png", Vec2(32, 32));
-let chese_Img = imageD("chese", imagePath+itemPath+"chese.png", Vec2(32, 32));
+let cheese_Img = imageD("cheese", imagePath+itemPath+"cheese.png", Vec2(32, 32));
 //UI
 let pick_up_bttn_Img = imageD("pick_up_bttn", imagePath+"pick_up.png", Vec2(64, 32));
 //FX
@@ -735,7 +735,7 @@ const itemTable = [
 	new drugsItem("DMT", new baseItem(7, 6, 0, Vec2(32, 32), dmt_Img.getColor())),
 	new drugsItem("Meth", new baseItem(8, 1, 0, Vec2(32, 32), meth_Img.getColor())),
 	new drugsItem("Smack", new baseItem(9, 3, 0, Vec2(32, 32), smack_Img.getColor())),
-	new drugsItem("Cheese", new baseItem(10, 10, 0, Vec2(32, 32), chese_Img.getColor())),
+	new drugsItem("Cheese", new baseItem(10, 10, 0, Vec2(32, 32), cheese_Img.getColor())),
 	new drugsItem("Your Mom", new baseItem(11, 7, 0, Vec2(32, 32), your_mom_Img.getColor())),
 	//Weapons
 	new weaponItem(0, new baseItem(101, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
