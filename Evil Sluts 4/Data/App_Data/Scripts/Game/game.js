@@ -622,9 +622,9 @@ function baseItem(id=0, rariety=1, cost=0, size=Vec2(16, 16), imageData=null) {
 
 function drugsItem(type="", base=new baseItems(), arrgs=[], func=null) {
 	this.type = type;
+	this.base = base;
 	this.arrgs = arrgs;
 	this.func = func;
-	this.base = base;
 	this.itemType = "drug";
 	this.mainType = "items"; //What inventory array it goes into
 	this.use = () => {
