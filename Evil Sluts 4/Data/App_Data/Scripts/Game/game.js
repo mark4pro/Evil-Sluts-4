@@ -1302,6 +1302,7 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 	this.dropNameExclude = dropNameExclude; //array of item names to exclude from the loot table
 	
 	this.enemies = [];
+	this.explosions = [];
 	this.time = 0;
 	this.count = 0;
 	let enemyPos = Vec2();
@@ -1399,10 +1400,25 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 			let enemyHealthFilter = this.enemies.filter((e) => e.health <= 0);
 			enemyHealthFilter.forEach((e) => {
 				//Add explosion effect
+				let newExplosion = sprite(6, base(true, nt(this.enemyName+"_explosion", "explosion"), Vec2(200, 200), e.base.startPosition.dup(), explosion_Img.getColor()), multiImgA([frameD(1, Vec2(45, 45), Vec2(0.25, 0.25)), frameD(2, Vec2(119, 113), Vec2(0.5, 0.5)), frameD(3, Vec2(196, 191), Vec2(0.75, 0.75)), frameD(4, Vec2(354, 342), Vec2(1, 1)), frameD(5, Vec2(345, 333), Vec2(0.8, 0.8)), frameD(6, Vec2(193,208), Vec2(0.75, 0.75)), frameD(7, Vec2(126, 136), Vec2(0.6, 0.6))], "Explosion_Frame_", "png", 7, 20, false, true, imagePath+effectPath));
+				newExplosion.base.overridePositionUpdateFunction = true;
+				newExplosion.base.updatePosition = () => {
+					if (!isPaused && currentMap() != null) {
+						newExplosion.base.position = newExplosion.base.startPosition.duplicate().addV(currentMap().mapPos);
+					}
+				}
+				this.explosions.push(newExplosion);
 				e.healthBar.base.marked = true;
 				e.base.marked = true;
 			});
 		}
+		//Deletes explosions
+		this.explosions.forEach((e, i) => {
+			if (!e.animator.play) {
+				e.base.destroy();
+				this.explosions.splice(i, 1);
+			}
+		});
 		//Discards killed enemies from the enemies array (Garbage clean up)
 		let cleanArray = this.enemies.some((e) => e.base.marked);
 		if (cleanArray) {
@@ -1583,7 +1599,7 @@ addUpdate(mainUpdate, "mainUpdate");
 
 //rayCasting
 
-sprite(6, base(true, nt(), Vec2(200, 200), screen.halfResolution, explosion_Img.getColor()), multiImgA([frameD(1, Vec2(45, 45)), frameD(2, Vec2(119, 113)), frameD(3, Vec2(196, 191)), frameD(4, Vec2(354, 342)), frameD(5, Vec2(345, 333)), frameD(6, Vec2(193,208)), frameD(7, Vec2(126, 136))], "Explosion_Frame_", "png", 7, 1, true, true, imagePath+effectPath));
+
 //Controls
 let moveUpBttn = K(
 	"Up",
