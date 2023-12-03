@@ -11,6 +11,7 @@ controllerManager.players = 1;
 //Custom paths
 const weaponPath = "Weapons/";
 const itemPath = "Items/";
+const effectPath = "Effects/";
 
 //Images
 //Player
@@ -710,18 +711,18 @@ const globalExcludedDrops = [];
 
 const itemTable = [
 	//Items
-	new drugsItem("Heroin", new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor())),
-	new drugsItem("Crack", new baseItem(1, 1, 0, Vec2(32, 32), crack_Img.getColor())),
-	new drugsItem("Cocaine", new baseItem(2, 2, 0, Vec2(32, 32), cocaine_Img.getColor())),
-	new drugsItem("LSD", new baseItem(3, 5, 0, Vec2(32, 32), lsd_Img.getColor())),
-	new drugsItem("Shrooms", new baseItem(4, 4, 0, Vec2(32, 32), mushroom_Img.getColor())),
-	new drugsItem("Crocodile", new baseItem(5, 1, 0, Vec2(32, 32), crocodile_Img.getColor())),
-	new drugsItem("Bath Salts", new baseItem(6, 2, 0, Vec2(32, 32), bath_salts_Img.getColor())),
-	new drugsItem("DMT", new baseItem(7, 6, 0, Vec2(32, 32), dmt_Img.getColor())),
-	new drugsItem("Meth", new baseItem(8, 1, 0, Vec2(32, 32), meth_Img.getColor())),
-	new drugsItem("Smack", new baseItem(9, 3, 0, Vec2(32, 32), smack_Img.getColor())),
-	new drugsItem("Cheese", new baseItem(10, 10, 0, Vec2(32, 32), chese_Img.getColor())),
-	new drugsItem("Your Mom", new baseItem(11, 7, 0, Vec2(32, 32), your_mom_Img.getColor())),
+	new drugsItem("Heroin", [], null, new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor())),
+	new drugsItem("Crack", [], null, new baseItem(1, 1, 0, Vec2(32, 32), crack_Img.getColor())),
+	new drugsItem("Cocaine", [], null, new baseItem(2, 2, 0, Vec2(32, 32), cocaine_Img.getColor())),
+	new drugsItem("LSD", [], null, new baseItem(3, 5, 0, Vec2(32, 32), lsd_Img.getColor())),
+	new drugsItem("Shrooms", [], null, new baseItem(4, 4, 0, Vec2(32, 32), mushroom_Img.getColor())),
+	new drugsItem("Crocodile", [], null, new baseItem(5, 1, 0, Vec2(32, 32), crocodile_Img.getColor())),
+	new drugsItem("Bath Salts", [], null, new baseItem(6, 2, 0, Vec2(32, 32), bath_salts_Img.getColor())),
+	new drugsItem("DMT", [], null, new baseItem(7, 6, 0, Vec2(32, 32), dmt_Img.getColor())),
+	new drugsItem("Meth", [], null, new baseItem(8, 1, 0, Vec2(32, 32), meth_Img.getColor())),
+	new drugsItem("Smack", [], null, new baseItem(9, 3, 0, Vec2(32, 32), smack_Img.getColor())),
+	new drugsItem("Cheese", [], null, new baseItem(10, 10, 0, Vec2(32, 32), chese_Img.getColor())),
+	new drugsItem("Your Mom", [], null, new baseItem(11, 7, 0, Vec2(32, 32), your_mom_Img.getColor())),
 	//Weapons
 	new weaponItem(0, new baseItem(101, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
 	//Armor
