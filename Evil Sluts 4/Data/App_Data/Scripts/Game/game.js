@@ -293,15 +293,16 @@ let testDialogue_3 = new convo("Test_3", 2, "Cool I guess.");
 const dropMenu = new pickUpMenu();
 
 const defaultContainerStyle = new ContainerStyle();
-function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25px Arial", visTxtShadow=shadow(Vec2(5, 5), "black", 5), visBttnColor=Vec2("#686868", "#959595"), visSize=25) {
+function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25px Arial", visTxtShadow=shadow(Vec2(5, 5), "black", 5), visBttnColor=Vec2("#686868", "#959595"), visSize=25, visOverflowColor="black") {
 	this.visColor = visColor;
 	this.visTxtColor = visTxtColor;
 	this.visTxtFont = visTxtFont;
 	this.visTxtShadow = visTxtShadow;
 	this.visBttnColor = visBttnColor;
 	this.visSize = visSize;
+	this.visOverflowColor = visOverflowColor;
 	this.duplicate = function() {
-		return new ContainerStyle(this.visColor, this.visTxtColor, this.visTxtFont, this.visTxtShadow, this.visBttnColor, this.visSize);
+		return new ContainerStyle(this.visColor, this.visTxtColor, this.visTxtFont, this.visTxtShadow, this.visBttnColor, this.visSize, this.visOverflowColor);
 	}
 	this.dup = this.duplicate;
 }
@@ -316,50 +317,76 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 		this.containerStyle = style;
 	}
 	this.type = "container";
-	let points_1 = [];
-	let points_2 = [];
+	let overflow = false;
+	let scrollLock = false;
+	let scrollPos = 0;
+	let scrollClamp = Vec2(0, 0);
+	let points = [];
 	this.getPoints = function() {
-		return points_1;
-	}
-	this.getPoints2 = function() {
-		return points_2;
+		return points;
 	}
 	this.duplicate = function() {
 		return new Container(this.layerNumber, this.base.dup(), this.objs, this.containerStyle.dup());
 	}
 	this.dup = this.duplicate;
 	this.draw = function() {
+		//Scroll code
+		if (!scrollLock) {
+			switch (mouseWheel) {
+				case -1:
+					if (scrollPos > scrollClamp.x) {
+						scrollPos -= this.containerStyle.visSize;
+					}
+				break;
+				case 1:
+					if (scrollPos < scrollClamp.y) {
+						scrollPos += this.containerStyle.visSize;
+					}
+				break;
+			}
+		}
+		scrollPos = clamp(scrollPos, scrollClamp.x, scrollClamp.y);
 		//Background
 		setupObject(this.base, DEFAULT_LINE);
-		points_1 = [
-			this.base.rotOrigin.rotateVector2(Vec2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
-			this.base.rotOrigin.rotateVector2(Vec2(this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r),
-			this.base.rotOrigin.rotateVector2(Vec2(this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
-			this.base.rotOrigin.rotateVector2(Vec2(-this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y), this.base.position.r),
-			this.base.rotOrigin.rotateVector2(Vec2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y), this.base.position.r)];
+		points = [
+			Vec2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y),
+			Vec2(this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y),
+			Vec2(this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y),
+			Vec2(-this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y),
+			Vec2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y)];
 		let thisPath = new Path2D();
-		thisPath.moveTo(this.base.position.x, this.base.position.y);
-		for (let i=0;i<points_1.length;i++) {
-			thisPath.lineTo(points_1[i].x, points_1[i].y);
+		thisPath.moveTo(points[0].x, points[0].y);
+		for (let i=0;i<points.length;i++) {
+			thisPath.lineTo(points[i].x, points[i].y);
 		}
 		ctx.fill(thisPath);
 		ctx.save();
 		ctx.clip(thisPath);
 		//Vis bg
-		let visSize = Vec2(this.base.size.x, this.objs.length*this.containerStyle.visSize);
-		points_2 = [
-				this.base.rotOrigin.rotateVector2(Vec2(-visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
-				this.base.rotOrigin.rotateVector2(Vec2(visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
-				this.base.rotOrigin.rotateVector2(Vec2(visSize.x/2+this.base.position.x, visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
-				this.base.rotOrigin.rotateVector2(Vec2(-visSize.x/2+this.base.position.x, visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r),
-				this.base.rotOrigin.rotateVector2(Vec2(-visSize.x/2+this.base.position.x, -visSize.y+this.base.position.y-this.base.size.div(2).y), this.base.position.r)];
-		let thisPath2 = new Path2D();
-		thisPath2.moveTo(this.base.position.x, this.base.position.y);
-		for (let i=0;i<points_2.length;i++) {
-			thisPath2.lineTo(points_2[i].x, points_2[i].y);
-		}
+		let visSize = Vec2(this.base.size.x, this.containerStyle.visSize);
+		ctx.shadowColor = NO_SHADOW.color;
+		ctx.shadowBlur = NO_SHADOW.blur;
+		ctx.shadowOffsetX = NO_SHADOW.offset.x;
+		ctx.shadowOffsetY = NO_SHADOW.offset.y;
 		ctx.fillStyle = this.containerStyle.visColor;
-		ctx.fill(thisPath2);
+		for (let i=1,length=this.objs.length;i<=length;i++) {
+			let visPos = Vec2(this.base.position.x-(this.base.size.x/2), (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y))-scrollPos);
+			if (i == length) {
+				if ((visPos.y+visSize.y/2) <= (this.base.position.y+this.base.size.y/2)) {
+					overflow = false;
+				} else {
+					overflow = true;
+				}
+				if (((visPos.y+scrollPos)+visSize.y/2) <= (this.base.position.y+this.base.size.y/2)) {
+					scrollLock = true;
+					scrollClamp.y = 0;
+				} else {
+					scrollLock = false;
+					scrollClamp.y = Math.abs((this.base.position.y+this.base.size.y/2)-((visPos.y+scrollPos)+visSize.y));
+				}
+			}
+			ctx.fillRect(visPos.x, visPos.y, visSize.x, visSize.y);
+		}
 		//Vis txt
 		ctx.textAlign = "left";
 		ctx.textBaseline = "middle";
@@ -377,7 +404,7 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 			ctx.shadowOffsetY = NO_SHADOW.offset.y;
 		}
 		for (let i=1,length=this.objs.length;i<=length;i++) {
-			ctx.fillText(getItemName(this.objs[i-1].item), this.base.position.x-this.base.size.div(2).x+5, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2));
+			ctx.fillText(getItemName(this.objs[i-1].item), this.base.position.x-this.base.size.div(2).x+5, (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2)+2.5)-scrollPos);
 		}
 		//Vis bttn
 		let visBttnSize = Vec2(170, this.containerStyle.visSize);
@@ -386,7 +413,7 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 		ctx.shadowOffsetX = NO_SHADOW.offset.x;
 		ctx.shadowOffsetY = NO_SHADOW.offset.y;
 		for (let i=1,length=this.objs.length;i<=length;i++) {
-			let visBttnPos = Vec2((this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y));
+			let visBttnPos = Vec2((this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y))-scrollPos);
 			if (recCollision({"base":{"position":getCursor().base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)), "size":visBttnSize}}) && recCollision(getCursor(), this)) {
 				ctx.fillStyle = this.containerStyle.visBttnColor.y;
 				if (mousePressed[0]) {
@@ -415,7 +442,23 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 			ctx.shadowOffsetY = NO_SHADOW.offset.y;
 		}
 		for (let i=1,length=this.objs.length;i<=length;i++) {
-			ctx.fillText("Pick up", (this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, ((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2));
+			ctx.fillText("Pick up", (this.base.position.x+this.base.size.div(2).x)-visBttnSize.div(2).x, (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2))-scrollPos);
+		}
+		if (scrollPos != 0) {
+			ctx.shadowColor = this.containerStyle.visOverflowColor;
+			ctx.shadowBlur = 20;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = 10;
+			ctx.fillStyle = this.containerStyle.visOverflowColor;
+			ctx.fillRect((this.base.position.x-this.base.size.x/2), (this.base.position.y-this.base.size.y/2)-20, this.base.size.x, 20);
+		}
+		if (overflow) {
+			ctx.shadowColor = this.containerStyle.visOverflowColor;
+			ctx.shadowBlur = 20;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = -10;
+			ctx.fillStyle = this.containerStyle.visOverflowColor;
+			ctx.fillRect((this.base.position.x-this.base.size.x/2), (this.base.position.y+this.base.size.y/2), this.base.size.x, 20);
 		}
 		ctx.restore();
 	}
@@ -538,6 +581,7 @@ function pickUpMenu() {
 	addUpdate(update, "pickUpMenu");
 }
 
+//Status bar updater
 function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=Vec2()) {
 	this.obj = obj;
 	this.value = value;
@@ -556,6 +600,7 @@ function statusBar(obj=BLANK_OBJECT, value=0, maxValue=100, color=Vec2()) {
 	}
 }
 
+//Weapons
 function weapon(name="", imageData=null, amountPerShot=1, fireTime=ONE, size=ONE, spreadPattern=[0], _speedRange=ONE, _rangeRange=ONE, _damageRange=ONE) {
 	this.name = name;
 	this.imageData = imageData;
@@ -590,6 +635,7 @@ const weaponTable = {
 	0:new weapon("Test", bullet_1_Img.getColor(), 5, Vec2(1,10), Vec2(10,10), [-12.5, -6.25, 0, 6.26, 12.5], Vec2(10, 15), Vec2(100, 200), Vec2(1, 2, 5, 10)),
 }
 
+//Armor
 let armorTypes = {
 	0:"Head",
 	1:"Chest",
@@ -621,12 +667,14 @@ const armorTable = {
 	3:new armor("Test4", null, ONE, armorTypes[3], Vec2(1,4)),
 }
 
-function baseItem(id=0, rariety=1, cost=0, size=Vec2(16, 16), imageData=null) {
+//Item shit
+function baseItem(id=0, rariety=1, cost=0, size=Vec2(16, 16), imageData=null, description="") {
 	this.id = id;
 	this.rariety = rariety;
 	this.cost = cost;
 	this.size = size;
 	this.imageData = imageData;
+	this.description = description;
 	this.duplicate = () => {
 		return new baseItem(this.id, this.rariety, this.cost, this.size, this.imageData);
 	}
@@ -639,13 +687,21 @@ function drugsItem(type="", base=new baseItems(), arrgs=[], func=null) {
 	this.func = func;
 	this.itemType = "drug";
 	this.mainType = "items"; //What inventory array it goes into
+	this.stack = 1;
 	this.use = () => {
 		if (this.func != null) {
 			this.func(this.arrgs);
+			this.stack--;
 		}
 	}
-	this.duplicate = () => {
-		return new drugsItem(this.type, this.arrgs, this.func, this.base.duplicate());
+	this.duplicate = (includeStack=true) => {
+		if (includeStack) {
+			let duppedItem = new drugsItem(this.type, this.base.duplicate(), this.arrgs, this.func);
+			duppedItem.stack = this.stack;
+			return duppedItem;
+		} else {
+			return new drugsItem(this.type, this.base.duplicate(), this.arrgs, this.func);
+		}
 	}
 }
 
@@ -721,36 +777,47 @@ function armorItems(armorId=0, base=new baseItems(), veriant=null) {
 	}
 }
 
-const globalExcludedDrops = [];
+const globalExcludedDrops = []; //Loot tables won't include these items. Good for boss items and dev items.
 
 const itemTable = [
 	//Items
-	new drugsItem("Heroin", new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor())),
-	new drugsItem("Crack", new baseItem(1, 1, 0, Vec2(32, 32), crack_Img.getColor())),
-	new drugsItem("Cocaine", new baseItem(2, 2, 0, Vec2(32, 32), cocaine_Img.getColor())),
-	new drugsItem("LSD", new baseItem(3, 5, 0, Vec2(32, 32), lsd_Img.getColor())),
-	new drugsItem("Shrooms", new baseItem(4, 4, 0, Vec2(32, 32), mushroom_Img.getColor())),
-	new drugsItem("Crocodile", new baseItem(5, 1, 0, Vec2(32, 32), crocodile_Img.getColor())),
-	new drugsItem("Bath Salts", new baseItem(6, 2, 0, Vec2(32, 32), bath_salts_Img.getColor())),
-	new drugsItem("DMT", new baseItem(7, 6, 0, Vec2(32, 32), dmt_Img.getColor())),
-	new drugsItem("Meth", new baseItem(8, 1, 0, Vec2(32, 32), meth_Img.getColor())),
-	new drugsItem("Smack", new baseItem(9, 3, 0, Vec2(32, 32), smack_Img.getColor())),
-	new drugsItem("Cheese", new baseItem(10, 10, 0, Vec2(32, 32), cheese_Img.getColor())),
-	new drugsItem("Your Mom", new baseItem(11, 7, 0, Vec2(32, 32), your_mom_Img.getColor())),
+	new drugsItem("Heroin", new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor(), "Slows you down.")),
+	new drugsItem("Crack", new baseItem(1, 1, 0, Vec2(32, 32), crack_Img.getColor(), "Speed boost.")),
+	new drugsItem("Cocaine", new baseItem(2, 2, 0, Vec2(32, 32), cocaine_Img.getColor(), "Greater speed boost.")),
+	new drugsItem("LSD", new baseItem(3, 5, 0, Vec2(32, 32), lsd_Img.getColor(), "Go goofy mode...")),
+	new drugsItem("Shrooms", new baseItem(4, 4, 0, Vec2(32, 32), mushroom_Img.getColor(), "Gives health.")),
+	new drugsItem("Crocodile", new baseItem(5, 1, 0, Vec2(32, 32), crocodile_Img.getColor(), "Green man...")),
+	new drugsItem("Bath Salts", new baseItem(6, 2, 0, Vec2(32, 32), bath_salts_Img.getColor(), "Defence boost.")),
+	new drugsItem("DMT", new baseItem(7, 6, 0, Vec2(32, 32), dmt_Img.getColor(), "Limited invincibility.")),
+	new drugsItem("Meth", new baseItem(8, 1, 0, Vec2(32, 32), meth_Img.getColor(), "Attack boost.")),
+	new drugsItem("Smack", new baseItem(9, 3, 0, Vec2(32, 32), smack_Img.getColor(), "Range boost.")),
+	new drugsItem("Cheese", new baseItem(10, 10, 0, Vec2(32, 32), cheese_Img.getColor(), "Stamina boost.")),
+	new drugsItem("Your Mom", new baseItem(11, 7, 0, Vec2(32, 32), your_mom_Img.getColor(), "Literally your mom...")),
 	//Weapons
-	new weaponItem(0, new baseItem(101, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
+	new weaponItem(0, new baseItem(101, 1, 0, Vec2(32, 32), bullet_1_Img.getColor(), "Test weapon 1")),
 	//Armor
-	new armorItems(0, new baseItem(201, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
-	new armorItems(1, new baseItem(202, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
-	new armorItems(2, new baseItem(203, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
-	new armorItems(3, new baseItem(204, 1, 0, Vec2(32, 32), bullet_1_Img.getColor())),
+	new armorItems(0, new baseItem(201, 1, 0, Vec2(32, 32), bullet_1_Img.getColor(), "Test armor 1")),
+	new armorItems(1, new baseItem(202, 1, 0, Vec2(32, 32), bullet_1_Img.getColor(), "Test armor 2")),
+	new armorItems(2, new baseItem(203, 1, 0, Vec2(32, 32), bullet_1_Img.getColor(), "Test armor 3")),
+	new armorItems(3, new baseItem(204, 1, 0, Vec2(32, 32), bullet_1_Img.getColor(), "Test armor 4")),
 ];
 
-const getItemName = (item) => {
+const getItemName = (item, includeStack=true) => {
 	let result = null;
 	switch (item.mainType) {
 		case "items":
-			result = item.type;
+			if (includeStack) {
+				switch (item.itemType) {
+					case "drug":
+						result = item.type+" x"+item.stack;
+					break;
+					default:
+						result = item.type;
+					break;
+				}
+			} else {
+				result = item.type;
+			}
 		break;
 		case "weapons":
 			result = weaponTable[item.weaponId].name;
@@ -881,7 +948,19 @@ const getLootTable = (amountRange=Vec2(1, 10), rarietyRange=Vec2(1, 10), typeExc
 	let done = false;
 	for (let i=0,length=rangeInt(amountRange.x, amountRange.y);i<length;i++) {
 		let thisLoot = lootGen(rarietyRange, typeExclude, nameExclude);
-		lootTable.push(thisLoot);
+		switch (thisLoot.itemType) {
+			case "drug":
+				let check = lootTable.filter(i => i.type == thisLoot.type);
+				if (check.length == 0) {
+					lootTable.push(thisLoot);
+				} else {
+					check[0].stack += thisLoot.stack;
+				}
+			break;
+			default:
+				lootTable.push(thisLoot);
+			break;
+		}
 		if (i == length-1) {
 			done = true;
 		}
@@ -935,7 +1014,19 @@ const spawnItem = (id=0, dropPos=ZERO) => {
 //Adds item to inventory
 const addToInventory = (item=null) => {
 	if (item != null) {
-		inventory[item.mainType].push(item);
+		switch (item.itemType) {
+			case "drug":
+				let check = inventory[item.mainType].filter(i => i.type == item.type);
+				if (check.length == 0) {
+					inventory[item.mainType].push(item);
+				} else {
+					check[0].stack += item.stack;
+				}
+			break;
+			default:
+				inventory[item.mainType].push(item);
+			break;
+		}
 	}
 }
 

@@ -3478,7 +3478,7 @@ window.addEventListener("dblclick", function(event) {
 
 //Mouse wheel function
 window.addEventListener("wheel", (e) => {
-	mouseWheel = e.deltaY;
+	mouseWheel = clamp(e.deltaY, -1, 1);
 });
 
 //Mouse down function

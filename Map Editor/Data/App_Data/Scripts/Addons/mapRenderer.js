@@ -55,6 +55,29 @@ loadMaps();
 let gameState = 0; //0- Main menu, 1- Gameplay
 let locationId = 0;
 
+//Settings menu
+SettingsMenu.toMainMenu = document.createElement('button');
+SettingsMenu.toMainMenu.innerHTML = "To Main Menu";
+SettingsMenu.toMainMenu.style.fontSize = "35px";
+SettingsMenu.toMainMenu.style.marginLeft = "0px";
+SettingsMenu.toMainMenu.style.marginRight = "0px";
+SettingsMenu.toMainMenu.style.marginTop = "0px";
+SettingsMenu.toMainMenu.style.marginBottom = "0px";
+SettingsMenu.toMainMenu.style.width = "100%";
+SettingsMenu.toMainMenu.style.height = "50px";
+SettingsMenu.toMainMenu.onclick = () => {
+	gameState = 0;
+	SettingsMenu.hide();
+};
+SettingsMenu.buttonsSep.appendChild(SettingsMenu.toMainMenu);
+addUpdate(()=>{
+	if (gameState != 0) {
+		SettingsMenu.toMainMenu.style.display = "initial";
+	} else {
+		SettingsMenu.toMainMenu.style.display = "none";
+	}
+}, "Settings_Menu_Addon");
+
 const tile = function(tableId=0, pos=ZERO, layerNum=1, tileTable=null) {
 	this.tableId = tableId;
 	this.pos = pos;
