@@ -1193,7 +1193,7 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 					this.unload();
 				}
 			} else {
-				for (let i = 0, length = inventory.items; i < length; i++){
+				for (let i=0,length=inventory.items.length;i<length;i++){
 					if(typeof inventory.items[i].stack != "undefined" && inventory.items[i].stack == 0){
 						inventory.items.splice(i, 1);
 					}
