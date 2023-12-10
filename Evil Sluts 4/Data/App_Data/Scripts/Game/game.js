@@ -1193,7 +1193,7 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 					this.unload();
 				}
 			} else {
-				for (let i = 0, length = inventory.items; i < length; i++){
+				for (let i = 0, length = inventory.items.length; i < length; i++){
 					if(typeof inventory.items[i].stack != "undefined" && inventory.items[i].stack == 0){
 						inventory.items.splice(i, 1);
 					}
@@ -1828,3 +1828,35 @@ let playerMovement = contAxisB(1, (e)=>{
 	}
 }, "playerMovement", 0);
 
+contBttnB(1, (e)=>{
+	if(e.pressed){
+		if(currentPlayer.loaded){
+		if(!currentPlayer.dead){
+			currentPlayer.run = true;
+		}else{
+			currentPlayer.run = false;
+		}
+	}
+	}else{
+		if(currentPlayer.loaded){
+			currentPlayer.run = false;
+		}
+	}
+}, "playerRun", "ls", false);
+
+let playerShoot = contAxisB(1, (e)=>{
+	if (currentPlayer.loaded){
+		if (!isPaused){
+			if(!e.r && !currentPlayer.dead) {
+				
+			}
+			if (e.r || currentPlayer.dead) {
+				currentPlayer.controller.moveDir.x = 0;
+				currentPlayer.controller.moveDir.y = 0;
+			}
+		} else {
+			currentPlayer.controller.moveDir.x = 0;
+			currentPlayer.controller.moveDir.y = 0;
+		}
+	}
+}, "playerShoot", 1);
