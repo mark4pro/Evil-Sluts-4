@@ -289,6 +289,79 @@ let testDialogue_1 = new convo("Test_1", 0, "Hello, how are you?", Vec2(new opti
 let testDialogue_2 = new convo("Test_2", 1, "... Okay guess you ain't a talker.");
 let testDialogue_3 = new convo("Test_3", 2, "Cool I guess.");
 
+//Tool tips
+const toolTip = new toolTipUI();
+
+function toolTipUI() {
+	let name = "";
+	let tip = "";
+	let isShowing = false;
+	this.show = (name_, tip_) => {
+		name = name_;
+		tip = tip_;
+		isShowing = true;
+	}
+	this.hide = () => {
+		name = "";
+		tip = "";
+		isShowing = false;
+	}
+	this.spawn = () => {
+		rectangle(8, base(true, nt("toolTip_bg", "toolTipUI"), Vec2(300, 105), Vec2(-1000, -1000), colorD("darkgrey", 0.75), shadow(Vec2(5, 5), "black", 10)));
+		text(8, "", base(true, nt("toolTip_name", "toolTipUI"), Vec2("20px arial", false, "left"), Vec2(-1000, -1000), colorD("white", 0.75), shadow(Vec2(2.5, 2.5), "black", 5)));
+		rectangle(8, base(true, nt("toolTip_descriptionBG", "toolTipUI"), Vec2(300, 85), Vec2(-1000, -1000), colorD("lightgrey", 0.75)));
+		text(8, "", base(true, nt("toolTip_tip_1", "toolTipUI"), Vec2("20px arial", false, "left"), Vec2(-1000, -1000), colorD("white", 0.75), shadow(Vec2(2.5, 2.5), "black", 5)));
+		text(8, "", base(true, nt("toolTip_tip_2", "toolTipUI"), Vec2("20px arial", false, "left"), Vec2(-1000, -1000), colorD("white", 0.75), shadow(Vec2(2.5, 2.5), "black", 5)));
+		text(8, "", base(true, nt("toolTip_tip_3", "toolTipUI"), Vec2("20px arial", false, "left"), Vec2(-1000, -1000), colorD("white", 0.75), shadow(Vec2(2.5, 2.5), "black", 5)));
+		text(8, "", base(true, nt("toolTip_tip_4", "toolTipUI"), Vec2("20px arial", false, "left"), Vec2(-1000, -1000), colorD("white", 0.75), shadow(Vec2(2.5, 2.5), "black", 5)));
+	}
+	const update = () => {
+		if (isShowing) {
+			if (getByNameTag(tag("toolTipUI"), 2) == undefined) {
+				this.spawn();
+			} else {
+				let UI_bg = getByNameTag(nt("toolTip_bg", "toolTipUI"));
+				UI_bg.base.position = getCursor().base.position.addV(Vec2(155, 57.5));
+				let UI_name = getByNameTag(nt("toolTip_name", "toolTipUI"));
+				UI_name.base.position = getCursor().base.position.addV(Vec2(7.5, 17.5));
+				UI_name.text = "Name: "+name;
+				let UI_description_bg = getByNameTag(nt("toolTip_descriptionBG", "toolTipUI"));
+				UI_description_bg.base.position = getCursor().base.position.addV(Vec2(155, 67.5));
+				let tipPieces = splitStringByWidth(tip, 150);
+				let UI_tip_1 = getByNameTag(nt("toolTip_tip_1", "toolTipUI"));
+				UI_tip_1.base.position = getCursor().base.position.addV(Vec2(7.5, 37.5));
+				UI_tip_1.text = tipPieces[0];
+				let UI_tip_2 = getByNameTag(nt("toolTip_tip_2", "toolTipUI"));
+				if (tipPieces.length > 1) {
+					UI_tip_2.base.position = getCursor().base.position.addV(Vec2(7.5, 57.5));
+					UI_tip_2.text = tipPieces[1];
+				} else {
+					UI_tip_2.text = "";
+				}
+				let UI_tip_3 = getByNameTag(nt("toolTip_tip_3", "toolTipUI"));
+				if (tipPieces.length > 2) {
+					UI_tip_3.base.position = getCursor().base.position.addV(Vec2(7.5, 77.5));
+					UI_tip_3.text = tipPieces[2];
+				} else {
+					UI_tip_3.text = "";
+				}
+				let UI_tip_4 = getByNameTag(nt("toolTip_tip_4", "toolTipUI"));
+				if (tipPieces.length > 3) {
+					UI_tip_4.base.position = getCursor().base.position.addV(Vec2(7.5, 97.5));
+					UI_tip_4.text = tipPieces[3];
+				} else {
+					UI_tip_4.text = "";
+				}
+			}
+		} else {
+			if (getByNameTag(tag("toolTipUI"), 2) != undefined) {
+				deleteByNameTag(tag("toolTipUI"), 2);
+			}
+		}
+	}
+	addUpdate(update, "toolTipUI");
+}
+
 //Item pickup menu
 const dropMenu = new pickUpMenu();
 
@@ -308,9 +381,9 @@ function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25
 }
 
 //Container object for the menu
-function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
+function Container(layerNumber=1, base_=EMPTY_OBJECT, objs=[], style=null) {
 	this.layerNumber = layerNumber;
-	this.base = base;
+	this.base = base_;
 	this.objs = objs;
 	this.containerStyle = defaultContainerStyle.dup();
 	if (style != null) {
@@ -321,6 +394,8 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 	let scrollLock = false;
 	let scrollPos = 0;
 	let scrollClamp = Vec2(0, 0);
+	let collisionArray = [];
+	let coliding = false;
 	let points = [];
 	this.getPoints = function() {
 		return points;
@@ -403,8 +478,24 @@ function Container(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
 			ctx.shadowOffsetX = NO_SHADOW.offset.x;
 			ctx.shadowOffsetY = NO_SHADOW.offset.y;
 		}
+		collisionArray.length = this.objs.length;
+		coliding = collisionArray.every((i) => {return i == false});
 		for (let i=1,length=this.objs.length;i<=length;i++) {
-			ctx.fillText(getItemName(this.objs[i-1].item), this.base.position.x-this.base.size.div(2).x+5, (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2)+2.5)-scrollPos);
+			let nameTxt = getItemName(this.objs[i-1].item);
+			let namePos = Vec2(this.base.position.x-this.base.size.div(2).x+5, (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2)+2.5)-scrollPos);
+			ctx.fillText(nameTxt, namePos.x, namePos.y);
+			let width = ctx.measureText(nameTxt).width;
+			let height = parseInt(this.containerStyle.visTxtFont);
+			let dummyOBJ = rectangle(8, base(false, nt(), Vec2(width, height), namePos.addV(Vec2(width/2, 0))));
+			if (recCollision(getCursor(), dummyOBJ) && namePos.y < this.base.position.y+(this.base.size.y/2)) {
+				toolTip.show(getItemName(this.objs[i-1].item, false), this.objs[i-1].item.base.description);
+				collisionArray[i-1] = true;
+			} else {
+				collisionArray[i-1] = false;
+			}
+		}
+		if (coliding) {
+			toolTip.hide();
 		}
 		//Vis bttn
 		let visBttnSize = Vec2(170, this.containerStyle.visSize);
@@ -676,7 +767,7 @@ function baseItem(id=0, rariety=1, cost=0, size=Vec2(16, 16), imageData=null, de
 	this.imageData = imageData;
 	this.description = description;
 	this.duplicate = () => {
-		return new baseItem(this.id, this.rariety, this.cost, this.size, this.imageData);
+		return new baseItem(this.id, this.rariety, this.cost, this.size, this.imageData, this.description);
 	}
 }
 

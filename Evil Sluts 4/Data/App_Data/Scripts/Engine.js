@@ -491,6 +491,33 @@ const arrayMatch = (arr1=[], arr2=[]) => {
   return arr;
 }
 
+//Splits a string into an array of strings based on length
+function splitStringByLength(str, len) {
+    const result = [];
+    for (let i = 0; i < str.length; i += len) {
+        result.push(str.substr(i, len));
+    }
+    return result;
+}
+
+//Splits a string into an array of strings based on width
+function splitStringByWidth(str, width) {
+  const words = str.split(' ');
+  let line = '';
+  const lines = [];
+  for (let i = 0; i < words.length; i++) {
+    const testLine = line + words[i] + ' ';
+    if (ctx.measureText(testLine).width > width && i > 0) {
+      lines.push(line.trim());
+      line = words[i] + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+  lines.push(line.trim());
+  return lines;
+}
+
 /*Core*/
 //Creates canvas
 const Screen = function(id="canvas", size=new Vector2(800,450), mode=0) {
