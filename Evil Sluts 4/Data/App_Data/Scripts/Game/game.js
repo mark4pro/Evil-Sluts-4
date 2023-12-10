@@ -327,7 +327,7 @@ function toolTipUI() {
 				UI_name.text = "Name: "+name;
 				let UI_description_bg = getByNameTag(nt("toolTip_descriptionBG", "toolTipUI"));
 				UI_description_bg.base.position = getCursor().base.position.addV(Vec2(155, 67.5));
-				let tipPieces = splitStringByWidth(tip, 150);
+				let tipPieces = splitStringByWidth(tip, 300);
 				let UI_tip_1 = getByNameTag(nt("toolTip_tip_1", "toolTipUI"));
 				UI_tip_1.base.position = getCursor().base.position.addV(Vec2(7.5, 37.5));
 				UI_tip_1.text = tipPieces[0];
@@ -1554,11 +1554,11 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 	
 	//TODO: Add bullet offsets
 	this.shoot = () => {
-		if (!isPaused) {
+		if (!isPaused && !currentPlayer.dead) {
 			for(enemy of this.enemies) {
 				if (enemy.inRange) {
 					if (enemy.fireTime == 0) {
-						let dir = enemy.base.position.getPolarDir();
+						let dir = enemy.base.position.getPolarDir(currentPlayer.playerOBJ.base.position);
 						console.log(dir);
 						for (let i=0;i<enemy.weapon.amountPerShot;i++) {
 							let newBullet = sprite(5, base(false, nt("bullet_"+enemy.bulletAmount, "enemy_bullet_"+enemy.weapon.name), enemy.weapon.size, enemy.base.position.dup(), enemy.weapon.imageData));
