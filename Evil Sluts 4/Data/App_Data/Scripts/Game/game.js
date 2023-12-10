@@ -1386,7 +1386,7 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 }
 
 //Add enemy spawn array / randomly get from array
-function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=Vec2(0.5, 5), maxHealth=100, defense=10, speed=Vec2(4, 5, 6, 7, 0.25), stopDistance=200, weaponId=0/**damage=Vec2(6, 8)**/, confirmedDrop=null, lootAmount=Vec2(1, 4), drugAmount=Vec2(1, 1), dropRariety=Vec2(1, 3), dropTypeExclude=[], dropNameExclude=[]) {
+function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], imgData=null, shadowData=NO_SHADOW, spawnAmount=0, spawnSpeed=Vec2(0.5, 5), maxHealth=100, defense=10, speed=Vec2(4, 5, 6, 7, 0.25), stopDistance=200, weaponId=0, weaponOffsets=[Vec2(), Vec2(), Vec2(), Vec2()], confirmedDrop=null, lootAmount=Vec2(1, 4), drugAmount=Vec2(1, 1), dropRariety=Vec2(1, 3), dropTypeExclude=[], dropNameExclude=[]) {
 	this.enemyName = enemyName;
 	this.enemySize = enemySize;
 	this.enemyPositions = enemyPositions; //can be an array of positions
@@ -1399,7 +1399,7 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 	this.speed = speed; //x- min normal speed, y- max normal speed, r- min agro speed, o- max agro speed, s- health agro percent
 	this.stopDistance = stopDistance;
 	this.weaponId = weaponId;
-	//this.damage = damage; //x- min damage, y- max damage
+	this.weaponOffsets = weaponOffsets;
 	this.confirmedDrop = confirmedDrop; //drops this item when killed
 	this.lootAmount = lootAmount;
 	this.drugAmount = drugAmount; //x- min drugs, y- max drugs
@@ -1467,6 +1467,8 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 			for(enemy of this.enemies) {
 				if (enemy.inRange) {
 					if (enemy.fireTime == 0) {
+						let dir = enemy.base.position.getPolarDir();
+						console.log(dir);
 						for (let i=0;i<enemy.weapon.amountPerShot;i++) {
 							let newBullet = sprite(5, base(false, nt("bullet_"+enemy.bulletAmount, "enemy_bullet_"+enemy.weapon.name), enemy.weapon.size, enemy.base.position.dup(), enemy.weapon.imageData));
 							let angle = newBullet.base.position.getRotation(currentPlayer.playerOBJ.base.position)+degToRad(180);
