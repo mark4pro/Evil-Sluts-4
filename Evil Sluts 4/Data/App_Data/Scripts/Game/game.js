@@ -381,7 +381,7 @@ function ContainerStyle(visColor="darkgrey", visTxtColor="white", visTxtFont="25
 }
 
 //Container object for the menu
-function Container(layerNumber=1, base_=EMPTY_OBJECT, objs=[], style=null) {
+function pickUpContainer(layerNumber=1, base_=EMPTY_OBJECT, objs=[], style=null) {
 	this.layerNumber = layerNumber;
 	this.base = base_;
 	this.objs = objs;
@@ -617,7 +617,7 @@ function pickUpMenu() {
 				mousePressed[0] = false;
 			}, Vec2(Close_UI.getColor(0.75), Close_UI_Hover.getColor(0.75)));
 			compList.CloseBttnLink.link();
-			compList.ItemContainer = new Container(8, base(true, nt("ItemContainer", this.tag), Vec2(this.size.x, this.size.y-25), Vec2(0, -12.5), colorD("lightgrey", 0)), []);
+			compList.ItemContainer = new pickUpContainer(8, base(true, nt("ItemContainer", this.tag), Vec2(this.size.x, this.size.y-25), Vec2(0, -12.5), colorD("lightgrey", 0)), []);
 			compList.ItemContainer.base.overridePositionUpdateFunction = true;
 			compList.ItemContainer.base.loaded = false;
 			compList.ItemContainer.base.updatePosition = () => {
@@ -641,6 +641,7 @@ function pickUpMenu() {
 	}
 	
 	//Resets the item ui
+	/*
 	this.resetVis = () => {
 		for (let i=0,length=itemVis.length;i<length;i++) {
 			itemVis[i].base.destroy();
@@ -649,6 +650,7 @@ function pickUpMenu() {
 			}
 		}
 	}
+	*/
 	
 	const update = () => {
 		//Updates item list
@@ -670,6 +672,18 @@ function pickUpMenu() {
 		}
 	}
 	addUpdate(update, "pickUpMenu");
+}
+
+//Inventory UI
+const inventoryUI = new inventoryMenu();
+
+function inventoryContainer(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
+	
+}
+
+function inventoryMenu() {
+	this.size = screen.resolution.dup();
+	this.pos = screen.halfResolution.dup();
 }
 
 //Status bar updater
@@ -1070,11 +1084,11 @@ const spawnItem = (id=0, dropPos=ZERO) => {
 	if (thisItem != undefined) {
 		if (!Array.isArray(id)) {
 			let dup = thisItem.duplicate();
-			let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
+			let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size.dup(), dropPos.dup(), dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
 			droppedItem.base.overridePositionUpdateFunction = true;
 			droppedItem.base.updatePosition = () => {
 				if (!isPaused && currentMap() != null) {
-					droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
+					droppedItem.base.position = droppedItem.base.startPosition.addV(currentMap().mapPos);
 				}
 			}
 			droppedItem.item = dup;
@@ -1085,11 +1099,11 @@ const spawnItem = (id=0, dropPos=ZERO) => {
 		} else {
 			for (let i=0,length=id.length;i<length;i++) {
 				let dup = thisItem[i].duplicate();
-				let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size, dropPos, dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
+				let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size.dup(), dropPos.dup(), dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
 				droppedItem.base.overridePositionUpdateFunction = true;
 				droppedItem.base.updatePosition = () => {
 					if (!isPaused && currentMap() != null) {
-						droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
+						droppedItem.base.position = droppedItem.base.startPosition.addV(currentMap().mapPos);
 					}
 				}
 				droppedItem.item = dup;
@@ -1132,11 +1146,11 @@ const dropItem = (itemType="items", index=0) => {
 	let inventoryItem = inventory[itemType][index];
 	if (inventoryItem != undefined) {
 		let dup = inventoryItem.duplicate(true);
-		let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size, currentPlayer.playerItemDropPos, dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
+		let droppedItem = sprite(2, base(true, nt("itemDrop", "item"), dup.base.size.dup(), currentPlayer.playerItemDropPos.dup(), dup.base.imageData, shadow(Vec2(5, -5), "black", 5)));
 		droppedItem.base.overridePositionUpdateFunction = true;
 		droppedItem.base.updatePosition = () => {
 			if (!isPaused && currentMap() != null) {
-				droppedItem.base.position = droppedItem.base.startPosition.duplicate().addV(currentMap().mapPos);
+				droppedItem.base.position = droppedItem.base.startPosition.addV(currentMap().mapPos);
 			}
 		}
 		droppedItem.item = dup;
@@ -1386,10 +1400,10 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 					this.playerOBJ.scale.x = this.playerDir;
 					switch (this.playerDir) {
 						case -1:
-							this.playerItemDropPos = this.playerOBJ.base.position.addV(Vec2(-30, 80));
+							this.playerItemDropPos = this.playerOBJ.base.position.subV(currentMap().mapPos).addV(Vec2(-30, 80));
 						break;
 						case 1:
-							this.playerItemDropPos = this.playerOBJ.base.position.addV(Vec2(30, 80));
+							this.playerItemDropPos = this.playerOBJ.base.position.subV(currentMap().mapPos).addV(Vec2(30, 80));
 						break;
 					}
 				}
@@ -1490,7 +1504,7 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 	this.speed = speed; //x- min normal speed, y- max normal speed, r- min agro speed, o- max agro speed, s- health agro percent
 	this.stopDistance = stopDistance;
 	this.weaponId = weaponId;
-	this.weaponOffsets = weaponOffsets;
+	this.weaponOffsets = weaponOffsets; //[0] Left [1] Right [2] Up [3] Down
 	this.confirmedDrop = confirmedDrop; //drops this item when killed
 	this.lootAmount = lootAmount;
 	this.drugAmount = drugAmount; //x- min drugs, y- max drugs
@@ -1534,6 +1548,7 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 			enemy.healthBarLink = enemyHealthBarLink;
 			enemy.fireTime = 0;
 			enemy.bulletAmount = 0;
+			enemy.offset = Vec2();
 			enemy.agro = false;
 			enemy.inRange = false;
 			
@@ -1559,9 +1574,34 @@ function enemySpawner(enemyName="", enemySize=Vec2(), enemyPositions=[Vec2()], i
 				if (enemy.inRange) {
 					if (enemy.fireTime == 0) {
 						let dir = enemy.base.position.getPolarDir(currentPlayer.playerOBJ.base.position);
-						console.log(dir);
+						switch (dir) {
+							//Left
+							case "NorthWest":
+							case "West":
+							case "SouthWest":
+								enemy.offset = this.weaponOffsets[0];
+							break;
+							//Right
+							case "NorthEast":
+							case "East":
+							case "SouthEast":
+								enemy.offset = this.weaponOffsets[1];
+							break;
+							//Up
+							case "North":
+								if (this.weaponOffsets.length > 2) {
+									enemy.offset = this.weaponOffsets[2];
+								}
+							break;
+							//Down
+							case "South":
+								if (this.weaponOffsets.length > 2) {
+									enemy.offset = this.weaponOffsets[3];
+								}
+							break;
+						}
 						for (let i=0;i<enemy.weapon.amountPerShot;i++) {
-							let newBullet = sprite(5, base(false, nt("bullet_"+enemy.bulletAmount, "enemy_bullet_"+enemy.weapon.name), enemy.weapon.size, enemy.base.position.dup(), enemy.weapon.imageData));
+							let newBullet = sprite(5, base(false, nt("bullet_"+enemy.bulletAmount, "enemy_bullet_"+enemy.weapon.name), enemy.weapon.size, enemy.base.position.dup().addV(enemy.offset), enemy.weapon.imageData));
 							let angle = newBullet.base.position.getRotation(currentPlayer.playerOBJ.base.position)+degToRad(180);
 							newBullet.base.position.s = -enemy.weapon.speed;
 							newBullet.base.position.r = degToRad(enemy.weapon.spreadPattern[i])+angle;
