@@ -239,22 +239,31 @@ const deleteMap = (thisNameTag=nt()) => {
 
 //Loads maps
 const mapLoader = () => {
-	if (gameState == 1) {
-		maps.forEach((i) => {
-			if (i.locationId == locationId) {
-				if (!i.loaded) {
-					if (typeof saveData != "undefined" && saveData.mapPos != null) {
-						i.load(saveData.mapPos);
-					} else {
-						i.load(i.mapPosInit);
-					}
-				}
-			} else {
+	switch (gameState) {
+		case 0:
+			maps.forEach((i) => {
 				if (i.loaded) {
 					i.unload();
 				}
-			}
-		});
+			});
+		break;
+		case 1:
+			maps.forEach((i) => {
+				if (i.locationId == locationId) {
+					if (!i.loaded) {
+						if (typeof saveData != "undefined" && saveData.mapPos != null) {
+							i.load(saveData.mapPos);
+						} else {
+							i.load(i.mapPosInit);
+						}
+					}
+				} else {
+					if (i.loaded) {
+						i.unload();
+					}
+				}
+			});
+		break;
 	}
 }
 addUpdate(mapLoader, "mapLoader");

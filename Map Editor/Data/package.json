@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ff45e2e24695c8026d81b415314165e00dbb87b85d5360dec8e457b3e1c1b09a
-size 288
+{
+	"name": "Map Editor",
+	"version": "1.0.0",
+	"main": "./App_Data/index.html",
+	"window": {
+		"position": "center",
+		"title": "Map Editor",
+		"icon": "./App_Data/Images/Icon/Icon.png"
+	},
+	"dependencies": {
+		"express": "^4.18.1",
+		"socket.io": "^4.5.1"
+	},
+	"single-instance":false
+}

@@ -491,6 +491,33 @@ const arrayMatch = (arr1=[], arr2=[]) => {
   return arr;
 }
 
+//Splits a string into an array of strings based on length
+function splitStringByLength(str, len) {
+    const result = [];
+    for (let i = 0; i < str.length; i += len) {
+        result.push(str.substr(i, len));
+    }
+    return result;
+}
+
+//Splits a string into an array of strings based on width
+function splitStringByWidth(str, width) {
+  const words = str.split(' ');
+  let line = '';
+  const lines = [];
+  for (let i = 0; i < words.length; i++) {
+    const testLine = line + words[i] + ' ';
+    if (ctx.measureText(testLine).width > width && i > 0) {
+      lines.push(line.trim());
+      line = words[i] + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+  lines.push(line.trim());
+  return lines;
+}
+
 /*Core*/
 //Creates canvas
 const Screen = function(id="canvas", size=new Vector2(800,450), mode=0) {
@@ -1120,7 +1147,7 @@ const Rectangle = function(layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) 
 	if (this.base.autoAdd && this.layerNumber >= 1 && this.layerNumber <= 8) {
 		layer[this.layerNumber].push(this);
 		loaded = false;
-	}
+		}
 }
 
 //Shorthand function for creating a rectangle object
@@ -1930,16 +1957,17 @@ const pointInsidePolygon = (vec, polygon) => {
      * I cast the ray along the x axis
      */
     let intersections = 0;
-    for(let i = polygon.getPoints().length;i--;){
+    for (let i = polygon.getPoints().length;i--;) {
         let xpos = polygon.getPoints()[i].x - vec.x;//the polygon is translated with the test point in origo
         let ypos = polygon.getPoints()[i].y - vec.y;
-        if(i){
-            let xpos2 = polygon.getPoints()[i - 1].x - vec.x;
-            let ypos2 = polygon.getPoints()[i - 1].y - vec.y;
-        }
-        else{//the last side of the polygon wraps around to the first point of the corner list, it requires special handling.
-            let xpos2 = polygon.getPoints()[polygon.getPoints().length - 1].x - vec.x;
-            let ypos2 = polygon.getPoints()[polygon.getPoints().length - 1].y - vec.y;
+		let xpos2 = 0;
+		let ypos2 = 0;
+        if (i != 0) {
+            xpos2 = polygon.getPoints()[i - 1].x - vec.x;
+            ypos2 = polygon.getPoints()[i - 1].y - vec.y;
+        } else {//the last side of the polygon wraps around to the first point of the corner list, it requires special handling.
+            xpos2 = polygon.getPoints()[polygon.getPoints().length - 1].x - vec.x;
+            ypos2 = polygon.getPoints()[polygon.getPoints().length - 1].y - vec.y;
         };
         //each side of the polygon does potentially intersect the ray. I skip the iteration for those that do not.
         if(xpos < 0 && xpos2 < 0){//the ray can not cross a side starting and ending at negative x, so no intersection then
@@ -2237,34 +2265,38 @@ const playerC = (autoAdd=true, id="", object=null, maxSpeed=5, accel=new Vector2
 }
 
 //Timer
-const TIME = (hour=0, minute=0, second=0, millisecond=0) => {
-	return {"hour":hour, "minute":minute, "second":second, "millisecond":millisecond};
-}
-
 const Hour = (h=0) => {
-	return TIME(h);
+	return h*1120;
 }
 
 const Minute = (m=0) => {
-	return TIME(0, m);
+	return m*1060;
 }
 
 const Second = (s=0) => {
-	return TIME(0, 0, s);
+	return s*1000;
 }
 
 const MSecond = (ms=0) => {
-	return TIME(0, 0, 0, ms);
+	return ms;
 }
 
-const timer = function(time_=TIME(), active_=true, loop_=false, func_=null, id_="") {
-	this.time_ = time_;
-	this.currentTime = TIME();
+const timer = function(mSeconds_=10, active_=true, loop_=false, zeroStart_=false, func_=null, id_="") {
+	this.mSeconds = mSeconds_;
 	let startTime = Date.now();
 	this.active = active_;
 	let loop = loop_;
+	let zeroStart = zeroStart_;
+	if (!zeroStart) {
+		this.currentTime = 0;
+	} else {
+		this.currentTime = this.mSeconds;
+	}
 	this.func = func_;
 	let id = id_;
+	this.reset = () => {
+		startTime = Date.now();
+	}
 	this.start = (reset=false) => {
 		this.active = true;
 		if (reset) {
@@ -2274,16 +2306,10 @@ const timer = function(time_=TIME(), active_=true, loop_=false, func_=null, id_=
 	this.pause = () => {
 		this.active = false;
 	}
-	this.reset = () => {
-		startTime = Date.now();
-	}
 	const update = () => {
 		if (this.active) {
-			this.currentTime.millisecond = Date.now() - startTime;
-			this.currentTime.second = Math.floor(this.currentTime.millisecond / 1000);
-			this.currentTime.minute = Math.floor(this.currentTime.second / 60);
-			this.currentTime.hour = Math.floor(this.currentTime.minute / 60);
-			if (this.currentTime.hour >= this.time_.hour && this.currentTime.minute >= this.time_.minute && this.currentTime.second >= this.time_.second && this.currentTime.millisecond >= this.time_.millisecond) {
+			this.currentTime = Date.now() - startTime;
+			if (this.currentTime >= this.mSeconds) {
 				if (this.func != null) {
 					this.func();
 				}
@@ -2298,8 +2324,8 @@ const timer = function(time_=TIME(), active_=true, loop_=false, func_=null, id_=
 }
 
 //Shorthand function for a timer
-const T = (time_=TIME(), active_=true, loop_=false, func_=null, id_="") => {
-	return new timer(time_, active_, loop_, func_, id_);
+const T = (time_=TIME(), active_=true, loop_=false, zeroStart_=false, func_=null, id_="") => {
+	return new timer(time_, active_, loop_, zeroStart_, func_, id_);
 }
 
 /*Mods*/
@@ -2572,7 +2598,7 @@ const mod = function(path="", id="") {
 
 /*Controls*/
 //Controllers
-let controllers = {};
+let controllers = [];
 
 //Controller manager
 const controllerMG = function() {
@@ -2606,7 +2632,16 @@ const controllerMG = function() {
 	
 	const update = () => {
 		controllers = (navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []));
-		this.connected = controllers.filter((i)=>{return i!=null}).length;
+		if (Array.isArray(controllers)) {
+			this.connected = controllers.filter((i)=>{return i!=null}).length;
+		} else {
+			this.connected = 0;
+			for (let i=0,length=controllers.length;i<length;i++) {
+				if (controllers[i] != null) {
+					this.connected++;
+				}
+			} 
+		}
 		if (this.players == 0) {
 			if (keybinder.controllerDiv.style.display != "none") {
 				keybinder.controllerDiv.style.display = "none";
@@ -3479,7 +3514,7 @@ window.addEventListener("dblclick", function(event) {
 
 //Mouse wheel function
 window.addEventListener("wheel", (e) => {
-	mouseWheel = e.deltaY;
+	mouseWheel = clamp(e.deltaY, -1, 1);
 });
 
 //Mouse down function

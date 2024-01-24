@@ -1,6 +1,14 @@
+//Image smoothing quality
+const imgSmoothQlty = {
+	0:"low",
+	1:"medium",
+	2:"high"
+}
+
 /*Engine setup*/
 const engineSettings = {
-	"Image_Smoothing":false,
+	"Image_Smoothing":true,
+	"Image_Smoothing_Quality":imgSmoothQlty[0],
 	"Allow_Shadows":true,
 	"Debug":{
 		"Show_FPS_Counter":false,
@@ -597,6 +605,31 @@ const Screen = function(id="canvas", size=new Vector2(800,450), mode=0) {
 const screen = new Screen();
 const ctx = screen.ctx;
 
+//Converts hex colors to rgba
+const hexToRgba = (hexCode, opacity = 1) => {  
+    let hex = hexCode.replace('#', '');
+    
+    if (hex.length === 3) {
+        hex = `${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+    }    
+    
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    if (opacity > 1 && opacity <= 100) {
+        opacity = opacity / 100;   
+    }
+
+    return `rgba(${r},${g},${b},${opacity})`;
+};
+
+//Converts colors to hex
+const colorToHex = (color) => {
+    ctx.fillStyle = color;
+    return ctx.fillStyle;
+}
+
 //FPS Counter
 const FPS = {
 	fpsCounter:document.createElement('p'),
@@ -876,11 +909,11 @@ const lineD = (stroked=false, cap=0, width=1, dashOffset=0, pattern=[]) => {
 const DEFAULT_LINE = lineD();
 
 //Color data
-const colorData = function(color="white", alpha=1, comp=0) {
+const colorData = function(color="white", alpha=1, comp=0, filter="none") {
 	this.color = color;
 	this.alpha = alpha;
 	this.compMode = comp;
-	this.imageData = imageData;
+	this.filter = filter;
 	this.mode = {
 		0:"source-over",
 		1:"source-in",
@@ -910,7 +943,7 @@ const colorData = function(color="white", alpha=1, comp=0) {
 		25:"luminosity"
 	};
 	this.duplicate = function() {
-		return new colorData(this.color, this.alpha, this.compMode);
+		return new colorData(this.color, this.alpha, this.compMode, this.filter);
 	}
 	this.dup = this.duplicate;
 	this.same = function(data, mode=0) {
@@ -963,8 +996,8 @@ const colorData = function(color="white", alpha=1, comp=0) {
 }
 
 //Shorthand function for color data
-const colorD = (color="white", alpha=1, comp=0) => {
-	return new colorData(color, alpha, comp);
+const colorD = (color="white", alpha=1, comp=0, filter="none") => {
+	return new colorData(color, alpha, comp, filter);
 }
 
 //Color data global variables
@@ -1088,8 +1121,10 @@ const EMPTY_OBJECT = base();
 //Sets up object
 const setupObject = (base=EMPTY_OBJECT, line=DEFAULT_LINE) => {
 	ctx.imageSmoothingEnabled = engineSettings.Image_Smoothing;
+	ctx.imageSmoothingQuality = engineSettings.Image_Smoothing_Quality;
 	ctx.globalAlpha = base.color.alpha;
 	ctx.globalCompositeOperation = base.color.comp;
+	ctx.filter = base.color.filter;
 	if (engineSettings.Allow_Shadows) {
 		ctx.shadowColor = base.shadow.color;
 		ctx.shadowBlur = base.shadow.blur;
@@ -1186,24 +1221,29 @@ const circle = (layerNumber=1, base=EMPTY_OBJECT, line=DEFAULT_LINE) => {
 	return new Circle(layerNumber, base, line);
 }
 
-/*REDO THIS SHIT*/
 //Circle Lighting
-const Light = function(layerNumber=1, base=EMPTY_OBJECT, lightIntensity=new Vector2(), line=DEFAULT_LINE) {
+const Light = function(layerNumber=1, base=EMPTY_OBJECT, lightIntensity=1, line=DEFAULT_LINE) {
 	this.layerNumber = layerNumber;
 	this.base = base;
 	this.lightIntensity = lightIntensity;
 	this.line = line;
 	this.type = "light";
-	this.base.color.push("rgba(0,0,0,0)")
-	this.gradientData = new gradientData(1, new Vector2(this.base.position.x, this.base.position.y, this.lightIntensity.x), new Vector2(this.base.position.x, this.base.position.y, this.lightIntensity.y), this.base.color);
-	this.base.color = this.gradientData.getColor(this.lightIntensity.r, this.lightIntensity.o);
+	this.gradient = ctx.createRadialGradient(this.base.position.x, this.base.position.y, this.lightIntensity, this.base.position.x, this.base.position.y, this.base.size.r);
+	this.gradient.addColorStop(0, hexToRgba(colorToHex(this.base.color.color), 1));
+	this.gradient.addColorStop(0.5, hexToRgba(colorToHex(this.base.color.color), 0.5));
+	this.gradient.addColorStop(1, hexToRgba(colorToHex(this.base.color.color), 0));
 	this.duplicate = function() {
-		return new Light(this.layerNumber, this.base.duplicate(), this.lightIntensity.duplicate(), this.line.duplicate());
+		return new Light(this.layerNumber, this.base.duplicate(), this.lightIntensity, this.line.duplicate());
 	}
 	this.dup = this.duplicate;
 	this.draw = function() {
 		setupObject(this.base, this.line);
 		ctx.beginPath();
+		this.gradient = ctx.createRadialGradient(this.base.position.x, this.base.position.y, this.lightIntensity, this.base.position.x, this.base.position.y, this.base.size.r);
+		this.gradient.addColorStop(0, hexToRgba(colorToHex(this.base.color.color), 1));
+		this.gradient.addColorStop(0.5, hexToRgba(colorToHex(this.base.color.color), 0.5));
+		this.gradient.addColorStop(1, hexToRgba(colorToHex(this.base.color.color), 0));
+		ctx.fillStyle = this.gradient;
 		ctx.ellipse(this.base.position.x, this.base.position.y, this.base.size.x, this.base.size.y, this.base.position.r, 0, 2*Math.PI);
 		if (!this.line.stroked) {
 			ctx.fill();
@@ -1211,23 +1251,15 @@ const Light = function(layerNumber=1, base=EMPTY_OBJECT, lightIntensity=new Vect
 			ctx.stroke();
 		}
 	}
-	this.setColor = function(color=[]) {
-		if (Array.isArray(this.base.color) && !arrayCompare(color, this.base.color, all=true)) {
-			this.base.color = color;
-			this.base.color.push("rgba(0,0,0,0)")
-			this.gradientData = new gradientData(1, new Vector2(this.base.position.x, this.base.position.y, this.lightIntensity.x), new Vector2(this.base.position.x, this.base.position.y, this.lightIntensity.y), this.base.color);
-			this.base.color = this.gradientData.getColor(this.lightIntensity.r, this.lightIntensity.o);
-		}
-	}
-	this.setIntensity = function(lightIntensity=new Vector2()) {
-		this.lightIntensity = lightIntensity;
-		this.gradientData = new gradientData(1, new Vector2(this.base.position.x, this.base.position.y, this.lightIntensity.x), new Vector2(this.base.position.x, this.base.position.y, this.lightIntensity.y), this.base.color);
-		this.base.color = this.gradientData.getColor(this.lightIntensity.r, this.lightIntensity.o);
-	}
 	if (this.base.autoAdd && this.layerNumber >= 1 && this.layerNumber <= 8) {
 		layer[this.layerNumber].push(this);
 		loaded = false;
 	}
+}
+
+//Shorthand function for creating circle Lighting
+const light = (layerNumber=1, base=EMPTY_OBJECT, lightIntensity=1, line=DEFAULT_LINE) => {
+	return new Light(layerNumber, base, lightIntensity, line);
 }
 
 //Sprite class
@@ -2324,8 +2356,8 @@ const timer = function(mSeconds_=10, active_=true, loop_=false, zeroStart_=false
 }
 
 //Shorthand function for a timer
-const T = (time_=TIME(), active_=true, loop_=false, func_=null, id_="") => {
-	return new timer(time_, active_, loop_, func_, id_);
+const T = (time_=TIME(), active_=true, loop_=false, zeroStart_=false, func_=null, id_="") => {
+	return new timer(time_, active_, loop_, zeroStart_, func_, id_);
 }
 
 /*Mods*/
@@ -2598,7 +2630,7 @@ const mod = function(path="", id="") {
 
 /*Controls*/
 //Controllers
-let controllers = {};
+let controllers = [];
 
 //Controller manager
 const controllerMG = function() {
@@ -2632,7 +2664,16 @@ const controllerMG = function() {
 	
 	const update = () => {
 		controllers = (navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []));
-		this.connected = controllers.filter((i)=>{return i!=null}).length;
+		if (Array.isArray(controllers)) {
+			this.connected = controllers.filter((i)=>{return i!=null}).length;
+		} else {
+			this.connected = 0;
+			for (let i=0,length=controllers.length;i<length;i++) {
+				if (controllers[i] != null) {
+					this.connected++;
+				}
+			} 
+		}
 		if (this.players == 0) {
 			if (keybinder.controllerDiv.style.display != "none") {
 				keybinder.controllerDiv.style.display = "none";
@@ -3750,6 +3791,52 @@ const optionsMenu = function() {
 		localStorage.setItem("Image_Smoothing", JSON.stringify(this.imageSmoothingChkBx.checked));
 	};
 	this.imageSmoothingDiv.appendChild(this.imageSmoothingChkBx);
+	//Image smoothing quality option
+	this.imageSmoothingQltyDiv = document.createElement('div');
+	this.imageSmoothingQltyDiv.style.marginLeft = "0px";
+	this.imageSmoothingQltyDiv.style.marginRight = "0px";
+	this.imageSmoothingQltyDiv.style.marginTop = "0px";
+	this.imageSmoothingQltyDiv.style.marginBottom = "0px";
+	this.imageSmoothingQltyDiv.style.width = "100%";
+	this.imageSmoothingQltyDiv.style.height = "50px";
+	this.imageSmoothingQltyDiv.style.backgroundColor = "darkgrey";
+	this.optionsSep.appendChild(this.imageSmoothingQltyDiv);
+	this.imageSmoothingQltyTxt = document.createElement('p');
+	this.imageSmoothingQltyTxt.innerHTML = "Image Smoothing Quality:";
+	this.imageSmoothingQltyTxt.style.fontSize = "35px";
+	this.imageSmoothingQltyTxt.style.marginLeft = "0px";
+	this.imageSmoothingQltyTxt.style.marginRight = "0px";
+	this.imageSmoothingQltyTxt.style.marginTop = "0px";
+	this.imageSmoothingQltyTxt.style.marginBottom = "0px";
+	this.imageSmoothingQltyTxt.style.width = "100%";
+	this.imageSmoothingQltyTxt.style.height = "100%";
+	this.imageSmoothingQltyTxt.style.color = "white";
+	this.imageSmoothingQltyTxt.style.display = "inline";
+	this.imageSmoothingQltyDiv.appendChild(this.imageSmoothingQltyTxt);
+	this.imageSmoothingQltySlider = document.createElement('input');
+	this.imageSmoothingQltySlider.type = "range";
+	this.imageSmoothingQltySlider.value = "1";
+	this.imageSmoothingQltySlider.min = "1";
+	this.imageSmoothingQltySlider.max = "3";
+	this.imageSmoothingQltySlider.style.width = "35%";
+	this.imageSmoothingQltySlider.style.height = "50%";
+	this.imageSmoothingQltySlider.style.marginLeft = "10px";
+	this.imageSmoothingQltySlider.style.marginRight = "0px";
+	this.imageSmoothingQltySlider.style.marginTop = "12.5px";
+	this.imageSmoothingQltySlider.style.marginBottom = "0px";
+	this.imageSmoothingQltySlider.style.appearance = "none";
+	this.imageSmoothingQltySlider.style.background = "lightgrey";
+	this.imageSmoothingQltySlider.style.outline = "none";
+	this.imageSmoothingQltySlider.style.borderRadius = "90px";
+	this.imageSmoothingQltySlider.style.float = "right";
+	this.imageSmoothingQltySlider.style.display = "inline";
+	if (localStorage.getItem("Image_Smoothing_Quality") != null) {
+		this.imageSmoothingQltySlider.value = JSON.parse(localStorage.getItem("Image_Smoothing_Quality"));
+	}
+	this.imageSmoothingQltySlider.onchange = () => {
+		localStorage.setItem("Image_Smoothing_Quality", JSON.stringify(this.imageSmoothingQltySlider.value));
+	};
+	this.imageSmoothingQltyDiv.appendChild(this.imageSmoothingQltySlider);
 	//Shadows option
 	this.shadowsDiv = document.createElement('div');
 	this.shadowsDiv.style.marginLeft = "0px";
@@ -3959,6 +4046,9 @@ const optionsMenu = function() {
 		this.gfxTxt.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
 		this.imageSmoothingTxt.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
 		engineSettings.Image_Smoothing = this.imageSmoothingChkBx.checked;
+		this.imageSmoothingQltyTxt.innerHTML = "Image Smoothing Quality: "+this.imageSmoothingQltySlider.value;
+		this.imageSmoothingQltyTxt.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
+		engineSettings.Image_Smoothing_Quality = imgSmoothQlty[this.imageSmoothingQltySlider.value-1];
 		this.shadowsTxt.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
 		engineSettings.Allow_Shadows = this.shadowsChkBx.checked;
 		this.debugTxt.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
@@ -3970,8 +4060,10 @@ const optionsMenu = function() {
 		engineSettings.Debug.Show_Debug_Cursor = this.debugCursorChkBx.checked;
 		if (engineSettings.Settings_Menu.Image_Smoothing) {
 			this.imageSmoothingDiv.style.display = "inherit";
+			this.imageSmoothingQltyDiv.style.display = "inherit";
 		} else {
 			this.imageSmoothingDiv.style.display = "none";
+			this.imageSmoothingQltyDiv.style.display = "none";
 		}
 		if (engineSettings.Settings_Menu.Shadows) {
 			this.shadowsDiv.style.display = "inherit";
@@ -4170,6 +4262,7 @@ const settingsMenu = function() {
 		this.settingsIcon.style.display = "block";
 		ModLoader.hide();
 		keybinder.hide();
+		OptionsMenu.hide();
 		isPaused = false;
 		this.active = false;
 	}

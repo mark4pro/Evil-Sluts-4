@@ -33,6 +33,11 @@ let your_mom_Img = imageD("your_mom", imagePath+itemPath+"your_mom.png", Vec2(32
 let cheese_Img = imageD("cheese", imagePath+itemPath+"cheese.png", Vec2(32, 32));
 //UI
 let pick_up_bttn_Img = imageD("pick_up_bttn", imagePath+"pick_up.png", Vec2(64, 32));
+let inventory_bttn_Img = imageD("inventory_bttn", imagePath+"sack.png", FillVec2(64));
+let all_bttn_Img = imageD("all_bttn", imagePath+"all.png", FillVec2(32));
+let weapon_bttn_Img = imageD("weapon_bttn", imagePath+"weapon.png", Vec2(50, 32));
+let armor_bttn_Img = imageD("armor_bttn", imagePath+"armor.png", FillVec2(32));
+let item_bttn_Img = imageD("item_bttn", imagePath+"item.png", FillVec2(32));
 //FX
 let explosion_Img = imageD("explosion", imagePath+effectPath+"Explosion_Frame_1.png", Vec2(45, 45));
 
@@ -79,6 +84,111 @@ function mainMenu() {
 		}
 	}
 	addUpdate(update, "mainMenu");
+}
+
+const optAddon = new optionsAddon();
+
+function optionsAddon() {
+	//Game title
+	OptionsMenu.gameDiv = document.createElement('div');
+	OptionsMenu.gameDiv.style.marginLeft = "0px";
+	OptionsMenu.gameDiv.style.marginRight = "0px";
+	OptionsMenu.gameDiv.style.marginTop = "0px";
+	OptionsMenu.gameDiv.style.marginBottom = "0px";
+	OptionsMenu.gameDiv.style.width = "100%";
+	OptionsMenu.gameDiv.style.height = "50px";
+	OptionsMenu.gameDiv.style.backgroundColor = "darkgrey";
+	OptionsMenu.optionsSep.insertBefore(OptionsMenu.gameDiv, OptionsMenu.optionsSep.childNodes[0]);
+	OptionsMenu.gameTxt = document.createElement('p');
+	OptionsMenu.gameTxt.innerHTML = "Game";
+	OptionsMenu.gameTxt.style.fontSize = "35px";
+	OptionsMenu.gameTxt.style.marginLeft = "0px";
+	OptionsMenu.gameTxt.style.marginRight = "0px";
+	OptionsMenu.gameTxt.style.marginTop = "0px";
+	OptionsMenu.gameTxt.style.marginBottom = "0px";
+	OptionsMenu.gameTxt.style.width = "100%";
+	OptionsMenu.gameTxt.style.height = "100%";
+	OptionsMenu.gameTxt.style.textAlign = "center";
+	OptionsMenu.gameTxt.style.color = "white";
+	OptionsMenu.gameDiv.appendChild(OptionsMenu.gameTxt);
+	//Text speed
+	OptionsMenu.txtSpeedDiv = document.createElement('div');
+	OptionsMenu.txtSpeedDiv.style.marginLeft = "0px";
+	OptionsMenu.txtSpeedDiv.style.marginRight = "0px";
+	OptionsMenu.txtSpeedDiv.style.marginTop = "0px";
+	OptionsMenu.txtSpeedDiv.style.marginBottom = "0px";
+	OptionsMenu.txtSpeedDiv.style.width = "100%";
+	OptionsMenu.txtSpeedDiv.style.height = "50px";
+	OptionsMenu.txtSpeedDiv.style.backgroundColor = "darkgrey";
+	OptionsMenu.optionsSep.insertBefore(OptionsMenu.txtSpeedDiv, OptionsMenu.optionsSep.childNodes[1]);
+	OptionsMenu.txtSpeedTxt = document.createElement('p');
+	OptionsMenu.txtSpeedTxt.innerHTML = "Text Speed: ";
+	OptionsMenu.txtSpeedTxt.style.fontSize = "35px";
+	OptionsMenu.txtSpeedTxt.style.marginLeft = "0px";
+	OptionsMenu.txtSpeedTxt.style.marginRight = "0px";
+	OptionsMenu.txtSpeedTxt.style.marginTop = "0px";
+	OptionsMenu.txtSpeedTxt.style.marginBottom = "0px";
+	OptionsMenu.txtSpeedTxt.style.width = "100%";
+	OptionsMenu.txtSpeedTxt.style.height = "100%";
+	OptionsMenu.txtSpeedTxt.style.color = "white";
+	OptionsMenu.txtSpeedTxt.style.display = "inline";
+	OptionsMenu.txtSpeedDiv.appendChild(OptionsMenu.txtSpeedTxt);
+	OptionsMenu.txtSpeedRange = document.createElement('input');
+	OptionsMenu.txtSpeedRange.type = "range";
+	OptionsMenu.txtSpeedRange.value = "100";
+	OptionsMenu.txtSpeedRange.min = "1";
+	OptionsMenu.txtSpeedRange.max = "300";
+	OptionsMenu.txtSpeedRange.style.width = "50%";
+	OptionsMenu.txtSpeedRange.style.height = "50%";
+	OptionsMenu.txtSpeedRange.style.marginLeft = "10px";
+	OptionsMenu.txtSpeedRange.style.marginRight = "0px";
+	OptionsMenu.txtSpeedRange.style.marginTop = "12.5px";
+	OptionsMenu.txtSpeedRange.style.marginBottom = "0px";
+	OptionsMenu.txtSpeedRange.style.appearance = "none";
+	OptionsMenu.txtSpeedRange.style.background = "lightgrey";
+	OptionsMenu.txtSpeedRange.style.outline = "none";
+	OptionsMenu.txtSpeedRange.style.borderRadius = "90px";
+	OptionsMenu.txtSpeedRange.style.float = "right";
+	OptionsMenu.txtSpeedRange.style.display = "inline";
+	if (localStorage.getItem("Text_Speed") != null) {
+		OptionsMenu.txtSpeedRange.value = JSON.parse(localStorage.getItem("Text_Speed"));
+	}
+	OptionsMenu.txtSpeedRange.onchange = () => {
+		localStorage.setItem("Text_Speed", JSON.stringify(OptionsMenu.txtSpeedRange.value));
+	};
+	OptionsMenu.txtSpeedDiv.appendChild(OptionsMenu.txtSpeedRange);
+	const update = () => {
+		OptionsMenu.txtSpeedTxt.style.fontSize = ((35*this.menuScale)*screen.getScale().x)+"px";
+		OptionsMenu.txtSpeedTxt.innerHTML = "Text Speed: "+OptionsMenu.txtSpeedRange.value;
+		dialogueMG.dSpeed = OptionsMenu.txtSpeedRange.value;
+	}
+	addUpdate(update, "optionAddon");
+}
+
+//Effects
+let effects = [false];
+const slowPlayer = (speed=Vec2(1.5, 3.5), duration=5) => {
+	let thisSpeed = Vec2();
+	let thisDuration = 0;
+	let normalPlayerSpeed = Vec2();
+	if (!effects[0]) { 
+		thisSpeed = speed;
+		thisDuration = duration;
+		normalPlayerSpeed = currentPlayer.playerSpeed.dup();
+		effects[0] = true;
+	}
+	currentPlayer.playerSpeed = thisSpeed.dup();
+	const update = () => {
+		if (!isPaused) {
+			T(Second(thisDuration), true, false, true, () => {
+				currentPlayer.playerSpeed = normalPlayerSpeed;
+				effects[0] = false;
+				deleteUpdate(1, "timer_slowPlayer");
+				deleteUpdate(1, "slowPlayer");
+			}, "slowPlayer");
+		}
+	}
+	addUpdate(update, "slowPlayer");
 }
 
 //Dialogue
@@ -167,7 +277,7 @@ function  dialogueUI(){
 				deleteByNameTag(this.option2.base.nameTag);
 			}
 		}
-		if (gameState == 0) {
+		if (typeof gameState != "undefined" && gameState == 0) {
 			this.showing = false;
 			this.showingOP1 = false;
 			this.showingOP2 = false;
@@ -223,6 +333,7 @@ function dialogueManager() {
 					}
 				}, "Text_Animation_1");
 			} else {
+				thisTextTimer.mSeconds = MSecond(this.dSpeed);
 				if (!thisTextTimer.active) {
 					thisTextTimer.start(true);
 				}
@@ -564,13 +675,11 @@ function pickUpMenu() {
 	this.pos = screen.halfResolution.dup();
 	
 	let items = [];
-	let itemVis = [];
 	let count = 1;
 	this.updateFrequence = 1;
 	this.maxUpdateTime = 10;
 	
 	this.isShowing = false;
-	this.isClickedOn = false;
 	
 	this.tag = "pickup_menu";
 	this.componentTable = {
@@ -634,23 +743,11 @@ function pickUpMenu() {
 	}
 	
 	this.hide = () => {
-		deleteByNameTag(nt("", this.tag), 2, true);
+		deleteByNameTag(tag(this.tag), 2, true);
 		this.componentTable.CloseBttnLink.unlink();
 		isPaused = false;
 		this.isShowing = false;
 	}
-	
-	//Resets the item ui
-	/*
-	this.resetVis = () => {
-		for (let i=0,length=itemVis.length;i<length;i++) {
-			itemVis[i].base.destroy();
-			if (i == length-1) {
-				itemVis = [];
-			}
-		}
-	}
-	*/
 	
 	const update = () => {
 		//Updates item list
@@ -677,13 +774,523 @@ function pickUpMenu() {
 //Inventory UI
 const inventoryUI = new inventoryMenu();
 
-function inventoryContainer(layerNumber=1, base=EMPTY_OBJECT, objs=[], style=null) {
-	
+function inventoryContainer(layerNumber=1, base_=EMPTY_OBJECT, objs=[], style=null) {
+	this.layerNumber = layerNumber;
+	this.base = base_;
+	this.objs = objs;
+	this.containerStyle = defaultContainerStyle.dup();
+	if (style != null) {
+		this.containerStyle = style;
+	}
+	this.type = "container";
+	let overflow = false;
+	let scrollLock = false;
+	let scrollPos = 0;
+	let scrollClamp = Vec2(0, 0);
+	let collisionArray = [];
+	let coliding = false;
+	let points = [];
+	this.getPoints = function() {
+		return points;
+	}
+	this.duplicate = function() {
+		return new Container(this.layerNumber, this.base.dup(), this.objs, this.containerStyle.dup());
+	}
+	this.dup = this.duplicate;
+	this.draw = function() {
+		//Scroll code
+		if (!scrollLock) {
+			switch (mouseWheel) {
+				case -1:
+					if (scrollPos > scrollClamp.x) {
+						scrollPos -= this.containerStyle.visSize;
+					}
+				break;
+				case 1:
+					if (scrollPos < scrollClamp.y) {
+						scrollPos += this.containerStyle.visSize;
+					}
+				break;
+			}
+		}
+		scrollPos = clamp(scrollPos, scrollClamp.x, scrollClamp.y);
+		//Background
+		setupObject(this.base, DEFAULT_LINE);
+		points = [
+			Vec2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y),
+			Vec2(this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y),
+			Vec2(this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y),
+			Vec2(-this.base.size.x/2+this.base.position.x, this.base.size.y/2+this.base.position.y),
+			Vec2(-this.base.size.x/2+this.base.position.x, -this.base.size.y/2+this.base.position.y)];
+		let thisPath = new Path2D();
+		thisPath.moveTo(points[0].x, points[0].y);
+		for (let i=0;i<points.length;i++) {
+			thisPath.lineTo(points[i].x, points[i].y);
+		}
+		ctx.fill(thisPath);
+		ctx.save();
+		ctx.clip(thisPath);
+		//Vis bg
+		let visSize = Vec2(this.base.size.x, this.containerStyle.visSize);
+		ctx.shadowColor = NO_SHADOW.color;
+		ctx.shadowBlur = NO_SHADOW.blur;
+		ctx.shadowOffsetX = NO_SHADOW.offset.x;
+		ctx.shadowOffsetY = NO_SHADOW.offset.y;
+		ctx.fillStyle = this.containerStyle.visColor;
+		for (let i=1,length=this.objs.length;i<=length;i++) {
+			let visPos = Vec2(this.base.position.x-(this.base.size.x/2), (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y))-scrollPos);
+			if (i == length) {
+				if ((visPos.y+visSize.y/2) <= (this.base.position.y+this.base.size.y/2)) {
+					overflow = false;
+				} else {
+					overflow = true;
+				}
+				if (((visPos.y+scrollPos)+visSize.y/2) <= (this.base.position.y+this.base.size.y/2)) {
+					scrollLock = true;
+					scrollClamp.y = 0;
+				} else {
+					scrollLock = false;
+					scrollClamp.y = Math.abs((this.base.position.y+this.base.size.y/2)-((visPos.y+scrollPos)+visSize.y));
+				}
+			}
+			ctx.fillRect(visPos.x, visPos.y, visSize.x, visSize.y);
+		}
+		//Vis txt
+		ctx.textAlign = "left";
+		ctx.textBaseline = "middle";
+		ctx.font = this.containerStyle.visTxtFont;
+		ctx.fillStyle = this.containerStyle.visTxtColor;
+		if (engineSettings.Allow_Shadows) {
+			ctx.shadowColor = this.containerStyle.visTxtShadow.color;
+			ctx.shadowBlur = this.containerStyle.visTxtShadow.blur;
+			ctx.shadowOffsetX = this.containerStyle.visTxtShadow.offset.x;
+			ctx.shadowOffsetY = this.containerStyle.visTxtShadow.offset.y;
+		} else {
+			ctx.shadowColor = NO_SHADOW.color;
+			ctx.shadowBlur = NO_SHADOW.blur;
+			ctx.shadowOffsetX = NO_SHADOW.offset.x;
+			ctx.shadowOffsetY = NO_SHADOW.offset.y;
+		}
+		collisionArray.length = this.objs.length;
+		coliding = collisionArray.every((i) => {return i == false});
+		for (let i=1,length=this.objs.length;i<=length;i++) {
+			let nameTxt = getItemName(this.objs[i-1]);
+			let namePos = Vec2(this.base.position.x-this.base.size.div(2).x+5, (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2)+2.5)-scrollPos);
+			ctx.fillText(nameTxt, namePos.x, namePos.y);
+			let width = ctx.measureText(nameTxt).width;
+			let height = parseInt(this.containerStyle.visTxtFont);
+			let dummyOBJ = rectangle(8, base(false, nt(), Vec2(width, height), namePos.addV(Vec2(width/2, 0))));
+			if (recCollision(getCursor(), dummyOBJ) && namePos.y < this.base.position.y+(this.base.size.y/2)) {
+				toolTip.show(getItemName(this.objs[i-1], false), this.objs[i-1].base.description);
+				collisionArray[i-1] = true;
+			} else {
+				collisionArray[i-1] = false;
+			}
+		}
+		if (coliding) {
+			toolTip.hide();
+		}
+		//Vis bttn
+		let visBttnSize = Vec2(75, this.containerStyle.visSize);
+		for (let i=1,length=this.objs.length;i<=length;i++) {
+			let thisItem = this.objs[i-1];
+			let visBttnPos = Vec2((this.base.position.x+this.base.size.div(2).x)-visBttnSize.x, (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y))-scrollPos);
+			switch (thisItem.mainType) {
+				case "items":
+					if (thisItem.func != null) {
+						ctx.shadowColor = NO_SHADOW.color;
+						ctx.shadowBlur = NO_SHADOW.blur;
+						ctx.shadowOffsetX = NO_SHADOW.offset.x;
+						ctx.shadowOffsetY = NO_SHADOW.offset.y;
+						if (recCollision({"base":{"position":getCursor().base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)).subV(Vec2(visBttnSize.x, 0)), "size":visBttnSize}}) && recCollision(getCursor(), this)) {
+							ctx.fillStyle = this.containerStyle.visBttnColor.y;
+							if (mousePressed[0]) {
+								thisItem.use();
+								mousePressed[0] = false;
+							}
+						} else {
+							ctx.fillStyle = this.containerStyle.visBttnColor.x;
+						}
+						ctx.fillRect(visBttnPos.x-visBttnSize.x, visBttnPos.y, visBttnSize.x, visBttnSize.y);
+						//Vis bttn txt
+						ctx.textAlign = "center";
+						ctx.textBaseline = "middle";
+						ctx.font = this.containerStyle.visTxtFont;
+						ctx.fillStyle = this.containerStyle.visTxtColor;
+						if (engineSettings.Allow_Shadows) {
+							ctx.shadowColor = this.containerStyle.visTxtShadow.color;
+							ctx.shadowBlur = this.containerStyle.visTxtShadow.blur;
+							ctx.shadowOffsetX = this.containerStyle.visTxtShadow.offset.x;
+							ctx.shadowOffsetY = this.containerStyle.visTxtShadow.offset.y;
+						} else {
+							ctx.shadowColor = NO_SHADOW.color;
+							ctx.shadowBlur = NO_SHADOW.blur;
+							ctx.shadowOffsetX = NO_SHADOW.offset.x;
+							ctx.shadowOffsetY = NO_SHADOW.offset.y;
+						}
+						ctx.fillText("Use", visBttnPos.x-(visBttnSize.x/2), (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2))-scrollPos);
+					}
+					ctx.shadowColor = NO_SHADOW.color;
+					ctx.shadowBlur = NO_SHADOW.blur;
+					ctx.shadowOffsetX = NO_SHADOW.offset.x;
+					ctx.shadowOffsetY = NO_SHADOW.offset.y;
+					if (recCollision({"base":{"position":getCursor().base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)), "size":visBttnSize}}) && recCollision(getCursor(), this)) {
+						ctx.fillStyle = this.containerStyle.visBttnColor.y;
+						if (mousePressed[0]) {
+							spawnItem(thisItem.base.id, currentPlayer.playerItemDropPos);
+							thisItem.stack--;
+							mousePressed[0] = false;
+						}
+					} else {
+						ctx.fillStyle = this.containerStyle.visBttnColor.x;
+					}
+					ctx.fillRect(visBttnPos.x, visBttnPos.y, visBttnSize.x, visBttnSize.y);
+					//Vis bttn txt
+					ctx.textAlign = "center";
+					ctx.textBaseline = "middle";
+					ctx.font = this.containerStyle.visTxtFont;
+					ctx.fillStyle = this.containerStyle.visTxtColor;
+					if (engineSettings.Allow_Shadows) {
+						ctx.shadowColor = this.containerStyle.visTxtShadow.color;
+						ctx.shadowBlur = this.containerStyle.visTxtShadow.blur;
+						ctx.shadowOffsetX = this.containerStyle.visTxtShadow.offset.x;
+						ctx.shadowOffsetY = this.containerStyle.visTxtShadow.offset.y;
+					} else {
+						ctx.shadowColor = NO_SHADOW.color;
+						ctx.shadowBlur = NO_SHADOW.blur;
+						ctx.shadowOffsetX = NO_SHADOW.offset.x;
+						ctx.shadowOffsetY = NO_SHADOW.offset.y;
+					}
+					ctx.fillText("Drop", visBttnPos.x+(visBttnSize.x/2), (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2))-scrollPos);
+				break;
+				case "weapons":
+				case "armor":
+					ctx.shadowColor = NO_SHADOW.color;
+					ctx.shadowBlur = NO_SHADOW.blur;
+					ctx.shadowOffsetX = NO_SHADOW.offset.x;
+					ctx.shadowOffsetY = NO_SHADOW.offset.y;
+					if (recCollision({"base":{"position":getCursor().base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)).subV(Vec2(visBttnSize.x, 0)), "size":visBttnSize}}) && recCollision(getCursor(), this)) {
+						ctx.fillStyle = this.containerStyle.visBttnColor.y;
+						if (mousePressed[0]) {
+							if (!thisItem.equipped) {
+								thisItem.equip();
+							} else {
+								thisItem.unequip();
+							}
+							mousePressed[0] = false;
+						}
+					} else {
+						ctx.fillStyle = this.containerStyle.visBttnColor.x;
+					}
+					if (!thisItem.equipped) {
+						ctx.fillRect(visBttnPos.x-visBttnSize.x, visBttnPos.y, visBttnSize.x, visBttnSize.y);
+					} else {
+						ctx.fillRect(visBttnPos.x-visBttnSize.x-50, visBttnPos.y, visBttnSize.x+50, visBttnSize.y);
+					}
+					//Vis bttn txt
+					ctx.textAlign = "center";
+					ctx.textBaseline = "middle";
+					ctx.font = this.containerStyle.visTxtFont;
+					ctx.fillStyle = this.containerStyle.visTxtColor;
+					if (engineSettings.Allow_Shadows) {
+						ctx.shadowColor = this.containerStyle.visTxtShadow.color;
+						ctx.shadowBlur = this.containerStyle.visTxtShadow.blur;
+						ctx.shadowOffsetX = this.containerStyle.visTxtShadow.offset.x;
+						ctx.shadowOffsetY = this.containerStyle.visTxtShadow.offset.y;
+					} else {
+						ctx.shadowColor = NO_SHADOW.color;
+						ctx.shadowBlur = NO_SHADOW.blur;
+						ctx.shadowOffsetX = NO_SHADOW.offset.x;
+						ctx.shadowOffsetY = NO_SHADOW.offset.y;
+					}
+					if (!thisItem.equipped) {
+						ctx.fillText("Equip", visBttnPos.x-(visBttnSize.x/2), (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2))-scrollPos);
+					} else {
+						ctx.fillText("Unequip", visBttnPos.x-(visBttnSize.x/2)-25, (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2))-scrollPos);
+					}
+					ctx.shadowColor = NO_SHADOW.color;
+					ctx.shadowBlur = NO_SHADOW.blur;
+					ctx.shadowOffsetX = NO_SHADOW.offset.x;
+					ctx.shadowOffsetY = NO_SHADOW.offset.y;
+					if (recCollision({"base":{"position":getCursor().base.position, "size":ONE}}, {"base":{"position":visBttnPos.addV(visBttnSize.div(2)), "size":visBttnSize}}) && recCollision(getCursor(), this)) {
+						ctx.fillStyle = this.containerStyle.visBttnColor.y;
+						if (mousePressed[0]) {
+							dropItem(thisItem.mainType, thisItem.index);
+							mousePressed[0] = false;
+						}
+					} else {
+						ctx.fillStyle = this.containerStyle.visBttnColor.x;
+					}
+					ctx.fillRect(visBttnPos.x, visBttnPos.y, visBttnSize.x, visBttnSize.y);
+					//Vis bttn txt
+					ctx.textAlign = "center";
+					ctx.textBaseline = "middle";
+					ctx.font = this.containerStyle.visTxtFont;
+					ctx.fillStyle = this.containerStyle.visTxtColor;
+					if (engineSettings.Allow_Shadows) {
+						ctx.shadowColor = this.containerStyle.visTxtShadow.color;
+						ctx.shadowBlur = this.containerStyle.visTxtShadow.blur;
+						ctx.shadowOffsetX = this.containerStyle.visTxtShadow.offset.x;
+						ctx.shadowOffsetY = this.containerStyle.visTxtShadow.offset.y;
+					} else {
+						ctx.shadowColor = NO_SHADOW.color;
+						ctx.shadowBlur = NO_SHADOW.blur;
+						ctx.shadowOffsetX = NO_SHADOW.offset.x;
+						ctx.shadowOffsetY = NO_SHADOW.offset.y;
+					}
+					ctx.fillText("Drop", visBttnPos.x+(visBttnSize.x/2), (((i-1)*this.containerStyle.visSize)+(this.base.position.y-this.base.size.div(2).y)+(this.containerStyle.visSize/2))-scrollPos);
+				break;
+			}
+		}
+		if (scrollPos != 0) {
+			ctx.shadowColor = this.containerStyle.visOverflowColor;
+			ctx.shadowBlur = 20;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = 10;
+			ctx.fillStyle = this.containerStyle.visOverflowColor;
+			ctx.fillRect((this.base.position.x-this.base.size.x/2), (this.base.position.y-this.base.size.y/2)-20, this.base.size.x, 20);
+		}
+		if (overflow) {
+			ctx.shadowColor = this.containerStyle.visOverflowColor;
+			ctx.shadowBlur = 20;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = -10;
+			ctx.fillStyle = this.containerStyle.visOverflowColor;
+			ctx.fillRect((this.base.position.x-this.base.size.x/2), (this.base.position.y+this.base.size.y/2), this.base.size.x, 20);
+		}
+		ctx.restore();
+	}
+	if (this.base.autoAdd && this.layerNumber >= 1 && this.layerNumber <= 8) {
+		layer[this.layerNumber].push(this);
+		loaded = false;
+	}
 }
 
 function inventoryMenu() {
-	this.size = screen.resolution.dup();
+	this.size = screen.resolution.div(1.2);
 	this.pos = screen.halfResolution.dup();
+	this.isShowing = false;
+	
+	let items = [];
+	
+	this.itemType = Vec2(0, 3); //0- All, 1- Weapons, 2- Armor, 3- Drugs
+	this.itemTagList = {
+		0:Vec2("all", null),
+		1:Vec2("weapons", null),
+		2:Vec2("armor", null),
+		3:Vec2("items", "drug"),
+	}
+	
+	this.tag = "inventory_menu";
+	this.componentTable = {
+		"Background":null,
+		"MenuTitle":null,
+		"CloseBttn":null,
+		"CloseBttnLink":null,
+		"AllBttn":null,
+		"AllBttnIcon":null,
+		"AllBttnLink":null,
+		"WeaponBttn":null,
+		"WeaponBttnIcon":null,
+		"WeaponBttnLink":null,
+		"ArmorBttn":null,
+		"ArmorBttnIcon":null,
+		"ArmorBttnLink":null,
+		"ItemBttn":null,
+		"ItemBttnIcon":null,
+		"ItemBttnLink":null,
+		"ItemContainer":null,
+	}
+	
+	this.init = () => {
+		if (!this.isShowing) {
+			const compList = this.componentTable;
+			//Window setup
+			compList.Background = rectangle(8, base(true, nt("Background", this.tag), this.size.duplicate(), this.pos.dup(), colorD("grey", 0.6), shadow(Vec2(5, 5), "black", 10)));
+			compList.MenuTitle = text(8, "Sack", base(true, nt("MenuTitle", this.tag), Vec2("25px Arial", false, "center"), Vec2(0, (this.size.y/2)-15), colorD("white", 0), shadow(Vec2(5, 5), "black", 10)));
+			compList.MenuTitle.base.overridePositionUpdateFunction = true;
+			compList.MenuTitle.base.loaded = false;
+			compList.MenuTitle.base.updatePosition = () => {
+				if (isPaused) {
+					compList.MenuTitle.base.position = compList.Background.base.position.subV(compList.MenuTitle.base.startPosition);
+					compList.MenuTitle.base.loaded = true;
+				}
+				if (compList.MenuTitle.base.loaded) {
+					compList.MenuTitle.base.color.alpha = 0.6;
+				}
+			}
+			compList.MenuTitle.base.updatePosition();
+			compList.CloseBttn = sprite(8, base(true, nt("CloseBttn", this.tag), Vec2(20, 20), Vec2(-((this.size.x/2)-12.5), (this.size.y/2)-12.5), Close_UI.getColor(0), shadow(Vec2(5, 5), "black", 10)));
+			compList.CloseBttn.base.overridePositionUpdateFunction = true;
+			compList.CloseBttn.base.loaded = false;
+			compList.CloseBttn.base.updatePosition = () => {
+				if (isPaused) {
+					compList.CloseBttn.base.position = compList.Background.base.position.subV(compList.CloseBttn.base.startPosition);
+					compList.CloseBttn.base.loaded = true;
+				}
+				if (compList.CloseBttn.base.loaded) {
+					compList.CloseBttn.base.color.alpha = 0.6;
+				}
+			}
+			compList.CloseBttn.base.updatePosition();
+			compList.CloseBttnLink = bttnL(compList.CloseBttn, null, recCollision, () => {
+				this.hide();
+				mousePressed[0] = false;
+			}, Vec2(Close_UI.getColor(0.75), Close_UI_Hover.getColor(0.75)));
+			compList.CloseBttnLink.link();
+			
+			compList.AllBttn = rectangle(8, base(true, nt("AllBttn", this.tag), Vec2(this.size.x/4, 70), Vec2((this.size.x/2)-((this.size.x/4)/2), (this.size.y/2)-62), colorD("white", 0.6), shadow(Vec2(0, 5), "black")));
+			compList.AllBttn.base.overridePositionUpdateFunction = true;
+			compList.AllBttn.base.loaded = false;
+			compList.AllBttn.base.updatePosition = () => {
+				if (isPaused) {
+					compList.AllBttn.base.position = compList.Background.base.position.subV(compList.AllBttn.base.startPosition);
+					compList.AllBttn.base.loaded = true;
+				}
+			}
+			compList.AllBttn.base.updatePosition();
+			compList.AllBttnIcon = sprite(8, base(true, nt("AllBttnIcon", this.tag), Vec2(64, 64), Vec2((this.size.x/2)-((this.size.x/4)/2), (this.size.y/2)-62), all_bttn_Img.getColor(0), shadow(Vec2(5, 5), "black", 10)));
+			compList.AllBttnIcon.base.overridePositionUpdateFunction = true;
+			compList.AllBttnIcon.base.loaded = false;
+			compList.AllBttnIcon.base.updatePosition = () => {
+				if (isPaused) {
+					compList.AllBttnIcon.base.position = compList.Background.base.position.subV(compList.AllBttnIcon.base.startPosition);
+					compList.AllBttnIcon.base.loaded = true;
+				}
+				if (compList.AllBttnIcon.base.loaded) {
+					compList.AllBttnIcon.base.color.alpha = compList.AllBttn.base.color.alpha;
+				}
+			}
+			compList.AllBttnIcon.base.updatePosition();
+			compList.AllBttnLink = bttnL(compList.AllBttn, null, recCollision, () => {
+				this.itemType.x = 0;
+				mousePressed[0] = false;
+			}, Vec2(colorD("white", 0.6), colorD("white", 0.75)));
+			compList.AllBttnLink.link();
+			
+			compList.WeaponBttn = rectangle(8, base(true, nt("WeaponBttn", this.tag), Vec2(this.size.x/4, 70), Vec2((this.size.x/4)-((this.size.x/4)/2), (this.size.y/2)-62), colorD("white", 0.6), shadow(Vec2(0, 5), "black")));
+			compList.WeaponBttn.base.overridePositionUpdateFunction = true;
+			compList.WeaponBttn.base.loaded = false;
+			compList.WeaponBttn.base.updatePosition = () => {
+				if (isPaused) {
+					compList.WeaponBttn.base.position = compList.Background.base.position.subV(compList.WeaponBttn.base.startPosition);
+					compList.WeaponBttn.base.loaded = true;
+				}
+			}
+			compList.WeaponBttn.base.updatePosition();
+			compList.WeaponBttnIcon = sprite(8, base(true, nt("WeaponBttnIcon", this.tag), Vec2(128, 64), Vec2((this.size.x/4)-((this.size.x/4)/2), (this.size.y/2)-62), weapon_bttn_Img.getColor(0), shadow(Vec2(5, 5), "black", 10)));
+			compList.WeaponBttnIcon.base.overridePositionUpdateFunction = true;
+			compList.WeaponBttnIcon.base.loaded = false;
+			compList.WeaponBttnIcon.base.updatePosition = () => {
+				if (isPaused) {
+					compList.WeaponBttnIcon.base.position = compList.Background.base.position.subV(compList.WeaponBttnIcon.base.startPosition);
+					compList.WeaponBttnIcon.base.loaded = true;
+				}
+				if (compList.WeaponBttnIcon.base.loaded) {
+					compList.WeaponBttnIcon.base.color.alpha = compList.WeaponBttn.base.color.alpha;
+				}
+			}
+			compList.WeaponBttnIcon.base.updatePosition();
+			compList.WeaponBttnLink = bttnL(compList.WeaponBttn, null, recCollision, () => {
+				this.itemType.x = 1;
+				mousePressed[0] = false;
+			}, Vec2(colorD("white", 0.6), colorD("white", 0.75)));
+			compList.WeaponBttnLink.link();
+			
+			compList.ArmorBttn = rectangle(8, base(true, nt("ArmorBttn", this.tag), Vec2(this.size.x/4, 70), Vec2(-((this.size.x/4)/2), (this.size.y/2)-62), colorD("white", 0.6), shadow(Vec2(0, 5), "black")));
+			compList.ArmorBttn.base.overridePositionUpdateFunction = true;
+			compList.ArmorBttn.base.loaded = false;
+			compList.ArmorBttn.base.updatePosition = () => {
+				if (isPaused) {
+					compList.ArmorBttn.base.position = compList.Background.base.position.subV(compList.ArmorBttn.base.startPosition);
+					compList.ArmorBttn.base.loaded = true;
+				}
+			}
+			compList.ArmorBttn.base.updatePosition();
+			compList.ArmorBttnIcon = sprite(8, base(true, nt("ArmorBttnIcon", this.tag), Vec2(64, 64), Vec2(-((this.size.x/4)/2), (this.size.y/2)-62), armor_bttn_Img.getColor(0), shadow(Vec2(5, 5), "black", 10)));
+			compList.ArmorBttnIcon.base.overridePositionUpdateFunction = true;
+			compList.ArmorBttnIcon.base.loaded = false;
+			compList.ArmorBttnIcon.base.updatePosition = () => {
+				if (isPaused) {
+					compList.ArmorBttnIcon.base.position = compList.Background.base.position.subV(compList.ArmorBttnIcon.base.startPosition);
+					compList.ArmorBttnIcon.base.loaded = true;
+				}
+				if (compList.ArmorBttnIcon.base.loaded) {
+					compList.ArmorBttnIcon.base.color.alpha = compList.ArmorBttn.base.color.alpha;
+				}
+			}
+			compList.ArmorBttnIcon.base.updatePosition();
+			compList.ArmorBttnLink = bttnL(compList.ArmorBttn, null, recCollision, () => {
+				this.itemType.x = 2;
+				mousePressed[0] = false;
+			}, Vec2(colorD("white", 0.6), colorD("white", 0.75)));
+			compList.ArmorBttnLink.link();
+			
+			compList.ItemBttn = rectangle(8, base(true, nt("ItemBttn", this.tag), Vec2(this.size.x/4, 70), Vec2(-(this.size.x/2)-((this.size.x/4)/-2), (this.size.y/2)-62), colorD("white", 0.6), shadow(Vec2(0, 5), "black")));
+			compList.ItemBttn.base.overridePositionUpdateFunction = true;
+			compList.ItemBttn.base.loaded = false;
+			compList.ItemBttn.base.updatePosition = () => {
+				if (isPaused) {
+					compList.ItemBttn.base.position = compList.Background.base.position.subV(compList.ItemBttn.base.startPosition);
+					compList.ItemBttn.base.loaded = true;
+				}
+			}
+			compList.ItemBttn.base.updatePosition();
+			compList.ItemBttnIcon = sprite(8, base(true, nt("ItemBttnIcon", this.tag), Vec2(64, 64), Vec2(-(this.size.x/2)-((this.size.x/4)/-2), (this.size.y/2)-62), item_bttn_Img.getColor(0), shadow(Vec2(5, 5), "black", 10)));
+			compList.ItemBttnIcon.base.overridePositionUpdateFunction = true;
+			compList.ItemBttnIcon.base.loaded = false;
+			compList.ItemBttnIcon.base.updatePosition = () => {
+				if (isPaused) {
+					compList.ItemBttnIcon.base.position = compList.Background.base.position.subV(compList.ItemBttnIcon.base.startPosition);
+					compList.ItemBttnIcon.base.loaded = true;
+				}
+				if (compList.ItemBttnIcon.base.loaded) {
+					compList.ItemBttnIcon.base.color.alpha = compList.ItemBttn.base.color.alpha;
+				}
+			}
+			compList.ItemBttnIcon.base.updatePosition();
+			compList.ItemBttnLink = bttnL(compList.ItemBttn, null, recCollision, () => {
+				this.itemType.x = 3;
+				mousePressed[0] = false;
+			}, Vec2(colorD("white", 0.6), colorD("white", 0.75)));
+			compList.ItemBttnLink.link();
+			
+			compList.ItemContainer = new inventoryContainer(8, base(true, nt("ItemContainer", this.tag), Vec2(this.size.x, this.size.y-100), Vec2(0, -50), colorD("lightgrey", 0)), []);
+			compList.ItemContainer.base.overridePositionUpdateFunction = true;
+			compList.ItemContainer.base.loaded = false;
+			compList.ItemContainer.base.updatePosition = () => {
+				if (isPaused) {
+					compList.ItemContainer.base.position = compList.Background.base.position.subV(compList.ItemContainer.base.startPosition);
+					compList.ItemContainer.base.loaded = true;
+				}
+				if (compList.ItemContainer.base.loaded) {
+					compList.ItemContainer.base.color.alpha = 0.5;
+				}
+			}
+			this.isShowing = true;
+		}
+	}
+	
+	this.hide = () => {
+		deleteByNameTag(tag(this.tag), 2, true);
+		this.componentTable.CloseBttnLink.unlink();
+		this.componentTable.AllBttnLink.unlink();
+		this.componentTable.WeaponBttnLink.unlink();
+		this.componentTable.ArmorBttnLink.unlink();
+		isPaused = false;
+		this.isShowing = false;
+	}
+	
+	const update = () => {
+		if (this.isShowing) {
+			isPaused = true;
+			let type = this.itemTagList[this.itemType.x];
+			this.itemType.x = clamp(this.itemType.x, 0, this.itemType.y);
+			items = getInventoryByType(type.x, type.y);
+			this.componentTable.ItemContainer.objs = items;
+		}
+	}
+	addUpdate(update, "inventoryUI");
 }
 
 //Status bar updater
@@ -737,7 +1344,7 @@ function weapon(name="", imageData=null, amountPerShot=1, fireTime=ONE, size=ONE
 }
 
 const weaponTable = {
-	0:new weapon("Test", bullet_1_Img.getColor(), 5, Vec2(1,10), Vec2(10,10), [-12.5, -6.25, 0, 6.26, 12.5], Vec2(10, 15), Vec2(100, 200), Vec2(1, 2, 5, 10)),
+	0:new weapon("Test Weapon 1", bullet_1_Img.getColor(), 5, Vec2(1,10), Vec2(10,10), [-12.5, -6.25, 0, 6.26, 12.5], Vec2(10, 15), Vec2(100, 200), Vec2(1, 2, 5, 10)),
 }
 
 //Armor
@@ -766,10 +1373,10 @@ function armor(name="", imageData=null, size=ONE, armorType="", _defenceStatRang
 }
 
 const armorTable = {
-	0:new armor("Test", null, ONE, armorTypes[0], Vec2(1,6)),
-	1:new armor("Test2", null, ONE, armorTypes[1], Vec2(4,10)),
-	2:new armor("Test3", null, ONE, armorTypes[2], Vec2(2,8)),
-	3:new armor("Test4", null, ONE, armorTypes[3], Vec2(1,4)),
+	0:new armor("Test Armor 1", null, ONE, armorTypes[0], Vec2(1,6)),
+	1:new armor("Test Armor 2", null, ONE, armorTypes[1], Vec2(4,10)),
+	2:new armor("Test Armor 3", null, ONE, armorTypes[2], Vec2(2,8)),
+	3:new armor("Test Armor 4", null, ONE, armorTypes[3], Vec2(1,4)),
 }
 
 //Item shit
@@ -785,27 +1392,35 @@ function baseItem(id=0, rariety=1, cost=0, size=Vec2(16, 16), imageData=null, de
 	}
 }
 
-function drugsItem(type="", base=new baseItems(), arrgs=[], func=null) {
+function drugsItem(type="", base=new baseItems(), arrgs=[], func=null, effect=-1) {
 	this.type = type;
 	this.base = base;
 	this.arrgs = arrgs;
 	this.func = func;
+	this.effect = effect;
 	this.itemType = "drug";
 	this.mainType = "items"; //What inventory array it goes into
 	this.stack = 1;
 	this.use = () => {
 		if (this.func != null) {
-			this.func(this.arrgs);
-			this.stack--;
+			if (effects[this.effect] == undefined) {
+				this.func(this.arrgs);
+				this.stack--;
+			} else {
+				if (effects[this.effect] == false) {
+					this.func(this.arrgs);
+					this.stack--;
+				}
+			}
 		}
 	}
 	this.duplicate = (includeStack=true) => {
 		if (includeStack) {
-			let duppedItem = new drugsItem(this.type, this.base.duplicate(), this.arrgs, this.func);
+			let duppedItem = new drugsItem(this.type, this.base.duplicate(), this.arrgs, this.func, this.effect);
 			duppedItem.stack = this.stack;
 			return duppedItem;
 		} else {
-			return new drugsItem(this.type, this.base.duplicate(), this.arrgs, this.func);
+			return new drugsItem(this.type, this.base.duplicate(), this.arrgs, this.func, this.effect);
 		}
 	}
 }
@@ -816,13 +1431,17 @@ function weaponItem(weaponId=0, base=new baseItems(), veriant=null) {
 	this.itemType = "weapon";
 	this.mainType = "weapons"; //What inventory array it goes into
 	this.weaponVeriant = veriant;
+	this.equipped = false;
+	this.index = null;
 	if (veriant == null) {
 		this.weaponVeriant = weaponTable[this.weaponId].duplicate();
 		this.weaponVeriant.genStats();
 	}
 	this.equip = () => {
 		if (currentPlayer.loaded && currentPlayer.weapons.filter((i) => i.weaponId == this.weaponId).length == 0) {
+			this.index = currentPlayer.weapons.length;
 			currentPlayer.weapons.push(this);
+			this.equipped = true;
 		}
 	}
 	this.unequip = () => {
@@ -830,6 +1449,8 @@ function weaponItem(weaponId=0, base=new baseItems(), veriant=null) {
 			currentPlayer.weapons.forEach((w, i) => {
 				if (w.weaponId == this.weaponId) {
 					currentPlayer.weapons.splice(i, 1);
+					this.index = null;
+					this.equipped = false;
 				}
 			});
 		}
@@ -852,13 +1473,17 @@ function armorItems(armorId=0, base=new baseItems(), veriant=null) {
 	this.itemType = "armor";
 	this.mainType = "armor";
 	this.armorVeriant = veriant;
+	this.equipped = false;
+	this.index = null;
 	if (veriant == null) {
 		this.armorVeriant = armorTable[this.armorId].duplicate();
 		this.armorVeriant.genStats();
 	}
 	this.equip = () => {
 		if (currentPlayer.loaded && currentPlayer.armor.filter((i) => armorTable[i.armorId].armorType == armorTable[this.armorId].armorType).length == 0) {
+			this.index = currentPlayer.armor.length;
 			currentPlayer.armor.push(this);
+			this.equipped = true;
 		}
 	}
 	this.unequip = () => {
@@ -866,6 +1491,8 @@ function armorItems(armorId=0, base=new baseItems(), veriant=null) {
 			currentPlayer.armor.forEach((w, i) => {
 				if (w.armorId == this.armorId) {
 					currentPlayer.armor.splice(i, 1);
+					this.index = null;
+					this.equipped = false;
 				}
 			});
 		} 
@@ -886,7 +1513,7 @@ const globalExcludedDrops = []; //Loot tables won't include these items. Good fo
 
 const itemTable = [
 	//Items
-	new drugsItem("Heroin", new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor(), "Slows you down.")),
+	new drugsItem("Heroin", new baseItem(0, 1, 0, Vec2(32, 32), heroin_Img.getColor(), "Slows you down."), [], () => {slowPlayer(Vec2(1.5, 3.5), 5)}, 0),
 	new drugsItem("Crack", new baseItem(1, 1, 0, Vec2(32, 32), crack_Img.getColor(), "Speed boost.")),
 	new drugsItem("Cocaine", new baseItem(2, 2, 0, Vec2(32, 32), cocaine_Img.getColor(), "Greater speed boost.")),
 	new drugsItem("LSD", new baseItem(3, 5, 0, Vec2(32, 32), lsd_Img.getColor(), "Go goofy mode...")),
@@ -1141,6 +1768,18 @@ const inventory = {
 	"items":[],
 };
 
+const getInventoryByType = (mainType="", itemType="") => {
+	if (mainType.toLowerCase() == "all") {
+		return inventory["weapons"].concat(inventory["armor"], inventory["items"]);
+	} else {
+		if (itemType != null) {
+			return inventory[mainType].filter((i) => i.itemType == itemType);
+		} else {
+			return inventory[mainType];
+		}
+	}
+}
+
 //Drops item from the players inventory
 const dropItem = (itemType="items", index=0) => {
 	let inventoryItem = inventory[itemType][index];
@@ -1178,13 +1817,12 @@ const getDroppedItems = () => {
 	}
 }
 
-const currentPlayer = new player(100, Vec2(3, 7), Vec2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [inventory.armor[0]], Vec2(100, 100));
+const currentPlayer = new player(100, Vec2(3, 7), Vec2(100, 0.5, 0.1), 10, [inventory.weapons[0]], [inventory.armor[0], inventory.armor[1], inventory.armor[2], inventory.armor[3]], Vec2(100, 100));
 
-//TODO: Implement armor functionality
 function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1), baseDefence=10, weapons=[], armor=[], ammo=Vec2(100, 100)) {
 	this.baseDefence = baseDefence;
 	this.armor = armor;
-	this.defence = this.baseDefence;
+	this.defense = this.baseDefence;
 	this.weapons = weapons;
 	this.ammo = ammo; //x- current ammo, y- max ammo
 	
@@ -1227,8 +1865,17 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 	this.pickUpBttn = sprite(8, base(false, nt("pickUpBttn", "UI_BTTN"), Vec2(128, 64), Vec2(1216, 688), pick_up_bttn_Img.getColor()));
 	this.droppedItemsTxt = text(8, "0", base(false, nt("droppedItemsTxt", "UI"), Vec2("30px Arial", false, "center"), Vec2(1152, 656), colorD("white", 0.75), shadow(Vec2(5, 5), "black", 5)));
 	this.pickUpBttnLink = bttnL(this.pickUpBttn, this.droppedItemsTxt, recCollision, () => {
-		dropMenu.init();
+		if (!inventoryUI.isShowing) {
+			dropMenu.init();
+		}
 	}, Vec2(pick_up_bttn_Img.getColor(0.75), pick_up_bttn_Img.getColor(1)), Vec2(colorD("white", 0.75), colorD("white", 1)), null, Vec2("rgba(0,0,0,192)", "rgba(0,0,0,256)"));
+	//Pick up bttn
+	this.inventoryBttn = sprite(8, base(false, nt("inventoryBttn", "UI_BTTN"), Vec2(75, 75), Vec2(65, 675), inventory_bttn_Img.getColor()));
+	this.inventoryBttnLink = bttnL(this.inventoryBttn, null, recCollision, () => {
+		if (!dropMenu.isShowing) {
+			inventoryUI.init();
+		}
+	}, Vec2(inventory_bttn_Img.getColor(0.75), inventory_bttn_Img.getColor(1)));
 	
 	this.respawn = function(pos) {
 		if (pos != null) {
@@ -1259,6 +1906,8 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 		addObject(this.pickUpBttn);
 		addObject(this.droppedItemsTxt);
 		this.pickUpBttnLink.link();
+		addObject(this.inventoryBttn);
+		this.inventoryBttnLink.link();
 		mousePressed[0] = false; //fixes shooting bullets after clicking play on the main menu
 		this.loaded = true;
 	}
@@ -1274,16 +1923,18 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 		deleteByNameTag(this.pickUpBttn.base.nameTag);
 		deleteByNameTag(this.droppedItemsTxt.base.nameTag);
 		this.pickUpBttnLink.unlink();
+		deleteByNameTag(this.inventoryBttn.base.nameTag);
+		this.inventoryBttnLink.unlink();
 		this.controller.deactivate();
 		this.loaded = false;
 	}
 	
 	this.damagePlayer = (damage=10) => {
-		console.log(damage*(damage/this.defence));
-		this.health.x -= clamp(damage*(damage/this.defence), 0, this.health.y);
+		console.log(damage*(damage/this.defense));
+		this.health.x -= clamp(damage*(damage/this.defense), 0, this.health.y);
 	}
 	
-	this.calPlayerDefence = () => {
+	this.calPlayerDefense = () => {
 		let value = this.baseDefence;
 		this.armor.forEach((a) => {
 			value = value+a.getArmor().defenceStat;
@@ -1293,197 +1944,228 @@ function player(maxHealth=100, playerSpeed=Vec(3, 7), maxStamina=Vec2(100, 0.1),
 	
 	const update = () => {
 		if (typeof gameState != "undefined") {
-			if (gameState == 0) {
-				if (this.loaded) {
-					this.unload();
-				}
-			} else {
-				for (let i=0,length=inventory.items.length;i<length;i++){
-					if(typeof inventory.items[i].stack != "undefined" && inventory.items[i].stack == 0){
-						inventory.items.splice(i, 1);
+			switch (gameState) {
+				case 0:
+					if (this.loaded) {
+						this.unload();
 					}
-				}
-				//UI
-				if (dUI.showing) {
-					this.healthBar.base.setAlpha(0);
-					this.healthBarTxt.base.setAlpha(0);
-					this.staminaBar.base.setAlpha(0);
-					this.staminaBarTxt.base.setAlpha(0);
-					this.weaponNameTxt.base.setAlpha(0);
-					this.ammoCountTxt.base.setAlpha(0);
-					this.pickUpBttn.base.setAlpha(0);
-					this.droppedItemsTxt.base.setAlpha(0);
-					this.pickUpBttnLink.unlink();
-					isPaused = true;
-					dUI.pauseLatch = false;
-				}
-				if (!dUI.showing) {
-					this.healthBar.base.setAlpha(0.75);
-					this.healthBarTxt.base.setAlpha(0.75);
-					this.staminaBar.base.setAlpha(0.75);
-					this.staminaBarTxt.base.setAlpha(0.75);
-					this.weaponNameTxt.base.setAlpha(0.75);
-					this.ammoCountTxt.base.setAlpha(0.75);
-					this.pickUpBttn.base.setAlpha(0.75);
-					this.droppedItemsTxt.base.setAlpha(0.75);
-					this.healthBarLink.update();
-					this.staminaBarLink.update();
-					this.pickUpBttnLink.link();
-					if (!dUI.pauseLatch) {
-						isPaused = false;
-						dUI.pauseLatch = true;
-					}
-				}
-				if (this.bttns.length == 0 && getByNameTag(nt("", "BTTN"), 2, false, true) != null) {
-					if (typeof getByNameTag(nt("", "BTTN"), 2, false, true).length != "undefined") {
-						this.bttns = getByNameTag(nt("", "BTTN"), 2, false, true);
-					} else {
-						this.bttns = [getByNameTag(nt("", "BTTN"), 2, false, true)];
-					}
-				}
-				if (this.bttns != null) {
-					if (typeof this.bttns.length != "undefined") {
-						let isTouchBttns = this.bttns.some((b) => recCollision(getCursor(), b)); 
-						if (isTouchBttns) {
-							this.lockWeapon = true;
+				break;
+				case 1:
+					if (currentMap() != undefined) {
+						for (let i=0,length=inventory.items.length;i<length;i++){
+							if(typeof inventory.items[i].stack != "undefined" && inventory.items[i].stack <= 0){
+								inventory.items.splice(i, 1);
+							}
+						}
+						for (let i=0,length=this.weapons.length;i<length;i++){
+							if(!this.weapons[i].equipped){
+								this.weapons[i].equipped = true;
+							}
+							if (this.weapons[i].index == null) {
+								this.weapons[i].index = i;
+							}
+						}
+						for (let i=0,length=this.armor.length;i<length;i++){
+							if(!this.armor[i].equipped){
+								this.armor[i].equipped = true;
+							}
+							if (this.armor[i].index == null) {
+								this.armor[i].index = i;
+							}
+						}
+						for (let i=0,length=inventory.weapons.length;i<length;i++){
+							if (inventory.weapons[i].index == null) {
+								inventory.weapons[i].index = i;
+							}
+						}
+						for (let i=0,length=inventory.armor.length;i<length;i++){
+							if (inventory.armor[i].index == null) {
+								inventory.armor[i].index = i;
+							}
+						}
+						//UI
+						if (dUI.showing) {
+							this.healthBar.base.setAlpha(0);
+							this.healthBarTxt.base.setAlpha(0);
+							this.staminaBar.base.setAlpha(0);
+							this.staminaBarTxt.base.setAlpha(0);
+							this.weaponNameTxt.base.setAlpha(0);
+							this.ammoCountTxt.base.setAlpha(0);
+							this.pickUpBttn.base.setAlpha(0);
+							this.droppedItemsTxt.base.setAlpha(0);
+							this.pickUpBttnLink.unlink();
+							isPaused = true;
+							dUI.pauseLatch = false;
+						}
+						if (!dUI.showing) {
+							this.healthBar.base.setAlpha(0.75);
+							this.healthBarTxt.base.setAlpha(0.75);
+							this.staminaBar.base.setAlpha(0.75);
+							this.staminaBarTxt.base.setAlpha(0.75);
+							this.weaponNameTxt.base.setAlpha(0.75);
+							this.ammoCountTxt.base.setAlpha(0.75);
+							this.pickUpBttn.base.setAlpha(0.75);
+							this.droppedItemsTxt.base.setAlpha(0.75);
+							this.healthBarLink.update();
+							this.staminaBarLink.update();
+							this.pickUpBttnLink.link();
+							if (!dUI.pauseLatch) {
+								isPaused = false;
+								dUI.pauseLatch = true;
+							}
+						}
+						if (this.bttns.length == 0 && getByNameTag(nt("", "BTTN"), 2, false, true) != null) {
+							if (typeof getByNameTag(nt("", "BTTN"), 2, false, true).length != "undefined") {
+								this.bttns = getByNameTag(nt("", "BTTN"), 2, false, true);
+							} else {
+								this.bttns = [getByNameTag(nt("", "BTTN"), 2, false, true)];
+							}
+						}
+						if (this.bttns != null) {
+							if (typeof this.bttns.length != "undefined") {
+								let isTouchBttns = this.bttns.some((b) => recCollision(getCursor(), b)); 
+								if (isTouchBttns) {
+									this.lockWeapon = true;
+								} else {
+									this.lockWeapon = false;
+								}
+							}
+						}
+						this.healthBarLink.value = this.health.x;
+						this.healthBarLink.maxValue = this.health.y;
+						this.health.x = clamp(this.health.x, 0, this.health.y);
+						if (this.health.x == 0) {
+							this.dead = true;
 						} else {
-							this.lockWeapon = false;
+							this.dead = false;
+						}
+						this.staminaBarLink.value = this.stamina.x;
+						this.staminaBarLink.maxValue = this.stamina.y;
+						this.stamina.x = clamp(this.stamina.x, 0, this.stamina.y);
+						if(this.currentWeaponData != null){ 
+							this.weaponNameTxt.text = "Weapon Name: "+this.currentWeaponData.name;
+						} else {
+							this.weaponNameTxt.text = "Weapon Name: None";
+						}
+						this.ammoCountTxt.text = "Ammo: "+this.ammo.x;
+						if (getDroppedItems() != null) {
+							if (getDroppedItems().length > 100) {
+								this.droppedItemsTxt.text = "100+";
+							} else {
+								this.droppedItemsTxt.text = getDroppedItems().length;
+							}
+						} else {
+							this.droppedItemsTxt.text = "0";
+						}
+						//Calculate player defense
+						this.defense = this.calPlayerDefense();
+						//Player movement
+						if (this.controller.moveDir.x != 0) {
+							this.playerDir = -this.controller.moveDir.x;
+						}
+						if (this.controller.moveDir.x != 0 || this.controller.moveDir.y != 0) {
+							if (this.run && this.stamina.x > 0) {
+								this.controller.maxSpeed = this.playerSpeed.y;
+								this.stamina.x -= this.stamina.r*delta;
+							} else {
+								this.controller.maxSpeed = this.playerSpeed.x;
+							}
+						}
+						if (!this.run) {
+							if (this.stamina.x < this.stamina.y) {
+								this.stamina.x += this.stamina.o*delta;
+							}
+						}
+						if (this.playerOBJ != null) {
+							this.playerOBJ.scale.x = this.playerDir;
+							switch (this.playerDir) {
+								case -1:
+									this.playerItemDropPos = this.playerOBJ.base.position.subV(currentMap().mapPos).addV(Vec2(-30, 80));
+								break;
+								case 1:
+									this.playerItemDropPos = this.playerOBJ.base.position.subV(currentMap().mapPos).addV(Vec2(30, 80));
+								break;
+							}
+						}
+						switch (this.playerDir) {
+							case -1:
+								this.bulletSpawn = Vec2(10, -60);
+							break;
+							case 1:
+								this.bulletSpawn = Vec2(-10, -60);
+							break;
+						}
+						if (currentMap() != null) {
+							if (this.controller.touchEdge.x) {
+								currentMap().dir.x = -this.controller.moveDir.x;
+							} else {
+								currentMap().dir.x = 0;
+							}
+							if (this.controller.touchEdge.y) {
+								currentMap().dir.y = -this.controller.moveDir.y;
+							} else {
+								currentMap().dir.y = 0;
+							}
+						}
+						//Player shooting
+						if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered && this.playerOBJ != null && !this.dead) {
+							if (fireTime == 0 && this.ammo.x > 0) {
+								for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
+									let newBullet = sprite(5, base(false, nt("bullet_"+bulletAmount,"player_bullet_"+this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
+									let angle = this.playerOBJ.base.position.getRotation(getCursor().base.position, false)+180;
+									newBullet.base.nameTag.name = newBullet.base.nameTag.name+i;
+									newBullet.base.position.r = degToRad(this.currentWeaponData.spreadPattern[i]+angle);
+									newBullet.base.position.s = -this.currentWeaponData.speed;
+									newBullet.damage = rangeFloat(this.currentWeaponData.damage.x, this.currentWeaponData.damage.y);
+									bulletAmount++;
+									addObject(newBullet);
+								}
+								this.ammo.x--;
+							}
+							fireTime += this.currentWeaponData.fireTime.x*delta;
+							if (fireTime > this.currentWeaponData.fireTime.y) {
+								fireTime = 0;
+							}
+						}
+						if (!mousePressed[0]) {
+							fireTime = 0;
+						}
+						if (bulletAmount > 1000) {
+							bulletAmount = 0;
+						}
+						this.playerBullets = getByNameTag(nt("", "player_bullet"), 2, false, true);
+						if (this.playerBullets != null) {
+							for (let i=0;i<this.playerBullets.length;i++) {
+								let dist = this.playerBullets[i].base.startPosition.distance(this.playerBullets[i].base.position);
+								if (dist > this.currentWeaponData.range) {
+									this.playerBullets[i].base.marked = true;
+								}
+							}
+						}
+						if (mouseWheel > 0) {
+							this.currentWeapon--;
+							mouseWheel = 0;
+						}
+						if (mouseWheel < 0) {
+							this.currentWeapon++;
+							mouseWheel = 0;
+						}
+						if (this.currentWeapon > this.weapons.length-1) {
+							this.currentWeapon = 0;
+						}
+						if (this.currentWeapon < 0) {
+							this.currentWeapon = this.weapons.length-1;
+						}
+						if (this.weapons[this.currentWeapon] != undefined) {
+							this.currentWeaponData = this.weapons[this.currentWeapon].getWeapon();
+						} else {
+							this.currentWeaponData = null;
+						}
+						if (this.dead) {
+							deleteByNameTag(this.nameTag);
 						}
 					}
-				}
-				this.healthBarLink.value = this.health.x;
-				this.healthBarLink.maxValue = this.health.y;
-				this.health.x = clamp(this.health.x, 0, this.health.y);
-				if (this.health.x == 0) {
-					this.dead = true;
-				} else {
-					this.dead = false;
-				}
-				this.staminaBarLink.value = this.stamina.x;
-				this.staminaBarLink.maxValue = this.stamina.y;
-				this.stamina.x = clamp(this.stamina.x, 0, this.stamina.y);
-				if(this.currentWeaponData != null){ 
-					this.weaponNameTxt.text = "Weapon Name: "+this.currentWeaponData.name;
-				} else {
-					this.weaponNameTxt.text = "Weapon Name: None";
-				}
-				this.ammoCountTxt.text = "Ammo: "+this.ammo.x;
-				if (getDroppedItems() != null) {
-					if (getDroppedItems().length > 100) {
-						this.droppedItemsTxt.text = "100+";
-					} else {
-						this.droppedItemsTxt.text = getDroppedItems().length;
-					}
-				} else {
-					this.droppedItemsTxt.text = "0";
-				}
-				//Calculate player defence
-				this.defence = this.calPlayerDefence();
-				//Player movement
-				if (this.controller.moveDir.x != 0) {
-					this.playerDir = -this.controller.moveDir.x;
-				}
-				if (this.controller.moveDir.x != 0 || this.controller.moveDir.y != 0) {
-					if (this.run && this.stamina.x > 0) {
-						this.controller.maxSpeed = this.playerSpeed.y;
-						this.stamina.x -= this.stamina.r*delta;
-					} else {
-						this.controller.maxSpeed = this.playerSpeed.x;
-					}
-				}
-				if (!this.run) {
-					if (this.stamina.x < this.stamina.y) {
-						this.stamina.x += this.stamina.o*delta;
-					}
-				}
-				if (this.playerOBJ != null) {
-					this.playerOBJ.scale.x = this.playerDir;
-					switch (this.playerDir) {
-						case -1:
-							this.playerItemDropPos = this.playerOBJ.base.position.subV(currentMap().mapPos).addV(Vec2(-30, 80));
-						break;
-						case 1:
-							this.playerItemDropPos = this.playerOBJ.base.position.subV(currentMap().mapPos).addV(Vec2(30, 80));
-						break;
-					}
-				}
-				switch (this.playerDir) {
-					case -1:
-						this.bulletSpawn = Vec2(10, -60);
-					break;
-					case 1:
-						this.bulletSpawn = Vec2(-10, -60);
-					break;
-				}
-				if (currentMap() != null) {
-					if (this.controller.touchEdge.x) {
-						currentMap().dir.x = -this.controller.moveDir.x;
-					} else {
-						currentMap().dir.x = 0;
-					}
-					if (this.controller.touchEdge.y) {
-						currentMap().dir.y = -this.controller.moveDir.y;
-					} else {
-						currentMap().dir.y = 0;
-					}
-				}
-				//Player shooting
-				if (mousePressed[0] && !isPaused && !this.lockWeapon && this.currentWeaponData != null && !SettingsMenu.iconHovered && this.playerOBJ != null && !this.dead) {
-					if (fireTime == 0 && this.ammo.x > 0) {
-						for (let i=0;i<this.currentWeaponData.amountPerShot;i++) {
-							let newBullet = sprite(5, base(false, nt("bullet_"+bulletAmount,"player_bullet_"+this.currentWeaponData.name), this.currentWeaponData.size.duplicate(), this.playerOBJ.base.position.duplicate().addV(this.bulletSpawn.duplicate()), this.currentWeaponData.imageData.duplicate()));
-							let angle = this.playerOBJ.base.position.getRotation(getCursor().base.position, false)+180;
-							newBullet.base.nameTag.name = newBullet.base.nameTag.name+i;
-							newBullet.base.position.r = degToRad(this.currentWeaponData.spreadPattern[i]+angle);
-							newBullet.base.position.s = -this.currentWeaponData.speed;
-							newBullet.damage = rangeFloat(this.currentWeaponData.damage.x, this.currentWeaponData.damage.y);
-							bulletAmount++;
-							addObject(newBullet);
-						}
-						this.ammo.x--;
-					}
-					fireTime += this.currentWeaponData.fireTime.x*delta;
-					if (fireTime > this.currentWeaponData.fireTime.y) {
-						fireTime = 0;
-					}
-				}
-				if (!mousePressed[0]) {
-					fireTime = 0;
-				}
-				if (bulletAmount > 1000) {
-					bulletAmount = 0;
-				}
-				this.playerBullets = getByNameTag(nt("", "player_bullet"), 2, false, true);
-				if (this.playerBullets != null) {
-					for (let i=0;i<this.playerBullets.length;i++) {
-						let dist = this.playerBullets[i].base.startPosition.distance(this.playerBullets[i].base.position);
-						if (dist > this.currentWeaponData.range) {
-							this.playerBullets[i].base.marked = true;
-						}
-					}
-				}
-				if (mouseWheel > 0) {
-					this.currentWeapon--;
-					mouseWheel = 0;
-				}
-				if (mouseWheel < 0) {
-					this.currentWeapon++;
-					mouseWheel = 0;
-				}
-				if (this.currentWeapon > this.weapons.length-1) {
-					this.currentWeapon = 0;
-				}
-				if (this.currentWeapon < 0) {
-					this.currentWeapon = this.weapons.length-1;
-				}
-				if (this.weapons[this.currentWeapon] != undefined) {
-					this.currentWeaponData = this.weapons[this.currentWeapon].getWeapon();
-				} else {
-					this.currentWeaponData = null;
-				}
-				if (this.dead) {
-					deleteByNameTag(this.nameTag);
-				}
+				break;
 			}
 		}
 	};
@@ -1922,6 +2604,40 @@ let runBttn = K(
 			currentPlayer.run = false;
 		}
 	}),
+	false
+);
+let pickupMenuBttn = K(
+	"Pick Up Menu",
+	[
+		keyD("p", 0)
+	],
+	Vec2(() => {
+		if (currentPlayer.loaded && !inventoryUI.isShowing) {
+			if (!currentPlayer.dead) {
+				dropMenu.init();
+			} else {
+				dropMenu.hide();
+			}
+		}
+	}, 
+	() => {}),
+	false
+);
+let inventoryMenuBttn = K(
+	"Inventory",
+	[
+		keyD("i", 0)
+	],
+	Vec2(() => {
+		if (currentPlayer.loaded && !dropMenu.isShowing) {
+			if (!currentPlayer.dead) {
+				inventoryUI.init();
+			} else {
+				inventoryUI.hide();
+			}
+		}
+	}, 
+	() => {}),
 	false
 );
 
