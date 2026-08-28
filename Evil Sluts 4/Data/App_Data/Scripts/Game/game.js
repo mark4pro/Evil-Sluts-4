@@ -4,7 +4,7 @@ getCursor().base.size = (Vec2(14, 14));
 Cursor.offset = getCursor().base.size.div(2);
 engineSettings.Settings_Menu.Image_Smoothing = false;
 engineSettings.Settings_Menu.Show_Debug_Cursor = false;
-engineSettings.Addons = ["mapRenderer"];
+engineSettings.Addons = ["tile_renderer"];
 loadAddons();
 controllerManager.players = 1;
 
@@ -2466,6 +2466,7 @@ function deathScreen (){
 const mainUpdate = () => {
 	deleteByMarked();
 	//Inits after all scripts are loaded
+	/*
 	if (typeof map != "undefined") {
 		if (!thisLoaded) {
 			config.scale = 5;
@@ -2514,7 +2515,7 @@ const mainUpdate = () => {
 				}
 			}
 		}
-	}
+	}*/
 };
 addUpdate(mainUpdate, "mainUpdate"); 
 
