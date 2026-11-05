@@ -773,6 +773,11 @@ const Updater = () => {
 		objectArray = layer[1].concat(layer[2], layer[3], layer[4], layer[5], layer[6], layer[7], layer[8]);
 		loaded = true;
 	}
+	if (typeof tm_renderer != "undefined") {
+		tm_renderer.draw();
+	} else {
+		ctx.clearRect(0, 0, screen.resolution.x, screen.resolution.y);
+	}
 	Renderer();
 	updateArray.forEach((u) => {
 		if (typeof u.function == "function") {
@@ -1885,12 +1890,23 @@ const getByColorData = (colorData=NO_COLOR, colorMode=0, returnIndex=false, getM
 
 //Renderer
 const Renderer = () => {
-	ctx.clearRect(0, 0, screen.resolution.x, screen.resolution.y);
 	objectArray.forEach((i) => {
-		if (typeof i.base.size.x == "string" || (i.base.position.x-(i.base.size.x/2) <= screen.resolution.x && i.base.position.x+(i.base.size.x/2) >= 0 && i.base.position.y-(i.base.size.y/2) <= screen.resolution.y && i.base.position.y+(i.base.size.y/2) >= 0)) {
+		if (
+			typeof i.base.size.x == "string" ||
+			(
+				i.base.position.x - (i.base.size.x / 2) <= screen.resolution.x &&
+				i.base.position.x + (i.base.size.x / 2) >= 0 &&
+				i.base.position.y - (i.base.size.y / 2) <= screen.resolution.y &&
+				i.base.position.y + (i.base.size.y / 2) >= 0
+			)
+		) {
 			i.draw();
 		}
-		if (i.base.position.s != 0 || i.base.overridePositionUpdateFunction) {
+
+		if (
+			i.base.position.s != 0 ||
+			i.base.overridePositionUpdateFunction
+		) {
 			i.base.updatePosition();
 		}
 	});
